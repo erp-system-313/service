@@ -1,5 +1,5 @@
 {
-  description = "Spring Boot Backend Dev Shell";
+  description = "ERP Backend Dev Shell";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
