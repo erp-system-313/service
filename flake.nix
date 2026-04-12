@@ -14,7 +14,7 @@
       {
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
-            openjdk26
+            jdk
             maven
             git
           ];
