@@ -1,5 +1,6 @@
 package com.erp.purchasing.dto;
 
+import com.erp.purchasing.entity.PurchaseOrder;
 import com.erp.purchasing.entity.StockMovement;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
