@@ -1,6 +1,5 @@
 package com.erp.inventory.dto;
 
-import com.erp.inventory.entity.Product;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,6 +7,8 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import com.erp.inventory.entity.Product;
 
 @Data
 @NoArgsConstructor
