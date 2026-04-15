@@ -1,6 +1,6 @@
 package com.erp.sales.entity;
 
-import com.erp.entity.Product;
+import com.erp.inventory.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;
 
