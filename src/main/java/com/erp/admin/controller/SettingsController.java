@@ -3,7 +3,9 @@ package com.erp.admin.controller;
 import com.erp.admin.dto.SettingsDto;
 import com.erp.admin.dto.UpdateSettingsRequest;
 import com.erp.admin.service.SettingsService;
+import com.erp.auth.security.CurrentUserUtil;
 import com.erp.common.dto.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,7 @@ import java.util.Map;
 public class SettingsController {
 
     private final SettingsService settingsService;
+    private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
     public ResponseEntity<ApiResponse<Map<String, String>>> getAll() {
@@ -34,5 +37,13 @@ public class SettingsController {
     public ResponseEntity<ApiResponse<SettingsDto>> update(@Valid @RequestBody UpdateSettingsRequest request) {
         SettingsDto settings = settingsService.update(request);
         return ResponseEntity.ok(ApiResponse.success(settings, "Settings updated successfully"));
+    }
+
+    @DeleteMapping("/{key}")
+    public ResponseEntity<ApiResponse<Void>> delete(
+            @PathVariable String key,
+            HttpServletRequest httpRequest) {
+        settingsService.delete(key);
+        return ResponseEntity.ok(ApiResponse.success(null, "Settings deleted successfully"));
     }
 }

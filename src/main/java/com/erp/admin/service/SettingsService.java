@@ -74,6 +74,15 @@ public class SettingsService {
         return toDto(settings);
     }
 
+    @Transactional
+    public void delete(String key) {
+        Settings settings = settingsRepository.findBySettingKey(key)
+                .orElseThrow(() -> new ResourceNotFoundException("Settings", key));
+        
+        settingsRepository.delete(settings);
+        log.info("Deleted settings: {}", key);
+    }
+
     public String getValue(String key, String defaultValue) {
         return settingsRepository.findBySettingKey(key)
                 .map(Settings::getSettingValue)

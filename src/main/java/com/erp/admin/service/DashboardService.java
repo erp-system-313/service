@@ -18,6 +18,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,6 +44,8 @@ public class DashboardService {
         long totalEmployees = employeeRepository.countByStatus(Employee.EmployeeStatus.ACTIVE);
 
         List<DashboardStatsDto.RecentOrderDto> recentOrders = getRecentOrders();
+        List<DashboardStatsDto.SalesTrendDto> salesTrend = getSalesTrend();
+        List<DashboardStatsDto.TopProductDto> topProducts = getTopProducts();
 
         return DashboardStatsDto.builder()
                 .totalSales(totalSales != null ? totalSales : BigDecimal.ZERO)
@@ -51,8 +55,8 @@ public class DashboardService {
                 .lowStockProducts(lowStockProducts)
                 .totalEmployees(totalEmployees)
                 .recentOrders(recentOrders)
-                .salesTrend(Collections.emptyList())
-                .topProducts(Collections.emptyList())
+                .salesTrend(salesTrend)
+                .topProducts(topProducts)
                 .build();
     }
 
@@ -61,6 +65,32 @@ public class DashboardService {
                 .findByStatusOrderByCreatedAtDesc(OrderStatus.SHIPPED, PageRequest.of(0, 5))
                 .stream()
                 .map(this::toRecentOrderDto)
+                .collect(Collectors.toList());
+    }
+
+    private List<DashboardStatsDto.SalesTrendDto> getSalesTrend() {
+        LocalDateTime sixMonthsAgo = LocalDateTime.now().minusMonths(6);
+        List<Object[]> results = salesOrderRepository.findDailySalesTrend(OrderStatus.SHIPPED, sixMonthsAgo);
+        
+        return results.stream()
+                .map(row -> DashboardStatsDto.SalesTrendDto.builder()
+                        .date(row[0] != null ? row[0].toString() : null)
+                        .amount(row[1] != null ? (BigDecimal) row[1] : BigDecimal.ZERO)
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    private List<DashboardStatsDto.TopProductDto> getTopProducts() {
+        LocalDateTime sixMonthsAgo = LocalDateTime.now().minusMonths(6);
+        List<Object[]> results = salesOrderRepository.findTopSellingProducts(
+                OrderStatus.SHIPPED, sixMonthsAgo, PageRequest.of(0, 5));
+        
+        return results.stream()
+                .map(row -> DashboardStatsDto.TopProductDto.builder()
+                        .productId((Long) row[0])
+                        .productName((String) row[1])
+                        .quantitySold(row[2] != null ? ((Number) row[2]).longValue() : 0L)
+                        .build())
                 .collect(Collectors.toList());
     }
 

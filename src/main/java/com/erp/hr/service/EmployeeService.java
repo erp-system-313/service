@@ -1,5 +1,6 @@
 package com.erp.hr.service;
 
+import com.erp.auth.security.CurrentUserUtil;
 import com.erp.hr.dto.CreateEmployeeRequest;
 import com.erp.hr.dto.EmployeeDto;
 import com.erp.hr.dto.UpdateEmployeeRequest;
@@ -27,6 +28,7 @@ public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
     private final AuditLogService auditLogService;
+    private final CurrentUserUtil currentUserUtil;
 
     public PageResponse<EmployeeDto> findAll(int page, int size, String department, String status) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -84,7 +86,7 @@ public class EmployeeService {
         employee = employeeRepository.save(employee);
         log.info("Created employee with id: {} and code: {}", employee.getId(), employeeCode);
 
-        auditLogService.log(null, "CREATE", "Employee", employee.getId(), null, ipAddress, "Employee created");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "CREATE", "Employee", employee.getId(), null, ipAddress, "Employee created");
 
         return toDto(employee);
     }
@@ -120,7 +122,7 @@ public class EmployeeService {
         employee = employeeRepository.save(employee);
         log.info("Updated employee with id: {}", employee.getId());
 
-        auditLogService.log(null, "UPDATE", "Employee", employee.getId(), null, ipAddress, "Employee updated");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "UPDATE", "Employee", employee.getId(), null, ipAddress, "Employee updated");
 
         return toDto(employee);
     }
@@ -135,7 +137,7 @@ public class EmployeeService {
         employeeRepository.save(employee);
         log.info("Terminated employee with id: {}", id);
 
-        auditLogService.log(null, "DELETE", "Employee", id, null, ipAddress, "Employee terminated");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "DELETE", "Employee", id, null, ipAddress, "Employee terminated");
     }
 
     public long countActive() {

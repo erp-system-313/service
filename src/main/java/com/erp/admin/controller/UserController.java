@@ -1,5 +1,6 @@
 package com.erp.admin.controller;
 
+import com.erp.auth.security.CurrentUserUtil;
 import com.erp.admin.dto.CreateUserRequest;
 import com.erp.admin.dto.UpdateUserRequest;
 import com.erp.admin.dto.UserDto;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<UserDto>>> getAll(
@@ -47,7 +49,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserDto>> create(
             @Valid @RequestBody CreateUserRequest request,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         UserDto user = userService.create(request, currentUserId, ipAddress);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(user, "User created successfully"));
@@ -58,7 +60,7 @@ public class UserController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateUserRequest request,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         UserDto user = userService.update(id, request, currentUserId, ipAddress);
         return ResponseEntity.ok(ApiResponse.success(user, "User updated successfully"));
@@ -68,7 +70,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         userService.delete(id, currentUserId, ipAddress);
         return ResponseEntity.ok(ApiResponse.success(null, "User deactivated successfully"));

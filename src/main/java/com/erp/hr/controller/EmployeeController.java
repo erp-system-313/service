@@ -1,5 +1,6 @@
 package com.erp.hr.controller;
 
+import com.erp.auth.security.CurrentUserUtil;
 import com.erp.hr.dto.CreateEmployeeRequest;
 import com.erp.hr.dto.EmployeeDto;
 import com.erp.hr.dto.UpdateEmployeeRequest;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class EmployeeController {
 
     private final EmployeeService employeeService;
+    private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<EmployeeDto>>> getAll(
@@ -41,7 +43,7 @@ public class EmployeeController {
     public ResponseEntity<ApiResponse<EmployeeDto>> create(
             @Valid @RequestBody CreateEmployeeRequest request,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         EmployeeDto employee = employeeService.create(request, currentUserId, ipAddress);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(employee, "Employee created successfully"));
@@ -52,7 +54,7 @@ public class EmployeeController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateEmployeeRequest request,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         EmployeeDto employee = employeeService.update(id, request, currentUserId, ipAddress);
         return ResponseEntity.ok(ApiResponse.success(employee, "Employee updated successfully"));
@@ -62,7 +64,7 @@ public class EmployeeController {
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         employeeService.delete(id, currentUserId, ipAddress);
         return ResponseEntity.ok(ApiResponse.success(null, "Employee terminated successfully"));

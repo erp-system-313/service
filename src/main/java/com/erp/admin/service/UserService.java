@@ -7,6 +7,7 @@ import com.erp.admin.entity.Role;
 import com.erp.admin.entity.User;
 import com.erp.admin.repository.RoleRepository;
 import com.erp.admin.repository.UserRepository;
+import com.erp.auth.security.CurrentUserUtil;
 import com.erp.common.dto.PageResponse;
 import com.erp.common.exception.BusinessException;
 import com.erp.common.exception.ResourceNotFoundException;
@@ -29,6 +30,7 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuditLogService auditLogService;
+    private final CurrentUserUtil currentUserUtil;
 
     public PageResponse<UserDto> findAll(int page, int size, String roleName, Boolean isActive) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -80,7 +82,7 @@ public class UserService {
         user = userRepository.save(user);
         log.info("Created user with id: {}", user.getId());
 
-        auditLogService.log(null, "CREATE", "User", user.getId(), null, ipAddress, "User created");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "CREATE", "User", user.getId(), null, ipAddress, "User created");
 
         return toDto(user);
     }
@@ -111,9 +113,9 @@ public class UserService {
         user = userRepository.save(user);
         log.info("Updated user with id: {}", user.getId());
 
-        auditLogService.log(null, "UPDATE", "User", user.getId(), null, ipAddress, "User updated");
+auditLogService.log(currentUserUtil.getCurrentUserId(), "UPDATE", "User", user.getId(), null, ipAddress, "User updated");
 
-        return toDto(user);
+        return toDto(employee);
     }
 
     @Transactional
@@ -125,7 +127,7 @@ public class UserService {
         userRepository.save(user);
         log.info("Soft deleted user with id: {}", id);
 
-        auditLogService.log(null, "DELETE", "User", id, null, ipAddress, "User deactivated");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "DELETE", "User", id, null, ipAddress, "User deactivated");
     }
 
     private UserDto toDto(User user) {

@@ -28,9 +28,8 @@ public class DashboardStatsDto {
     @AllArgsConstructor
     @Builder
     public static class SalesTrendDto {
-        private String month;
+        private String date;
         private BigDecimal amount;
-        private long orderCount;
     }
 
     @Data
@@ -40,8 +39,7 @@ public class DashboardStatsDto {
     public static class TopProductDto {
         private Long productId;
         private String productName;
-        private long quantitySold;
-        private BigDecimal revenue;
+        private Long quantitySold;
     }
 
     @Data
