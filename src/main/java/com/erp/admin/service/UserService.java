@@ -99,7 +99,9 @@ public class UserService {
 
         if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
         if (request.getLastName() != null) user.setLastName(request.getLastName());
-        if (request.getIsActive() != null) user.setIsActive(request.getIsActive());
+        if (request.getIsActive() != null) {
+            user.setIsActive(request.getIsActive());
+        }
         if (request.getRoleId() != null) {
             Role role = roleRepository.findById(request.getRoleId())
                     .orElseThrow(() -> new ResourceNotFoundException("Role", request.getRoleId()));
@@ -136,7 +138,7 @@ public class UserService {
                 .roleId(user.getRole() != null ? user.getRole().getId() : null)
                 .roleName(user.getRole() != null ? user.getRole().getName() : null)
                 .employeeId(user.getEmployee() != null ? user.getEmployee().getId() : null)
-                .isActive(user.isActive())
+                .isActive(user.getIsActive())
                 .lastLoginAt(user.getLastLoginAt())
                 .createdAt(user.getCreatedAt())
                 .build();

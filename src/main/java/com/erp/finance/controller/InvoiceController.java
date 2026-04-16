@@ -41,6 +41,12 @@ public class InvoiceController {
         return ResponseEntity.ok(ApiResponse.success(invoice));
     }
 
+    @GetMapping("/{id}/pdf")
+    public ResponseEntity<ApiResponse<String>> getPdf(@PathVariable Long id) {
+        invoiceService.findById(id);
+        return ResponseEntity.ok(ApiResponse.success("PDF generation not implemented yet", "PDF endpoint"));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<InvoiceDto>> create(
             @Valid @RequestBody CreateInvoiceRequest request) {

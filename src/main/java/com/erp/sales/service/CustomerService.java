@@ -2,9 +2,11 @@ package com.erp.sales.service;
 
 import com.erp.sales.dto.CreateCustomerRequest;
 import com.erp.sales.dto.CustomerDto;
+import com.erp.sales.dto.SalesOrderDto;
 import com.erp.sales.dto.UpdateCustomerRequest;
 import com.erp.sales.entity.Customer;
 import com.erp.sales.repository.CustomerRepository;
+import com.erp.sales.repository.SalesOrderRepository;
 import com.erp.common.dto.PageResponse;
 import com.erp.common.exception.BusinessException;
 import com.erp.common.exception.ResourceNotFoundException;
@@ -25,6 +27,7 @@ import java.util.List;
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final SalesOrderRepository salesOrderRepository;
 
     public PageResponse<CustomerDto> findAll(int page, int size, String search, Boolean isActive) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -50,6 +53,17 @@ public class CustomerService {
     public List<CustomerDto> findActiveCustomers() {
         return customerRepository.findByIsActiveTrue().stream()
                 .map(this::toDto)
+                .toList();
+    }
+
+    public List<SalesOrderDto> getCustomerOrders(Long customerId) {
+        customerRepository.findById(customerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+        
+        return salesOrderRepository.findByCustomerId(customerId, PageRequest.of(0, 100, Sort.by("createdAt").descending()))
+                .getContent()
+                .stream()
+                .map(SalesOrderDto::fromEntity)
                 .toList();
     }
 

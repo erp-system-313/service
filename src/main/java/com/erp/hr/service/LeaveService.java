@@ -67,8 +67,9 @@ public class LeaveService {
 
     @Transactional
     public LeaveRequestDto create(LeaveRequest leaveRequest, Long currentUserId, String ipAddress) {
-        Employee employee = employeeRepository.findById(leaveRequest.getEmployee().getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Employee", leaveRequest.getEmployee().getId()));
+        Long employeeId = leaveRequest.getEmployee().getId();
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", employeeId));
 
         leaveRequest.setEmployee(employee);
         leaveRequest.setStatus(LeaveRequest.LeaveStatus.PENDING);

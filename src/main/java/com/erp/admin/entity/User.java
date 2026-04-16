@@ -42,7 +42,7 @@ public class User {
 
     @Column(name = "is_active", nullable = false)
     @Builder.Default
-    private boolean isActive = true;
+    private Boolean isActive = true;
 
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;

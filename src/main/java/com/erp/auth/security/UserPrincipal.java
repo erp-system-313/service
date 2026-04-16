@@ -35,7 +35,7 @@ public class UserPrincipal implements UserDetails {
                 user.getEmail(),
                 user.getPasswordHash(),
                 roleName,
-                user.isActive()
+                user.getIsActive()
         );
     }
 

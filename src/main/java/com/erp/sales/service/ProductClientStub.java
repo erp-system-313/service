@@ -1,7 +1,7 @@
 package com.erp.sales.service;
 
 import com.erp.common.exception.ResourceNotFoundException;
-import com.erp.entity.Product;
+import com.erp.inventory.entity.Product;
 import com.erp.sales.entity.SalesOrder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -16,12 +16,13 @@ public class ProductClientStub implements ProductClient {
     public Product getProductById(Long id) {
         log.warn("ProductClientStub: getProductById called with id={} - returning stub", id);
         
-        Product product = new Product();
-        product.setId(id);
-        product.setSku("SKU-" + id);
-        product.setName("Product " + id);
-        product.setUnitPrice(BigDecimal.valueOf(99.99));
-        product.setIsActive(true);
+        Product product = Product.builder()
+                .id(id)
+                .sku("SKU-" + id)
+                .name("Product " + id)
+                .unitPrice(BigDecimal.valueOf(99.99))
+                .status(Product.Status.ACTIVE)
+                .build();
         
         return product;
     }

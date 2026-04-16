@@ -1,6 +1,6 @@
 package com.erp.sales.service;
 
-import com.erp.entity.Product;
+import com.erp.inventory.entity.Product;
 import com.erp.sales.entity.SalesOrder;
 
 public interface ProductClient {

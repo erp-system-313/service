@@ -13,26 +13,26 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final UserRepository userRepository;
+  private final UserRepository userRepository;
 
-    @Override
-    @Transactional(readOnly = true)
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmailWithRole(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+  @Override
+  @Transactional(readOnly = true)
+  public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    User user = userRepository.findByEmailWithRole(email)
+        .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
-        if (!user.isActive()) {
-            throw new UsernameNotFoundException("User account is inactive: " + email);
-        }
-
-        return UserPrincipal.create(user);
+    if (!user.getIsActive()) {
+      throw new UsernameNotFoundException("User account is inactive: " + email);
     }
 
-    @Transactional(readOnly = true)
-    public UserDetails loadUserById(Long id) {
-        User user = userRepository.findByIdWithRole(id)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + id));
+    return UserPrincipal.create(user);
+  }
 
-        return UserPrincipal.create(user);
-    }
+  @Transactional(readOnly = true)
+  public UserDetails loadUserById(Long id) {
+    User user = userRepository.findByIdWithRole(id)
+        .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + id));
+
+    return UserPrincipal.create(user);
+  }
 }

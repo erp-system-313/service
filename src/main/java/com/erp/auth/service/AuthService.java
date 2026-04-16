@@ -31,7 +31,7 @@ public class AuthService {
         User user = userRepository.findByEmailWithRole(request.getEmail())
                 .orElseThrow(() -> new BusinessException("AUTH_001", "Invalid email or password"));
 
-        if (!user.isActive()) {
+        if (!user.getIsActive()) {
             throw new BusinessException("AUTH_002", "Account is inactive");
         }
 
