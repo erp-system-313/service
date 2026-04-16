@@ -40,6 +40,10 @@ public class Product {
     @Column(name = "reorder_level")
     private Integer reorderLevel;
 
+    @Column(name = "current_stock")
+    @Builder.Default
+    private Integer currentStock = 0;
+
     @Column(name = "image_url")
     private String imageUrl;
 
