@@ -99,4 +99,8 @@ public class JwtTokenProvider {
         }
         return false;
     }
+
+    public String generateResetToken(Long userId) {
+        return java.util.UUID.randomUUID().toString() + "-" + userId;
+    }
 }
