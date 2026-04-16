@@ -13,6 +13,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UpdateSupplierRequest {
 
+    @Size(max = 50)
+    private String code;
+
     @Size(max = 255)
     private String name;
 
@@ -26,4 +29,9 @@ public class UpdateSupplierRequest {
     private String phone;
 
     private String address;
+
+    @Size(max = 50)
+    private String taxId;
+
+    private Integer paymentTerms;
 }

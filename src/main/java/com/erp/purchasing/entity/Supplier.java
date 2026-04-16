@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,6 +21,9 @@ public class Supplier {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true, nullable = false, length = 50)
+    private String code;
+
     @Column(nullable = false)
     private String name;
 
@@ -34,6 +38,16 @@ public class Supplier {
 
     @Column(columnDefinition = "TEXT")
     private String address;
+
+    @Column(name = "tax_id", length = 50)
+    private String taxId;
+
+    @Column(name = "payment_terms")
+    private Integer paymentTerms;
+
+    @Column(name = "total_purchased", precision = 15, scale = 2)
+    @Builder.Default
+    private BigDecimal totalPurchased = BigDecimal.ZERO;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "is_active", nullable = false, length = 20)

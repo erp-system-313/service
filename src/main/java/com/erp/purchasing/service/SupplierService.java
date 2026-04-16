@@ -51,13 +51,19 @@ public class SupplierService {
         if (supplierRepository.existsByName(request.getName())) {
             throw new BusinessException("SUPPLIER_001", "Supplier name already exists");
         }
+        if (supplierRepository.existsByCode(request.getCode())) {
+            throw new BusinessException("SUPPLIER_002", "Supplier code already exists");
+        }
 
         Supplier supplier = Supplier.builder()
+                .code(request.getCode())
                 .name(request.getName())
                 .contactPerson(request.getContactPerson())
                 .email(request.getEmail())
                 .phone(request.getPhone())
                 .address(request.getAddress())
+                .taxId(request.getTaxId())
+                .paymentTerms(request.getPaymentTerms())
                 .status(Supplier.Status.ACTIVE)
                 .build();
 
@@ -81,10 +87,13 @@ public class SupplierService {
             supplier.setName(request.getName());
         }
 
+        if (request.getCode() != null) supplier.setCode(request.getCode());
         if (request.getContactPerson() != null) supplier.setContactPerson(request.getContactPerson());
         if (request.getEmail() != null) supplier.setEmail(request.getEmail());
         if (request.getPhone() != null) supplier.setPhone(request.getPhone());
         if (request.getAddress() != null) supplier.setAddress(request.getAddress());
+        if (request.getTaxId() != null) supplier.setTaxId(request.getTaxId());
+        if (request.getPaymentTerms() != null) supplier.setPaymentTerms(request.getPaymentTerms());
 
         supplier = supplierRepository.save(supplier);
         log.info("Updated supplier with id: {}", supplier.getId());
@@ -113,11 +122,15 @@ public class SupplierService {
     private SupplierDto toDto(Supplier supplier) {
         return SupplierDto.builder()
                 .id(supplier.getId())
+                .code(supplier.getCode())
                 .name(supplier.getName())
                 .contactPerson(supplier.getContactPerson())
                 .email(supplier.getEmail())
                 .phone(supplier.getPhone())
                 .address(supplier.getAddress())
+                .taxId(supplier.getTaxId())
+                .paymentTerms(supplier.getPaymentTerms())
+                .totalPurchased(supplier.getTotalPurchased())
                 .status(supplier.getStatus())
                 .createdAt(supplier.getCreatedAt())
                 .updatedAt(supplier.getUpdatedAt())

@@ -17,6 +17,10 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
 
     boolean existsByEmail(String email);
 
+    Optional<Supplier> findByCode(String code);
+
+    boolean existsByCode(String code);
+
     Page<Supplier> findByStatus(Supplier.Status status, Pageable pageable);
 
     long countByStatus(Supplier.Status status);

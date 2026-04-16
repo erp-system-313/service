@@ -39,12 +39,26 @@ public class PurchaseOrder {
     @Builder.Default
     private Status status = Status.PENDING;
 
+    @Column(name = "subtotal", precision = 15, scale = 2)
+    @Builder.Default
+    private BigDecimal subtotal = BigDecimal.ZERO;
+
+    @Column(precision = 15, scale = 2)
+    @Builder.Default
+    private BigDecimal tax = BigDecimal.ZERO;
+
     @Column(name = "total_amount", precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
     @Column(name = "expected_date")
     private LocalDate expectedDate;
+
+    @Column(name = "received_date")
+    private LocalDate receivedDate;
+
+    @Column(columnDefinition = "TEXT")
+    private String notes;
 
     @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

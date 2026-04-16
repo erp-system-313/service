@@ -20,4 +20,6 @@ public class CreateCategoryRequest {
     private String description;
 
     private Long parentId;
+
+    private Integer sortOrder;
 }

@@ -19,6 +19,8 @@ public class UpdatePurchaseOrderRequest {
     private LocalDate date;
     private PurchaseOrder.Status status;
     private LocalDate expectedDate;
+    private LocalDate receivedDate;
+    private String notes;
     private List<UpdatePurchaseOrderLineRequest> lines;
 
     @Data
@@ -29,5 +31,7 @@ public class UpdatePurchaseOrderRequest {
         private Long productId;
         private Integer quantity;
         private BigDecimal unitPrice;
+        private BigDecimal discount;
+        private String notes;
     }
 }

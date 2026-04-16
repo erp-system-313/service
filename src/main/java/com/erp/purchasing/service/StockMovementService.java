@@ -1,5 +1,7 @@
 package com.erp.purchasing.service;
 
+import com.erp.admin.entity.User;
+import com.erp.admin.repository.UserRepository;
 import com.erp.admin.service.AuditLogService;
 import com.erp.common.dto.PageResponse;
 import com.erp.common.exception.ResourceNotFoundException;
@@ -25,6 +27,7 @@ public class StockMovementService {
 
     private final StockMovementRepository stockMovementRepository;
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
     private final AuditLogService auditLogService;
 
     public PageResponse<StockMovementDto> findAll(int page, int size, Long productId, String type) {
@@ -54,14 +57,22 @@ public class StockMovementService {
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product", request.getProductId()));
 
+        User createdBy = null;
+        if (currentUserId != null) {
+            createdBy = userRepository.findById(currentUserId).orElse(null);
+        }
+
         StockMovement movement = StockMovement.builder()
                 .product(product)
                 .type(request.getType())
                 .quantity(request.getQuantity())
+                .previousStock(request.getPreviousStock())
+                .newStock(request.getNewStock())
                 .referenceType(request.getReferenceType())
                 .referenceId(request.getReferenceId())
                 .date(request.getDate())
                 .notes(request.getNotes())
+                .createdBy(createdBy)
                 .build();
 
         movement = stockMovementRepository.save(movement);
@@ -84,11 +95,16 @@ public class StockMovementService {
                 .productName(movement.getProduct().getName())
                 .type(movement.getType())
                 .quantity(movement.getQuantity())
+                .previousStock(movement.getPreviousStock())
+                .newStock(movement.getNewStock())
                 .referenceType(movement.getReferenceType())
                 .referenceId(movement.getReferenceId())
                 .date(movement.getDate())
                 .notes(movement.getNotes())
+                .createdById(movement.getCreatedBy() != null ? movement.getCreatedBy().getId() : null)
+                .createdByName(movement.getCreatedBy() != null ? movement.getCreatedBy().getEmail() : null)
                 .createdAt(movement.getCreatedAt())
+                .updatedAt(movement.getUpdatedAt())
                 .build();
     }
 }

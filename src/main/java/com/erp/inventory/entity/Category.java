@@ -28,6 +28,9 @@ public class Category {
     @Column(name = "parent_id")
     private Long parentId;
 
+    @Column(name = "sort_order")
+    private Integer sortOrder;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default

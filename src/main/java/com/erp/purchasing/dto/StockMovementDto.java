@@ -19,9 +19,14 @@ public class StockMovementDto {
     private String productName;
     private StockMovement.MovementType type;
     private Integer quantity;
+    private Integer previousStock;
+    private Integer newStock;
     private String referenceType;
     private Long referenceId;
     private LocalDate date;
     private String notes;
+    private Long createdById;
+    private String createdByName;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

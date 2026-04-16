@@ -1,7 +1,6 @@
 package com.erp.purchasing.dto;
 
 import com.erp.purchasing.entity.PurchaseOrder;
-import com.erp.purchasing.entity.StockMovement;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,8 +22,12 @@ public class PurchaseOrderDto {
     private String supplierName;
     private LocalDate date;
     private PurchaseOrder.Status status;
+    private BigDecimal subtotal;
+    private BigDecimal tax;
     private BigDecimal totalAmount;
     private LocalDate expectedDate;
+    private LocalDate receivedDate;
+    private String notes;
     private List<PurchaseOrderLineDto> lines;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -1,5 +1,6 @@
 package com.erp.inventory.entity;
 
+import com.erp.purchasing.entity.Supplier;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -27,9 +28,16 @@ public class Product {
     @Column(nullable = false)
     private String name;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "supplier_id")
+    private Supplier supplier;
 
     @Column(name = "unit_price", precision = 10, scale = 2)
     private BigDecimal unitPrice;
@@ -39,6 +47,12 @@ public class Product {
 
     @Column(name = "reorder_level")
     private Integer reorderLevel;
+
+    @Column(name = "reorder_quantity")
+    private Integer reorderQuantity;
+
+    @Column(name = "unit_of_measure", length = 50)
+    private String unitOfMeasure;
 
     @Column(name = "current_stock")
     @Builder.Default

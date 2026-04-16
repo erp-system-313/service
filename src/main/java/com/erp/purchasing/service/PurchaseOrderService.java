@@ -74,10 +74,11 @@ public class PurchaseOrderService {
                 .supplier(supplier)
                 .date(request.getDate())
                 .expectedDate(request.getExpectedDate())
+                .notes(request.getNotes())
                 .status(PurchaseOrder.Status.PENDING)
                 .build();
 
-        BigDecimal totalAmount = BigDecimal.ZERO;
+        BigDecimal subtotal = BigDecimal.ZERO;
 
         if (request.getLines() != null && !request.getLines().isEmpty()) {
             for (CreatePurchaseOrderRequest.CreatePurchaseOrderLineRequest lineRequest : request.getLines()) {
@@ -89,16 +90,20 @@ public class PurchaseOrderService {
                         .product(product)
                         .quantity(lineRequest.getQuantity())
                         .unitPrice(lineRequest.getUnitPrice())
+                        .discount(lineRequest.getDiscount())
+                        .notes(lineRequest.getNotes())
                         .receivedQty(0)
                         .build();
                 line.calculateLineTotal();
 
                 order.getLines().add(line);
-                totalAmount = totalAmount.add(line.getLineTotal());
+                subtotal = subtotal.add(line.getLineTotal());
             }
         }
 
-        order.setTotalAmount(totalAmount);
+        order.setSubtotal(subtotal);
+        order.setTax(BigDecimal.ZERO);
+        order.setTotalAmount(subtotal);
         order = purchaseOrderRepository.save(order);
         log.info("Created purchase order with id: {} and poNumber: {}", order.getId(), poNumber);
 
@@ -120,11 +125,13 @@ public class PurchaseOrderService {
 
         if (request.getDate() != null) order.setDate(request.getDate());
         if (request.getExpectedDate() != null) order.setExpectedDate(request.getExpectedDate());
+        if (request.getReceivedDate() != null) order.setReceivedDate(request.getReceivedDate());
+        if (request.getNotes() != null) order.setNotes(request.getNotes());
         if (request.getStatus() != null) order.setStatus(request.getStatus());
 
         if (request.getLines() != null) {
             order.getLines().clear();
-            BigDecimal totalAmount = BigDecimal.ZERO;
+            BigDecimal subtotal = BigDecimal.ZERO;
 
             for (UpdatePurchaseOrderRequest.UpdatePurchaseOrderLineRequest lineRequest : request.getLines()) {
                 Product product = productRepository.findById(lineRequest.getProductId())
@@ -135,14 +142,17 @@ public class PurchaseOrderService {
                         .product(product)
                         .quantity(lineRequest.getQuantity())
                         .unitPrice(lineRequest.getUnitPrice())
+                        .discount(lineRequest.getDiscount())
+                        .notes(lineRequest.getNotes())
                         .receivedQty(0)
                         .build();
                 line.calculateLineTotal();
 
                 order.getLines().add(line);
-                totalAmount = totalAmount.add(line.getLineTotal());
+                subtotal = subtotal.add(line.getLineTotal());
             }
-            order.setTotalAmount(totalAmount);
+            order.setSubtotal(subtotal);
+            order.setTotalAmount(subtotal);
         }
 
         order = purchaseOrderRepository.save(order);
@@ -185,8 +195,12 @@ public class PurchaseOrderService {
                 .supplierName(order.getSupplier().getName())
                 .date(order.getDate())
                 .status(order.getStatus())
+                .subtotal(order.getSubtotal())
+                .tax(order.getTax())
                 .totalAmount(order.getTotalAmount())
                 .expectedDate(order.getExpectedDate())
+                .receivedDate(order.getReceivedDate())
+                .notes(order.getNotes())
                 .lines(order.getLines().stream().map(this::toLineDto).collect(Collectors.toList()))
                 .createdAt(order.getCreatedAt())
                 .updatedAt(order.getUpdatedAt())
@@ -201,8 +215,10 @@ public class PurchaseOrderService {
                 .productName(line.getProduct().getName())
                 .quantity(line.getQuantity())
                 .unitPrice(line.getUnitPrice())
+                .discount(line.getDiscount())
                 .lineTotal(line.getLineTotal())
                 .receivedQty(line.getReceivedQty())
+                .notes(line.getNotes())
                 .build();
     }
 }

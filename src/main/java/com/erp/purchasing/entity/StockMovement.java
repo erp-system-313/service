@@ -1,9 +1,11 @@
 package com.erp.purchasing.entity;
 
+import com.erp.admin.entity.User;
 import com.erp.inventory.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,11 +28,17 @@ public class StockMovement {
     private Product product;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false, length = 20)
     private MovementType type;
 
     @Column(nullable = false)
     private Integer quantity;
+
+    @Column(name = "previous_stock")
+    private Integer previousStock;
+
+    @Column(name = "new_stock")
+    private Integer newStock;
 
     @Column(name = "reference_type", length = 50)
     private String referenceType;
@@ -44,11 +52,19 @@ public class StockMovement {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private User createdBy;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     public enum MovementType {
-        IN, OUT
+        INBOUND, OUTBOUND, ADJUSTMENT, RETURN, DAMAGED
     }
 }

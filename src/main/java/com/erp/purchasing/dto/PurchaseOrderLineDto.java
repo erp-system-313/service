@@ -1,6 +1,5 @@
 package com.erp.purchasing.dto;
 
-import com.erp.purchasing.entity.PurchaseOrderLine;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +18,8 @@ public class PurchaseOrderLineDto {
     private String productName;
     private Integer quantity;
     private BigDecimal unitPrice;
+    private BigDecimal discount;
     private BigDecimal lineTotal;
     private Integer receivedQty;
+    private String notes;
 }

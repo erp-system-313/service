@@ -11,6 +11,8 @@ import com.erp.inventory.dto.ProductDto;
 import com.erp.inventory.dto.UpdateProductRequest;
 import com.erp.inventory.repository.CategoryRepository;
 import com.erp.inventory.repository.ProductRepository;
+import com.erp.purchasing.entity.Supplier;
+import com.erp.purchasing.repository.SupplierRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final SupplierRepository supplierRepository;
     private final AuditLogService auditLogService;
 
     public PageResponse<ProductDto> findAll(int page, int size, Long categoryId, String status) {
@@ -67,13 +70,24 @@ public class ProductService {
                     .orElseThrow(() -> new ResourceNotFoundException("Category", request.getCategoryId()));
         }
 
+        Supplier supplier = null;
+        if (request.getSupplierId() != null) {
+            supplier = supplierRepository.findById(request.getSupplierId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Supplier", request.getSupplierId()));
+        }
+
         Product product = Product.builder()
                 .sku(request.getSku())
                 .name(request.getName())
+                .description(request.getDescription())
                 .category(category)
+                .supplier(supplier)
                 .unitPrice(request.getUnitPrice())
                 .costPrice(request.getCostPrice())
                 .reorderLevel(request.getReorderLevel())
+                .reorderQuantity(request.getReorderQuantity())
+                .unitOfMeasure(request.getUnitOfMeasure())
+                .currentStock(0)
                 .imageUrl(request.getImageUrl())
                 .status(Product.Status.ACTIVE)
                 .build();
@@ -104,9 +118,17 @@ public class ProductService {
                     .orElseThrow(() -> new ResourceNotFoundException("Category", request.getCategoryId()));
             product.setCategory(category);
         }
+        if (request.getSupplierId() != null) {
+            Supplier supplier = supplierRepository.findById(request.getSupplierId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Supplier", request.getSupplierId()));
+            product.setSupplier(supplier);
+        }
+        if (request.getDescription() != null) product.setDescription(request.getDescription());
         if (request.getUnitPrice() != null) product.setUnitPrice(request.getUnitPrice());
         if (request.getCostPrice() != null) product.setCostPrice(request.getCostPrice());
         if (request.getReorderLevel() != null) product.setReorderLevel(request.getReorderLevel());
+        if (request.getReorderQuantity() != null) product.setReorderQuantity(request.getReorderQuantity());
+        if (request.getUnitOfMeasure() != null) product.setUnitOfMeasure(request.getUnitOfMeasure());
         if (request.getImageUrl() != null) product.setImageUrl(request.getImageUrl());
 
         product = productRepository.save(product);
@@ -138,11 +160,17 @@ public class ProductService {
                 .id(product.getId())
                 .sku(product.getSku())
                 .name(product.getName())
+                .description(product.getDescription())
                 .categoryId(product.getCategory() != null ? product.getCategory().getId() : null)
                 .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
+                .supplierId(product.getSupplier() != null ? product.getSupplier().getId() : null)
+                .supplierName(product.getSupplier() != null ? product.getSupplier().getName() : null)
                 .unitPrice(product.getUnitPrice())
                 .costPrice(product.getCostPrice())
                 .reorderLevel(product.getReorderLevel())
+                .reorderQuantity(product.getReorderQuantity())
+                .unitOfMeasure(product.getUnitOfMeasure())
+                .currentStock(product.getCurrentStock())
                 .imageUrl(product.getImageUrl())
                 .status(product.getStatus())
                 .createdAt(product.getCreatedAt())

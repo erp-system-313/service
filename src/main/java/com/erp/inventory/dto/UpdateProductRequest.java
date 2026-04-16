@@ -22,6 +22,8 @@ public class UpdateProductRequest {
 
     private Long categoryId;
 
+    private Long supplierId;
+
     @DecimalMin(value = "0.00", message = "Unit price must be non-negative")
     @Digits(integer = 8, fraction = 2)
     private BigDecimal unitPrice;
@@ -32,6 +34,13 @@ public class UpdateProductRequest {
 
     @Min(value = 0, message = "Reorder level must be non-negative")
     private Integer reorderLevel;
+
+    private Integer reorderQuantity;
+
+    @Size(max = 50)
+    private String unitOfMeasure;
+
+    private String description;
 
     private String imageUrl;
 }

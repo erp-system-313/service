@@ -57,6 +57,7 @@ public class CategoryService {
                 .name(request.getName())
                 .description(request.getDescription())
                 .parentId(request.getParentId())
+                .sortOrder(request.getSortOrder())
                 .status(Category.Status.ACTIVE)
                 .build();
 
@@ -82,6 +83,7 @@ public class CategoryService {
 
         if (request.getDescription() != null) category.setDescription(request.getDescription());
         if (request.getParentId() != null) category.setParentId(request.getParentId());
+        if (request.getSortOrder() != null) category.setSortOrder(request.getSortOrder());
 
         category = categoryRepository.save(category);
         log.info("Updated category with id: {}", category.getId());
@@ -113,6 +115,7 @@ public class CategoryService {
                 .name(category.getName())
                 .description(category.getDescription())
                 .parentId(category.getParentId())
+                .sortOrder(category.getSortOrder())
                 .status(category.getStatus())
                 .createdAt(category.getCreatedAt())
                 .updatedAt(category.getUpdatedAt())

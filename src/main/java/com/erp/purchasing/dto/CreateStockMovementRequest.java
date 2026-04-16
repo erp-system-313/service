@@ -26,6 +26,10 @@ public class CreateStockMovementRequest {
     @Min(value = 1, message = "Quantity must be at least 1")
     private Integer quantity;
 
+    private Integer previousStock;
+
+    private Integer newStock;
+
     private String referenceType;
 
     private Long referenceId;

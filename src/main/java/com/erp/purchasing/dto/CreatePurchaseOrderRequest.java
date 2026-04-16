@@ -1,13 +1,12 @@
 package com.erp.purchasing.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -25,6 +24,8 @@ public class CreatePurchaseOrderRequest {
 
     private LocalDate expectedDate;
 
+    private String notes;
+
     private List<CreatePurchaseOrderLineRequest> lines;
 
     @Data
@@ -39,6 +40,10 @@ public class CreatePurchaseOrderRequest {
         private Integer quantity;
 
         @NotNull(message = "Unit price is required")
-        private java.math.BigDecimal unitPrice;
+        private BigDecimal unitPrice;
+
+        private BigDecimal discount;
+
+        private String notes;
     }
 }

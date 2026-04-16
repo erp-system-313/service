@@ -18,4 +18,6 @@ public class UpdateCategoryRequest {
     private String description;
 
     private Long parentId;
+
+    private Integer sortOrder;
 }

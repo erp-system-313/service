@@ -33,6 +33,10 @@ public class PurchaseOrderLine {
     @Column(name = "unit_price", precision = 10, scale = 2, nullable = false)
     private BigDecimal unitPrice;
 
+    @Column(precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal discount = BigDecimal.ZERO;
+
     @Column(name = "line_total", precision = 15, scale = 2)
     private BigDecimal lineTotal;
 
@@ -40,11 +44,19 @@ public class PurchaseOrderLine {
     @Builder.Default
     private Integer receivedQty = 0;
 
+    @Column(columnDefinition = "TEXT")
+    private String notes;
+
     @PrePersist
     @PreUpdate
     public void calculateLineTotal() {
         if (quantity != null && unitPrice != null) {
-            this.lineTotal = unitPrice.multiply(BigDecimal.valueOf(quantity));
+            BigDecimal baseTotal = unitPrice.multiply(BigDecimal.valueOf(quantity));
+            if (discount != null) {
+                this.lineTotal = baseTotal.subtract(discount);
+            } else {
+                this.lineTotal = baseTotal;
+            }
         }
     }
 }
