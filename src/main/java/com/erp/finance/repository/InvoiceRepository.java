@@ -32,4 +32,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     Optional<Invoice> findByInvoiceNumber(String invoiceNumber);
 
     boolean existsByInvoiceNumber(String invoiceNumber);
+
+    long countByStatus(InvoiceStatus status);
 }
