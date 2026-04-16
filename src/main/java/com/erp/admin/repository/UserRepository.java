@@ -28,4 +28,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u WHERE u.role.name = :roleName AND u.isActive = true")
     Page<User> findByRoleName(@Param("roleName") String roleName, Pageable pageable);
+
+    Optional<User> findByResetToken(String resetToken);
 }
