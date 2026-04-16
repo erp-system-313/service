@@ -1,5 +1,6 @@
 package com.erp.hr.service;
 
+import com.erp.auth.security.CurrentUserUtil;
 import com.erp.hr.dto.LeaveBalanceDto;
 import com.erp.hr.dto.LeaveRequestDto;
 import com.erp.hr.entity.Employee;
@@ -36,6 +37,7 @@ public class LeaveService {
     private final EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
     private final AuditLogService auditLogService;
+    private final CurrentUserUtil currentUserUtil;
 
     public PageResponse<LeaveRequestDto> findAll(int page, int size, Long employeeId, String status, String type) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -76,7 +78,7 @@ public class LeaveService {
         leaveRequest = leaveRequestRepository.save(leaveRequest);
         log.info("Created leave request {} for employee {}", leaveRequest.getId(), employee.getId());
 
-        auditLogService.log(null, "CREATE", "LeaveRequest", leaveRequest.getId(), null, ipAddress, "Leave request submitted");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "CREATE", "LeaveRequest", leaveRequest.getId(), null, ipAddress, "Leave request submitted");
 
         return toDto(leaveRequest);
     }
@@ -101,7 +103,7 @@ public class LeaveService {
         updateLeaveBalance(leaveRequest);
 
         log.info("Leave request {} approved by user {}", id, approverId);
-        auditLogService.log(null, "APPROVE", "LeaveRequest", id, null, ipAddress, "Leave request approved");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "APPROVE", "LeaveRequest", id, null, ipAddress, "Leave request approved");
 
         return toDto(leaveRequest);
     }
@@ -120,7 +122,7 @@ public class LeaveService {
         leaveRequest = leaveRequestRepository.save(leaveRequest);
 
         log.info("Leave request {} rejected by user {}", id, rejecterId);
-        auditLogService.log(null, "REJECT", "LeaveRequest", id, null, ipAddress, "Leave request rejected: " + reason);
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "REJECT", "LeaveRequest", id, null, ipAddress, "Leave request rejected: " + reason);
 
         return toDto(leaveRequest);
     }

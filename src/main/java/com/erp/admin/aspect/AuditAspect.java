@@ -66,7 +66,7 @@ public class AuditAspect {
 
         try {
             auditLogService.log(
-                    getCurrentUser(),
+                    getCurrentUserId(),
                     action,
                     entityType,
                     entityId,
@@ -81,14 +81,11 @@ public class AuditAspect {
         return result;
     }
 
-    private com.erp.admin.entity.User getCurrentUser() {
+    private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof UserPrincipal) {
             UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-            return com.erp.admin.entity.User.builder()
-                    .id(userPrincipal.getId())
-                    .email(userPrincipal.getEmail())
-                    .build();
+            return userPrincipal.getId();
         }
         return null;
     }

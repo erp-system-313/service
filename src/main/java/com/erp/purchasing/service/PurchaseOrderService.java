@@ -1,6 +1,7 @@
 package com.erp.purchasing.service;
 
 import com.erp.admin.service.AuditLogService;
+import com.erp.auth.security.CurrentUserUtil;
 import com.erp.common.dto.PageResponse;
 import com.erp.common.exception.BusinessException;
 import com.erp.common.exception.ResourceNotFoundException;
@@ -36,6 +37,7 @@ public class PurchaseOrderService {
     private final SupplierRepository supplierRepository;
     private final ProductRepository productRepository;
     private final AuditLogService auditLogService;
+    private final CurrentUserUtil currentUserUtil;
 
     public PageResponse<PurchaseOrderDto> findAll(int page, int size, Long supplierId, String status) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -107,7 +109,7 @@ public class PurchaseOrderService {
         order = purchaseOrderRepository.save(order);
         log.info("Created purchase order with id: {} and poNumber: {}", order.getId(), poNumber);
 
-        auditLogService.log(null, "CREATE", "PurchaseOrder", order.getId(), null, ipAddress, "Purchase order created");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "CREATE", "PurchaseOrder", order.getId(), null, ipAddress, "Purchase order created");
 
         return toDto(order);
     }
@@ -158,7 +160,7 @@ public class PurchaseOrderService {
         order = purchaseOrderRepository.save(order);
         log.info("Updated purchase order with id: {}", order.getId());
 
-        auditLogService.log(null, "UPDATE", "PurchaseOrder", order.getId(), null, ipAddress, "Purchase order updated");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "UPDATE", "PurchaseOrder", order.getId(), null, ipAddress, "Purchase order updated");
 
         return toDto(order);
     }
@@ -172,7 +174,7 @@ public class PurchaseOrderService {
         purchaseOrderRepository.save(order);
         log.info("Cancelled purchase order with id: {}", id);
 
-        auditLogService.log(null, "DELETE", "PurchaseOrder", id, null, ipAddress, "Purchase order cancelled");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "DELETE", "PurchaseOrder", id, null, ipAddress, "Purchase order cancelled");
     }
 
     public long countActive() {

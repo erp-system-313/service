@@ -1,5 +1,6 @@
 package com.erp.hr.service;
 
+import com.erp.auth.security.CurrentUserUtil;
 import com.erp.hr.dto.AttendanceDto;
 import com.erp.hr.entity.Attendance;
 import com.erp.hr.entity.Employee;
@@ -29,6 +30,7 @@ public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final EmployeeRepository employeeRepository;
     private final AuditLogService auditLogService;
+    private final CurrentUserUtil currentUserUtil;
 
     public PageResponse<AttendanceDto> findAll(int page, int size, Long employeeId, LocalDate date) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
@@ -74,7 +76,7 @@ public class AttendanceService {
         attendance = attendanceRepository.save(attendance);
         log.info("Employee {} clocked in at {}", employeeId, attendance.getCheckIn());
 
-        auditLogService.log(null, "CLOCK_IN", "Attendance", attendance.getId(), null, ipAddress, "Employee clocked in");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "CLOCK_IN", "Attendance", attendance.getId(), null, ipAddress, "Employee clocked in");
 
         return toDto(attendance);
     }
@@ -93,7 +95,7 @@ public class AttendanceService {
         attendance = attendanceRepository.save(attendance);
         log.info("Employee {} clocked out at {}", employeeId, attendance.getCheckOut());
 
-        auditLogService.log(null, "CLOCK_OUT", "Attendance", attendance.getId(), null, ipAddress, "Employee clocked out");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "CLOCK_OUT", "Attendance", attendance.getId(), null, ipAddress, "Employee clocked out");
 
         return toDto(attendance);
     }

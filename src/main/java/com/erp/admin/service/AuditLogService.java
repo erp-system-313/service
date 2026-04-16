@@ -5,7 +5,6 @@ import com.erp.admin.entity.AuditLog;
 import com.erp.admin.entity.User;
 import com.erp.admin.repository.AuditLogRepository;
 import com.erp.common.dto.PageResponse;
-import com.erp.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -53,8 +52,9 @@ public class AuditLogService {
 
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void log(User user, String action, String entityType, Long entityId, Map<String, Object> changes, String ipAddress, String details) {
+    public void log(Long userId, String action, String entityType, Long entityId, Map<String, Object> changes, String ipAddress, String details) {
         try {
+            User user = userId != null ? auditLogRepository.findByUserId(userId).orElse(null) : null;
             AuditLog auditLog = AuditLog.builder()
                     .user(user)
                     .action(action)

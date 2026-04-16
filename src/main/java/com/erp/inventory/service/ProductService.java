@@ -1,6 +1,7 @@
 package com.erp.inventory.service;
 
 import com.erp.admin.service.AuditLogService;
+import com.erp.auth.security.CurrentUserUtil;
 import com.erp.common.dto.PageResponse;
 import com.erp.common.exception.BusinessException;
 import com.erp.common.exception.ResourceNotFoundException;
@@ -32,6 +33,7 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final SupplierRepository supplierRepository;
     private final AuditLogService auditLogService;
+    private final CurrentUserUtil currentUserUtil;
 
     public PageResponse<ProductDto> findAll(int page, int size, Long categoryId, String status) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -95,7 +97,7 @@ public class ProductService {
         product = productRepository.save(product);
         log.info("Created product with id: {} and sku: {}", product.getId(), request.getSku());
 
-        auditLogService.log(null, "CREATE", "Product", product.getId(), null, ipAddress, "Product created");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "CREATE", "Product", product.getId(), null, ipAddress, "Product created");
 
         return toDto(product);
     }
@@ -134,7 +136,7 @@ public class ProductService {
         product = productRepository.save(product);
         log.info("Updated product with id: {}", product.getId());
 
-        auditLogService.log(null, "UPDATE", "Product", product.getId(), null, ipAddress, "Product updated");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "UPDATE", "Product", product.getId(), null, ipAddress, "Product updated");
 
         return toDto(product);
     }
@@ -148,7 +150,7 @@ public class ProductService {
         productRepository.save(product);
         log.info("Deactivated product with id: {}", id);
 
-        auditLogService.log(null, "DELETE", "Product", id, null, ipAddress, "Product deactivated");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "DELETE", "Product", id, null, ipAddress, "Product deactivated");
     }
 
     public long countActive() {

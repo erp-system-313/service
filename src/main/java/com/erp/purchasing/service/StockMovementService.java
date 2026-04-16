@@ -3,6 +3,7 @@ package com.erp.purchasing.service;
 import com.erp.admin.entity.User;
 import com.erp.admin.repository.UserRepository;
 import com.erp.admin.service.AuditLogService;
+import com.erp.auth.security.CurrentUserUtil;
 import com.erp.common.dto.PageResponse;
 import com.erp.common.exception.ResourceNotFoundException;
 import com.erp.inventory.entity.Product;
@@ -29,6 +30,7 @@ public class StockMovementService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final AuditLogService auditLogService;
+    private final CurrentUserUtil currentUserUtil;
 
     public PageResponse<StockMovementDto> findAll(int page, int size, Long productId, String type) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -78,7 +80,7 @@ public class StockMovementService {
         movement = stockMovementRepository.save(movement);
         log.info("Created stock movement with id: {} and type: {}", movement.getId(), request.getType());
 
-        auditLogService.log(null, "CREATE", "StockMovement", movement.getId(), null, ipAddress, "Stock movement created");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "CREATE", "StockMovement", movement.getId(), null, ipAddress, "Stock movement created");
 
         return toDto(movement);
     }

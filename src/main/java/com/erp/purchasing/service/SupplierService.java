@@ -1,6 +1,7 @@
 package com.erp.purchasing.service;
 
 import com.erp.admin.service.AuditLogService;
+import com.erp.auth.security.CurrentUserUtil;
 import com.erp.common.dto.PageResponse;
 import com.erp.common.exception.BusinessException;
 import com.erp.common.exception.ResourceNotFoundException;
@@ -25,6 +26,7 @@ public class SupplierService {
 
     private final SupplierRepository supplierRepository;
     private final AuditLogService auditLogService;
+    private final CurrentUserUtil currentUserUtil;
 
     public PageResponse<SupplierDto> findAll(int page, int size, String status) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -70,7 +72,7 @@ public class SupplierService {
         supplier = supplierRepository.save(supplier);
         log.info("Created supplier with id: {} and name: {}", supplier.getId(), request.getName());
 
-        auditLogService.log(null, "CREATE", "Supplier", supplier.getId(), null, ipAddress, "Supplier created");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "CREATE", "Supplier", supplier.getId(), null, ipAddress, "Supplier created");
 
         return toDto(supplier);
     }
@@ -98,7 +100,7 @@ public class SupplierService {
         supplier = supplierRepository.save(supplier);
         log.info("Updated supplier with id: {}", supplier.getId());
 
-        auditLogService.log(null, "UPDATE", "Supplier", supplier.getId(), null, ipAddress, "Supplier updated");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "UPDATE", "Supplier", supplier.getId(), null, ipAddress, "Supplier updated");
 
         return toDto(supplier);
     }
@@ -112,7 +114,7 @@ public class SupplierService {
         supplierRepository.save(supplier);
         log.info("Deactivated supplier with id: {}", id);
 
-        auditLogService.log(null, "DELETE", "Supplier", id, null, ipAddress, "Supplier deactivated");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "DELETE", "Supplier", id, null, ipAddress, "Supplier deactivated");
     }
 
     public long countActive() {

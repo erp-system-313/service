@@ -110,12 +110,12 @@ public class UserService {
             user.setRole(role);
         }
 
-        user = userRepository.save(user);
+user = userRepository.save(user);
         log.info("Updated user with id: {}", user.getId());
 
-auditLogService.log(currentUserUtil.getCurrentUserId(), "UPDATE", "User", user.getId(), null, ipAddress, "User updated");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "UPDATE", "User", user.getId(), null, ipAddress, "User updated");
 
-        return toDto(employee);
+        return toDto(user);
     }
 
     @Transactional
