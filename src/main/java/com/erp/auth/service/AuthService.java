@@ -84,4 +84,34 @@ public class AuthService {
     public void logout() {
         SecurityContextHolder.clearContext();
     }
+
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BusinessException("AUTH_005", "User not found with this email"));
+
+        String resetToken = tokenProvider.generateResetToken(user.getId());
+        user.setResetToken(resetToken);
+        user.setResetTokenExpiresAt(java.time.LocalDateTime.now().plusHours(24));
+        userRepository.save(user);
+
+        log.info("Password reset token generated for user: {}", user.getEmail());
+    }
+
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        User user = userRepository.findByResetToken(request.getToken())
+                .orElseThrow(() -> new BusinessException("AUTH_006", "Invalid or expired reset token"));
+
+        if (user.getResetTokenExpiresAt() == null || user.getResetTokenExpiresAt().isBefore(java.time.LocalDateTime.now())) {
+            throw new BusinessException("AUTH_006", "Invalid or expired reset token");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        user.setResetToken(null);
+        user.setResetTokenExpiresAt(null);
+        userRepository.save(user);
+
+        log.info("Password reset successfully for user: {}", user.getEmail());
+    }
 }
