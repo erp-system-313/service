@@ -34,4 +34,12 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
     Optional<SalesOrder> findByOrderNumber(String orderNumber);
 
     boolean existsByOrderNumber(String orderNumber);
+
+    long countByStatus(OrderStatus status);
+
+    @Query("SELECT COALESCE(SUM(so.totalAmount), 0) FROM SalesOrder so WHERE so.status = :status")
+    java.math.BigDecimal sumTotalAmountByStatus(@Param("status") OrderStatus status);
+
+    @Query("SELECT so FROM SalesOrder so WHERE so.status = :status ORDER BY so.createdAt DESC")
+    Page<SalesOrder> findByStatusOrderByCreatedAtDesc(@Param("status") OrderStatus status, Pageable pageable);
 }

@@ -27,4 +27,7 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Lo
     long countByStatus(PurchaseOrder.Status status);
 
     long countBySupplierId(Long supplierId);
+
+    @Query("SELECT COALESCE(SUM(p.totalAmount), 0) FROM PurchaseOrder p WHERE p.status = :status")
+    java.math.BigDecimal sumTotalAmountByStatus(@Param("status") PurchaseOrder.Status status);
 }
