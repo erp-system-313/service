@@ -17,6 +17,8 @@
             jdk
             maven
             git
+            docker
+            docker-compose
           ];
         };
       }
