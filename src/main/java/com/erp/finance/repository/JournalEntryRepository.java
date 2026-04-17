@@ -25,7 +25,8 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long
             @Param("dateTo") LocalDate dateTo,
             Pageable pageable);
 
-    Optional<JournalEntry> findByIdWithLines(Long id);
+    @Query("SELECT j FROM JournalEntry j LEFT JOIN FETCH j.lines WHERE j.id = :id")
+    Optional<JournalEntry> findByIdWithLines(@Param("id") Long id);
 
     Optional<JournalEntry> findByEntryNumber(String entryNumber);
 

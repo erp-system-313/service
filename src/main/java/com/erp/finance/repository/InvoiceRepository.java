@@ -27,7 +27,8 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
             @Param("dateTo") LocalDateTime dateTo,
             Pageable pageable);
 
-    Optional<Invoice> findByIdWithPayments(Long id);
+    @Query("SELECT i FROM Invoice i LEFT JOIN FETCH i.payments WHERE i.id = :id")
+    Optional<Invoice> findByIdWithPayments(@Param("id") Long id);
 
     Optional<Invoice> findByInvoiceNumber(String invoiceNumber);
 
