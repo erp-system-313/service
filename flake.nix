@@ -22,27 +22,23 @@
           ];
 
           shellHook = ''
-            # Docker daemon check and start
-            if ! docker info > /dev/null 2>&1; then
-              echo "Starting Docker daemon..."
-              # Try to start docker service (works on NixOS)
-              sudo systemctl start docker 2>/dev/null || true
+            # Docker daemon check
+            if docker info > /dev/null 2>&1; then
+              echo "Docker daemon is running ✓"
               
-              # Alternative: try dockerd directly
-              if ! command -v dockerd > /dev/null 2>&1; then
-                echo "Docker daemon not available. To enable Docker:"
-                echo "  - On NixOS: add 'services.docker.enable = true;' to your configuration.nix"
-                echo "  - On Linux: sudo systemctl start docker"
-                echo "  - On macOS: start Docker Desktop"
+              # Start PostgreSQL via docker-compose if available
+              if [ -f docker-compose.yml ]; then
+                echo "Starting services with docker-compose..."
+                docker-compose up -d
               fi
             else
-              echo "Docker daemon is running ✓"
-            fi
-
-            # Start PostgreSQL via docker-compose if available
-            if [ -f docker-compose.yml ]; then
-              echo "Starting services with docker-compose..."
-              docker-compose up -d
+              echo "⚠ Docker daemon is not running"
+              echo "To enable Docker:"
+              echo "  - On NixOS: add 'services.docker.enable = true;' to your configuration.nix"
+              echo "  - On Linux: sudo systemctl start docker"
+              echo "  - On macOS: start Docker Desktop"
+              echo ""
+              echo "You can still develop without Docker - Spring Boot will connect to external services."
             fi
 
             echo "Development environment ready!"
