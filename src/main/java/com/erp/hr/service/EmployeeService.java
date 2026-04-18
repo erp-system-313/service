@@ -200,8 +200,8 @@ public class EmployeeService {
                 .employeeId(attendance.getEmployee().getId())
                 .employeeName(attendance.getEmployee().getFullName())
                 .date(attendance.getDate())
-                .clockIn(attendance.getClockIn())
-                .clockOut(attendance.getClockOut())
+                .checkIn(attendance.getCheckIn())
+                .checkOut(attendance.getCheckOut())
                 .status(attendance.getStatus())
                 .build();
     }
