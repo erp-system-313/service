@@ -30,10 +30,6 @@ public class Invoice {
     private String invoiceNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sales_order_id")
-    private SalesOrder salesOrder;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
