@@ -3,6 +3,7 @@ package com.erp.sales.controller;
 import com.erp.sales.dto.CreateCustomerRequest;
 import com.erp.sales.dto.CustomerDto;
 import com.erp.sales.dto.SalesOrderDto;
+import com.erp.sales.dto.SalesOrderDto;
 import com.erp.sales.dto.UpdateCustomerRequest;
 import com.erp.sales.service.CustomerService;
 import com.erp.common.dto.ApiResponse;
@@ -64,6 +65,6 @@ public class CustomerController {
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         customerService.delete(id);
-        return ResponseEntity.ok(ApiResponse.success(null, "Customer deleted successfully"));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
