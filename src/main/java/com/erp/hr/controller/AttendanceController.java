@@ -1,5 +1,6 @@
 package com.erp.hr.controller;
 
+import com.erp.auth.security.CurrentUserUtil;
 import com.erp.hr.dto.AttendanceDto;
 import com.erp.hr.service.AttendanceService;
 import com.erp.common.dto.ApiResponse;
@@ -18,6 +19,7 @@ import java.time.LocalDate;
 public class AttendanceController {
 
     private final AttendanceService attendanceService;
+    private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<AttendanceDto>>> getAll(
@@ -40,7 +42,7 @@ public class AttendanceController {
     public ResponseEntity<ApiResponse<AttendanceDto>> clockIn(
             @RequestParam Long employeeId,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         AttendanceDto attendance = attendanceService.clockIn(employeeId, currentUserId, ipAddress);
         return ResponseEntity.ok(ApiResponse.success(attendance, "Clocked in successfully"));
@@ -50,7 +52,7 @@ public class AttendanceController {
     public ResponseEntity<ApiResponse<AttendanceDto>> clockOut(
             @RequestParam Long employeeId,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         AttendanceDto attendance = attendanceService.clockOut(employeeId, currentUserId, ipAddress);
         return ResponseEntity.ok(ApiResponse.success(attendance, "Clocked out successfully"));

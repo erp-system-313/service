@@ -1,5 +1,6 @@
 package com.erp.hr.controller;
 
+import com.erp.auth.security.CurrentUserUtil;
 import com.erp.hr.dto.LeaveBalanceDto;
 import com.erp.hr.dto.LeaveRequestDto;
 import com.erp.hr.entity.LeaveRequest;
@@ -22,6 +23,7 @@ import java.util.Map;
 public class LeaveController {
 
     private final LeaveService leaveService;
+    private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<LeaveRequestDto>>> getAll(
@@ -45,7 +47,7 @@ public class LeaveController {
     public ResponseEntity<ApiResponse<LeaveRequestDto>> create(
             @Valid @RequestBody LeaveRequest leaveRequest,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         LeaveRequestDto request = leaveService.create(leaveRequest, currentUserId, ipAddress);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(request, "Leave request submitted"));
@@ -55,7 +57,7 @@ public class LeaveController {
     public ResponseEntity<ApiResponse<LeaveRequestDto>> approve(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         LeaveRequestDto request = leaveService.approve(id, currentUserId, ipAddress);
         return ResponseEntity.ok(ApiResponse.success(request, "Leave request approved"));
@@ -66,7 +68,7 @@ public class LeaveController {
             @PathVariable Long id,
             @RequestBody Map<String, String> body,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         String reason = body.get("reason");
         LeaveRequestDto request = leaveService.reject(id, currentUserId, reason, ipAddress);
