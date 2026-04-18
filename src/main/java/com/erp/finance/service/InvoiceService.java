@@ -88,7 +88,6 @@ public class InvoiceService {
                 throw new BusinessException("INVOICE_001", "Sales order must be SHIPPED to create invoice");
             }
             
-            invoice.setSalesOrder(salesOrder);
             invoice.setSubtotal(salesOrder.getSubtotal());
             invoice.setTaxAmount(salesOrder.getTaxAmount() != null ? salesOrder.getTaxAmount() : BigDecimal.ZERO);
             invoice.setTotal(salesOrder.getTotalAmount());
