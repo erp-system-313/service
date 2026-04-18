@@ -44,6 +44,6 @@ public class SettingsController {
             @PathVariable String key,
             HttpServletRequest httpRequest) {
         settingsService.delete(key);
-        return ResponseEntity.ok(ApiResponse.success(null, "Settings deleted successfully"));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
