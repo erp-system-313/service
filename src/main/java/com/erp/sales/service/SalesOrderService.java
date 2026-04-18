@@ -45,7 +45,7 @@ public class SalesOrderService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
         Page<SalesOrder> orders = salesOrderRepository.findWithFilters(
-                status, customerId, dateFrom, dateTo, pageable);
+                status, customerId, pageable);
 
         return PageResponse.from(orders.map(SalesOrderDto::fromEntity));
     }
@@ -81,7 +81,7 @@ public class SalesOrderService {
                     .product(product)
                     .quantity(lineRequest.getQuantity())
                     .unitPrice(lineRequest.getUnitPrice())
-                    .lineTotal(lineRequest.getUnitPrice().multiply(BigDecimal.valueOf(lineRequest.getQuantity())))
+                    .lineTotal(lineRequest.getUnitPrice().multiply(lineRequest.getQuantity()))
                     .build();
             
             order.addLine(line);
@@ -124,7 +124,7 @@ public class SalesOrderService {
                         .product(product)
                         .quantity(lineRequest.getQuantity())
                         .unitPrice(lineRequest.getUnitPrice())
-                        .lineTotal(lineRequest.getUnitPrice().multiply(BigDecimal.valueOf(lineRequest.getQuantity())))
+                        .lineTotal(lineRequest.getUnitPrice().multiply(lineRequest.getQuantity()))
                         .build();
                 
                 order.addLine(line);

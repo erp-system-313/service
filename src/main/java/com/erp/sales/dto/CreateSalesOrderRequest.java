@@ -3,11 +3,13 @@ package com.erp.sales.dto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -38,7 +40,8 @@ public class CreateSalesOrderRequest {
         private Long productId;
 
         @NotNull(message = "Quantity is required")
-        private Integer quantity;
+        @Positive(message = "Quantity must be positive")
+        private BigDecimal quantity;
 
         @NotNull(message = "Unit price is required")
         private java.math.BigDecimal unitPrice;

@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,14 +30,10 @@ public class Invoice {
     private String invoiceNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sales_order_id")
-    private SalesOrder salesOrder;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-    @Column(name = "invoice_date", nullable = false)
+    @Column(name = "issue_date", nullable = false)
     private LocalDateTime invoiceDate;
 
     @Column(name = "due_date", nullable = false)
@@ -54,7 +51,7 @@ public class Invoice {
     @Builder.Default
     private BigDecimal taxAmount = BigDecimal.ZERO;
 
-    @Column(nullable = false, precision = 15, scale = 2)
+    @Column(name = "total_amount", nullable = false, precision = 15, scale = 2)
     private BigDecimal total;
 
     @Column(name = "paid_amount", precision = 15, scale = 2)
@@ -72,6 +69,12 @@ public class Invoice {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "sent_at")
+    private LocalDateTime sentAt;
+
+    @Column(name = "due_at")
+    private LocalDateTime dueAt;
 
     public void addPayment(Payment payment) {
         payments.add(payment);
