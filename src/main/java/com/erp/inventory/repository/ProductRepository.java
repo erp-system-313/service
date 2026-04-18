@@ -31,4 +31,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT COUNT(p) FROM Product p WHERE p.currentStock < p.reorderLevel AND p.status = :status")
     long countLowStock(@Param("status") Product.Status status);
+
+    @Query("SELECT p FROM Product p WHERE p.currentStock < p.reorderLevel AND p.status = :status")
+    Page<Product> findLowStock(@Param("status") Product.Status status, Pageable pageable);
 }
