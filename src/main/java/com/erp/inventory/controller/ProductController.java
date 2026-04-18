@@ -1,5 +1,6 @@
 package com.erp.inventory.controller;
 
+import com.erp.auth.security.CurrentUserUtil;
 import com.erp.common.dto.ApiResponse;
 import com.erp.common.dto.PageResponse;
 import com.erp.inventory.dto.CreateProductRequest;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class ProductController {
 
     private final ProductService productService;
+    private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<ProductDto>>> getAll(
@@ -42,7 +44,7 @@ public class ProductController {
     public ResponseEntity<ApiResponse<ProductDto>> create(
             @Valid @RequestBody CreateProductRequest request,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         ProductDto product = productService.create(request, currentUserId, ipAddress);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(product, "Product created successfully"));
@@ -53,19 +55,27 @@ public class ProductController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateProductRequest request,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         ProductDto product = productService.update(id, request, currentUserId, ipAddress);
         return ResponseEntity.ok(ApiResponse.success(product, "Product updated successfully"));
+    }
+
+    @GetMapping("/low-stock")
+    public ResponseEntity<ApiResponse<PageResponse<ProductDto>>> getLowStock(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        PageResponse<ProductDto> products = productService.findLowStock(page, size);
+        return ResponseEntity.ok(ApiResponse.success(products));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         productService.delete(id, currentUserId, ipAddress);
-        return ResponseEntity.ok(ApiResponse.success(null, "Product deactivated successfully"));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
