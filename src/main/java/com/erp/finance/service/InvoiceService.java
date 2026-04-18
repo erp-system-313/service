@@ -45,7 +45,7 @@ public class InvoiceService {
                                             LocalDateTime dateTo) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        Page<Invoice> invoices = invoiceRepository.findWithFilters(status, customerId, dateFrom, dateTo, pageable);
+        Page<Invoice> invoices = invoiceRepository.findWithFilters(status, customerId, pageable);
 
         return PageResponse.from(invoices.map(this::toDto));
     }

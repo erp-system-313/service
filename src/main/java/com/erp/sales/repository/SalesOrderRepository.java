@@ -20,23 +20,12 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
 
     Page<SalesOrder> findByCustomerId(Long customerId, Pageable pageable);
 
-    @Query(value = "SELECT DISTINCT so FROM SalesOrder so " +
-           "LEFT JOIN FETCH so.customer " +
-           "LEFT JOIN FETCH so.createdBy " +
-           "WHERE (:status IS NULL OR so.status = :status) AND " +
-           "(:customerId IS NULL OR so.customer.id = :customerId) AND " +
-           "(:dateFrom IS NULL OR so.orderDate >= :dateFrom) AND " +
-           "(:dateTo IS NULL OR so.orderDate <= :dateTo)",
-           countQuery = "SELECT COUNT(DISTINCT so) FROM SalesOrder so WHERE " +
+    @Query("SELECT so FROM SalesOrder so WHERE " +
            "(:status IS NULL OR so.status = :status) AND " +
-           "(:customerId IS NULL OR so.customer.id = :customerId) AND " +
-           "(:dateFrom IS NULL OR so.orderDate >= :dateFrom) AND " +
-           "(:dateTo IS NULL OR so.orderDate <= :dateTo)")
+           "(:customerId IS NULL OR so.customer.id = :customerId)")
     Page<SalesOrder> findWithFilters(
             @Param("status") OrderStatus status,
             @Param("customerId") Long customerId,
-            @Param("dateFrom") LocalDateTime dateFrom,
-            @Param("dateTo") LocalDateTime dateTo,
             Pageable pageable);
 
     Optional<SalesOrder> findByOrderNumber(String orderNumber);
