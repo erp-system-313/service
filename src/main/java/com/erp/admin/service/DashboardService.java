@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -33,6 +34,7 @@ public class DashboardService {
     private final ProductRepository productRepository;
     private final EmployeeRepository employeeRepository;
 
+    @Transactional(readOnly = true)
     public DashboardStatsDto getStats() {
         BigDecimal totalSales = salesOrderRepository.sumTotalAmountByStatus(OrderStatus.SHIPPED);
         BigDecimal totalPurchases = purchaseOrderRepository.sumTotalAmountByStatus(PurchaseOrder.Status.RECEIVED);
