@@ -16,7 +16,7 @@ public class SalesOrderLineDto {
     private Long productId;
     private String productName;
     private String productSku;
-    private Integer quantity;
+    private BigDecimal quantity;
     private BigDecimal unitPrice;
     private BigDecimal lineTotal;
 }

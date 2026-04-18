@@ -79,7 +79,6 @@ public class CustomerService {
                 .phone(request.getPhone())
                 .address(request.getAddress())
                 .creditLimit(request.getCreditLimit())
-                .paymentTerms(request.getPaymentTerms())
                 .isActive(true)
                 .build();
 
@@ -105,7 +104,6 @@ public class CustomerService {
         if (request.getPhone() != null) customer.setPhone(request.getPhone());
         if (request.getAddress() != null) customer.setAddress(request.getAddress());
         if (request.getCreditLimit() != null) customer.setCreditLimit(request.getCreditLimit());
-        if (request.getPaymentTerms() != null) customer.setPaymentTerms(request.getPaymentTerms());
         if (request.getIsActive() != null) customer.setIsActive(request.getIsActive());
 
         customer = customerRepository.save(customer);
@@ -132,7 +130,6 @@ public class CustomerService {
                 .phone(customer.getPhone())
                 .address(customer.getAddress())
                 .creditLimit(customer.getCreditLimit())
-                .paymentTerms(customer.getPaymentTerms())
                 .isActive(customer.getIsActive())
                 .createdAt(customer.getCreatedAt())
                 .updatedAt(customer.getUpdatedAt())

@@ -1,11 +1,13 @@
 package com.erp.sales.dto;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -28,7 +30,8 @@ public class UpdateSalesOrderRequest {
     public static class SalesOrderLineRequest {
         private Long id;
         private Long productId;
-        private Integer quantity;
-        private java.math.BigDecimal unitPrice;
+        @Positive
+        private BigDecimal quantity;
+        private BigDecimal unitPrice;
     }
 }

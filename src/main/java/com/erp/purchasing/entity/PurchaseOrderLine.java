@@ -40,7 +40,7 @@ public class PurchaseOrderLine {
     @Column(name = "line_total", precision = 15, scale = 2)
     private BigDecimal lineTotal;
 
-    @Column(name = "received_qty")
+    @Column(name = "received_quantity")
     @Builder.Default
     private Integer receivedQty = 0;
 
