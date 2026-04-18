@@ -1,10 +1,13 @@
 package com.erp.hr.service;
 
 import com.erp.auth.security.CurrentUserUtil;
+import com.erp.hr.dto.AttendanceDto;
 import com.erp.hr.dto.CreateEmployeeRequest;
 import com.erp.hr.dto.EmployeeDto;
 import com.erp.hr.dto.UpdateEmployeeRequest;
+import com.erp.hr.entity.Attendance;
 import com.erp.hr.entity.Employee;
+import com.erp.hr.repository.AttendanceRepository;
 import com.erp.hr.repository.EmployeeRepository;
 import com.erp.admin.repository.UserRepository;
 import com.erp.admin.service.AuditLogService;
@@ -26,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
+    private final AttendanceRepository attendanceRepository;
     private final UserRepository userRepository;
     private final AuditLogService auditLogService;
     private final CurrentUserUtil currentUserUtil;
@@ -144,6 +148,22 @@ public class EmployeeService {
         return employeeRepository.countByStatus(Employee.EmployeeStatus.ACTIVE);
     }
 
+    public PageResponse<AttendanceDto> getAttendance(Long employeeId, java.time.LocalDate dateFrom, java.time.LocalDate dateTo) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", employeeId));
+
+        Pageable pageable = PageRequest.of(0, 100, Sort.by("date").descending());
+        Page<Attendance> attendance;
+
+        if (dateFrom != null && dateTo != null) {
+            attendance = attendanceRepository.findByEmployeeAndDateBetween(employee, dateFrom, dateTo, pageable);
+        } else {
+            attendance = attendanceRepository.findByEmployee(employee, pageable);
+        }
+
+        return PageResponse.from(attendance.map(this::toAttendanceDto));
+    }
+
     private String generateEmployeeCode() {
         String code;
         do {
@@ -171,6 +191,18 @@ public class EmployeeService {
                 .userId(employee.getUser() != null ? employee.getUser().getId() : null)
                 .createdAt(employee.getCreatedAt())
                 .updatedAt(employee.getUpdatedAt())
+                .build();
+    }
+
+    private AttendanceDto toAttendanceDto(Attendance attendance) {
+        return AttendanceDto.builder()
+                .id(attendance.getId())
+                .employeeId(attendance.getEmployee().getId())
+                .employeeName(attendance.getEmployee().getFullName())
+                .date(attendance.getDate())
+                .clockIn(attendance.getClockIn())
+                .clockOut(attendance.getClockOut())
+                .status(attendance.getStatus())
                 .build();
     }
 }
