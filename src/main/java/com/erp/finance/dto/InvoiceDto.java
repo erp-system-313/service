@@ -19,8 +19,6 @@ import com.erp.finance.entity.Invoice;
 public class InvoiceDto {
     private Long id;
     private String invoiceNumber;
-    private Long salesOrderId;
-    private String salesOrderNumber;
     private Long customerId;
     private String customerName;
     private LocalDateTime invoiceDate;
@@ -39,8 +37,6 @@ public class InvoiceDto {
         return InvoiceDto.builder()
                 .id(invoice.getId())
                 .invoiceNumber(invoice.getInvoiceNumber())
-                .salesOrderId(invoice.getSalesOrder() != null ? invoice.getSalesOrder().getId() : null)
-                .salesOrderNumber(invoice.getSalesOrder() != null ? invoice.getSalesOrder().getOrderNumber() : null)
                 .customerId(invoice.getCustomer() != null ? invoice.getCustomer().getId() : null)
                 .customerName(invoice.getCustomer() != null ? invoice.getCustomer().getName() : null)
                 .invoiceDate(invoice.getInvoiceDate())

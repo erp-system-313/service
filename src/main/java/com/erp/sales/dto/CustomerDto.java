@@ -1,7 +1,6 @@
 package com.erp.sales.dto;
 
 import com.erp.sales.entity.Customer;
-import com.erp.sales.entity.PaymentTerms;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,7 +20,6 @@ public class CustomerDto {
     private String phone;
     private String address;
     private BigDecimal creditLimit;
-    private PaymentTerms paymentTerms;
     private Boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -34,7 +32,6 @@ public class CustomerDto {
                 .phone(customer.getPhone())
                 .address(customer.getAddress())
                 .creditLimit(customer.getCreditLimit())
-                .paymentTerms(customer.getPaymentTerms())
                 .isActive(customer.getIsActive())
                 .createdAt(customer.getCreatedAt())
                 .updatedAt(customer.getUpdatedAt())

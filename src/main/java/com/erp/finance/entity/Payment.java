@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -28,10 +29,10 @@ public class Payment {
     private BigDecimal amount;
 
     @Column(name = "payment_date", nullable = false)
-    private LocalDateTime paymentDate;
+    private LocalDate paymentDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "method", nullable = false, length = 20)
+    @Column(name = "payment_method", nullable = false, length = 20)
     private PaymentMethod method;
 
     @Column(length = 100)

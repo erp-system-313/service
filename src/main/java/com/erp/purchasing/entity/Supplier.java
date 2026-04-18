@@ -50,7 +50,7 @@ public class Supplier {
     private BigDecimal totalPurchased = BigDecimal.ZERO;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "is_active", nullable = false, length = 20)
+    @Column(name = "status", nullable = false, length = 20)
     @Builder.Default
     private Status status = Status.ACTIVE;
 
