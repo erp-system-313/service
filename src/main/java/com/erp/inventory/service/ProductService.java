@@ -157,6 +157,12 @@ public class ProductService {
         return productRepository.countByStatus(Product.Status.ACTIVE);
     }
 
+    public PageResponse<ProductDto> findLowStock(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("currentStock").ascending());
+        Page<Product> products = productRepository.findLowStock(Product.Status.ACTIVE, pageable);
+        return PageResponse.from(products.map(this::toDto));
+    }
+
     private ProductDto toDto(Product product) {
         return ProductDto.builder()
                 .id(product.getId())
