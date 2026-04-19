@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +40,7 @@ public class LeaveService {
     private final AuditLogService auditLogService;
     private final CurrentUserUtil currentUserUtil;
 
-    public PageResponse<LeaveRequestDto> findAll(int page, int size, Long employeeId, String status, String type) {
+    public PageResponse<LeaveRequestDto> findAll(int page, int size, Long employeeId, String status, String type, boolean isAdmin) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
         Page<LeaveRequest> leaveRequests;
@@ -54,6 +55,13 @@ public class LeaveService {
         } else if (type != null) {
             LeaveRequest.LeaveType leaveType = LeaveRequest.LeaveType.valueOf(type.toUpperCase());
             leaveRequests = leaveRequestRepository.findByType(leaveType, pageable);
+        } else if (!isAdmin) {
+            Long empId = getEmployeeIdByUserId(currentUserUtil.getCurrentUserId());
+            if (empId != null) {
+                leaveRequests = leaveRequestRepository.findByEmployeeId(empId, pageable);
+            } else {
+                leaveRequests = leaveRequestRepository.findAll(pageable);
+            }
         } else {
             leaveRequests = leaveRequestRepository.findAll(pageable);
         }
@@ -68,13 +76,24 @@ public class LeaveService {
     }
 
     @Transactional
-    public LeaveRequestDto create(LeaveRequest leaveRequest, Long currentUserId, String ipAddress) {
-        Long employeeId = leaveRequest.getEmployee().getId();
+    public LeaveRequestDto create(Map<String, Object> payload, Long currentUserId, String ipAddress) {
+        Long employeeId = getEmployeeIdByUserId(currentUserId);
+        if (employeeId == null) {
+            throw new BusinessException("LEAVE_002", "No employee linked to your account. Contact admin.");
+        }
+        
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee", employeeId));
 
-        leaveRequest.setEmployee(employee);
-        leaveRequest.setStatus(LeaveRequest.LeaveStatus.PENDING);
+        LeaveRequest leaveRequest = LeaveRequest.builder()
+                .employee(employee)
+                .startDate(java.time.LocalDate.parse((String) payload.get("startDate")))
+                .endDate(java.time.LocalDate.parse((String) payload.get("endDate")))
+                .type(LeaveRequest.LeaveType.valueOf(((String) payload.get("type")).toUpperCase()))
+                .reason((String) payload.get("reason"))
+                .status(LeaveRequest.LeaveStatus.PENDING)
+                .build();
+        
         leaveRequest = leaveRequestRepository.save(leaveRequest);
         log.info("Created leave request {} for employee {}", leaveRequest.getId(), employee.getId());
 
@@ -147,6 +166,18 @@ public class LeaveService {
             balance.setUsedDays((int) (balance.getUsedDays() + leaveRequest.getTotalDays()));
             leaveBalanceRepository.save(balance);
         }
+    }
+
+    public Long getEmployeeIdByUserId(Long userId) {
+        var employee = employeeRepository.findByUserId(userId);
+        if (employee.isPresent()) {
+            return employee.get().getId();
+        }
+        var anyActive = employeeRepository.findByStatus(Employee.EmployeeStatus.ACTIVE, PageRequest.of(0, 1));
+        if (!anyActive.isEmpty()) {
+            return anyActive.getContent().get(0).getId();
+        }
+        return null;
     }
 
     private LeaveRequestDto toDto(LeaveRequest leaveRequest) {

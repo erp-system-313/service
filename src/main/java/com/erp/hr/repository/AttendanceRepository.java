@@ -1,6 +1,7 @@
 package com.erp.hr.repository;
 
 import com.erp.hr.entity.Attendance;
+import com.erp.hr.entity.Employee;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -34,4 +35,15 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     Page<Attendance> findByDate(@Param("date") LocalDate date, Pageable pageable);
 
     boolean existsByEmployeeIdAndDate(Long employeeId, LocalDate date);
+
+    // New methods accepting Employee entity
+    Page<Attendance> findByEmployee(Employee employee, Pageable pageable);
+
+    @Query("SELECT a FROM Attendance a WHERE a.employee = :employee AND a.date BETWEEN :startDate AND :endDate")
+    Page<Attendance> findByEmployeeAndDateBetween(
+            @Param("employee") Employee employee,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            Pageable pageable
+    );
 }

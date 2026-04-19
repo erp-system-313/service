@@ -8,6 +8,7 @@ import com.erp.common.dto.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,6 +45,6 @@ public class SettingsController {
             @PathVariable String key,
             HttpServletRequest httpRequest) {
         settingsService.delete(key);
-        return ResponseEntity.ok(ApiResponse.success(null, "Settings deleted successfully"));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

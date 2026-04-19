@@ -1,10 +1,13 @@
 package com.erp.hr.service;
 
 import com.erp.auth.security.CurrentUserUtil;
+import com.erp.hr.dto.AttendanceDto;
 import com.erp.hr.dto.CreateEmployeeRequest;
 import com.erp.hr.dto.EmployeeDto;
 import com.erp.hr.dto.UpdateEmployeeRequest;
+import com.erp.hr.entity.Attendance;
 import com.erp.hr.entity.Employee;
+import com.erp.hr.repository.AttendanceRepository;
 import com.erp.hr.repository.EmployeeRepository;
 import com.erp.admin.repository.UserRepository;
 import com.erp.admin.service.AuditLogService;
@@ -20,12 +23,15 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
+    private final AttendanceRepository attendanceRepository;
     private final UserRepository userRepository;
     private final AuditLogService auditLogService;
     private final CurrentUserUtil currentUserUtil;
@@ -38,12 +44,12 @@ public class EmployeeService {
             Employee.EmployeeStatus employeeStatus = Employee.EmployeeStatus.valueOf(status.toUpperCase());
             employees = employeeRepository.findByDepartmentAndStatus(department, employeeStatus, pageable);
         } else if (department != null) {
-            employees = employeeRepository.findByDepartment(department, pageable);
+            employees = employeeRepository.findByDepartmentAndStatus(department, Employee.EmployeeStatus.ACTIVE, pageable);
         } else if (status != null) {
             Employee.EmployeeStatus employeeStatus = Employee.EmployeeStatus.valueOf(status.toUpperCase());
             employees = employeeRepository.findByStatus(employeeStatus, pageable);
         } else {
-            employees = employeeRepository.findAll(pageable);
+            employees = employeeRepository.findByStatus(Employee.EmployeeStatus.ACTIVE, pageable);
         }
 
         return PageResponse.from(employees.map(this::toDto));
@@ -62,6 +68,11 @@ public class EmployeeService {
         }
 
         String employeeCode = generateEmployeeCode();
+        
+        LocalDate hireDate = request.getHireDate();
+        if (hireDate == null) {
+            hireDate = LocalDate.now();
+        }
 
         Employee employee = Employee.builder()
                 .employeeCode(employeeCode)
@@ -71,7 +82,7 @@ public class EmployeeService {
                 .phone(request.getPhone())
                 .department(request.getDepartment())
                 .position(request.getPosition())
-                .hireDate(request.getHireDate())
+                .hireDate(hireDate)
                 .salary(request.getSalary())
                 .address(request.getAddress())
                 .status(Employee.EmployeeStatus.ACTIVE)
@@ -86,7 +97,7 @@ public class EmployeeService {
         employee = employeeRepository.save(employee);
         log.info("Created employee with id: {} and code: {}", employee.getId(), employeeCode);
 
-        auditLogService.log(currentUserUtil.getCurrentUserId(), "CREATE", "Employee", employee.getId(), null, ipAddress, "Employee created");
+        auditLogService.log(currentUserId, "CREATE", "Employee", employee.getId(), null, ipAddress, "Employee created");
 
         return toDto(employee);
     }
@@ -122,7 +133,7 @@ public class EmployeeService {
         employee = employeeRepository.save(employee);
         log.info("Updated employee with id: {}", employee.getId());
 
-        auditLogService.log(currentUserUtil.getCurrentUserId(), "UPDATE", "Employee", employee.getId(), null, ipAddress, "Employee updated");
+        auditLogService.log(currentUserId, "UPDATE", "Employee", employee.getId(), null, ipAddress, "Employee updated");
 
         return toDto(employee);
     }
@@ -137,11 +148,27 @@ public class EmployeeService {
         employeeRepository.save(employee);
         log.info("Terminated employee with id: {}", id);
 
-        auditLogService.log(currentUserUtil.getCurrentUserId(), "DELETE", "Employee", id, null, ipAddress, "Employee terminated");
+        auditLogService.log(currentUserId, "DELETE", "Employee", id, null, ipAddress, "Employee terminated");
     }
 
     public long countActive() {
         return employeeRepository.countByStatus(Employee.EmployeeStatus.ACTIVE);
+    }
+
+    public PageResponse<AttendanceDto> getAttendance(Long employeeId, java.time.LocalDate dateFrom, java.time.LocalDate dateTo) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", employeeId));
+
+        Pageable pageable = PageRequest.of(0, 100, Sort.by("date").descending());
+        Page<Attendance> attendance;
+
+        if (dateFrom != null && dateTo != null) {
+            attendance = attendanceRepository.findByEmployeeAndDateBetween(employee, dateFrom, dateTo, pageable);
+        } else {
+            attendance = attendanceRepository.findByEmployee(employee, pageable);
+        }
+
+        return PageResponse.from(attendance.map(this::toAttendanceDto));
     }
 
     private String generateEmployeeCode() {
@@ -171,6 +198,18 @@ public class EmployeeService {
                 .userId(employee.getUser() != null ? employee.getUser().getId() : null)
                 .createdAt(employee.getCreatedAt())
                 .updatedAt(employee.getUpdatedAt())
+                .build();
+    }
+
+    private AttendanceDto toAttendanceDto(Attendance attendance) {
+        return AttendanceDto.builder()
+                .id(attendance.getId())
+                .employeeId(attendance.getEmployee().getId())
+                .employeeName(attendance.getEmployee().getFullName())
+                .date(attendance.getDate())
+                .checkIn(attendance.getCheckIn())
+                .checkOut(attendance.getCheckOut())
+                .status(attendance.getStatus())
                 .build();
     }
 }

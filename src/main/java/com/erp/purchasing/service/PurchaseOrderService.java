@@ -177,6 +177,22 @@ public class PurchaseOrderService {
         auditLogService.log(currentUserUtil.getCurrentUserId(), "DELETE", "PurchaseOrder", id, null, ipAddress, "Purchase order cancelled");
     }
 
+    @Transactional
+    public PurchaseOrderDto cancel(Long id) {
+        PurchaseOrder order = purchaseOrderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("PurchaseOrder", id));
+
+        if (order.getStatus() == PurchaseOrder.Status.RECEIVED) {
+            throw new BusinessException("PO_001", "Cannot cancel a received purchase order");
+        }
+
+        order.setStatus(PurchaseOrder.Status.CANCELLED);
+        order = purchaseOrderRepository.save(order);
+        log.info("Cancelled purchase order with id: {}", id);
+
+        return toDto(order);
+    }
+
     public long countActive() {
         return purchaseOrderRepository.countByStatus(PurchaseOrder.Status.PENDING);
     }
