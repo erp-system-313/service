@@ -40,8 +40,6 @@ public class CreateEmployeeRequest {
     @Size(max = 100)
     private String position;
 
-    @NotNull(message = "Hire date is required")
-    @Past(message = "Hire date must be in the past")
     private LocalDate hireDate;
 
     private BigDecimal salary;
