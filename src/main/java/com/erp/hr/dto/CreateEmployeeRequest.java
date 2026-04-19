@@ -31,12 +31,15 @@ public class CreateEmployeeRequest {
     @Email(message = "Invalid email format")
     private String email;
 
+    @NotBlank(message = "Phone is required")
     @Size(max = 20)
     private String phone;
 
+    @NotBlank(message = "Department is required")
     @Size(max = 100)
     private String department;
 
+    @NotBlank(message = "Position is required")
     @Size(max = 100)
     private String position;
 
