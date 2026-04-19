@@ -21,7 +21,7 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
 
     boolean existsByCode(String code);
 
-    Page<Supplier> findByIsActive(Boolean isActive, Pageable pageable);
+    Page<Supplier> findByStatus(Supplier.Status status, Pageable pageable);
 
-    long countByIsActive(Boolean isActive);
+    long countByStatus(Supplier.Status status);
 }

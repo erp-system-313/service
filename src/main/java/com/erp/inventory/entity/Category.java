@@ -32,7 +32,7 @@ public class Category {
     private Integer sortOrder;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
+    @Column(nullable = false, length = 20)
     @Builder.Default
     private Status status = Status.ACTIVE;
 

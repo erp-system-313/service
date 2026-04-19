@@ -49,9 +49,10 @@ public class Supplier {
     @Builder.Default
     private BigDecimal totalPurchased = BigDecimal.ZERO;
 
-    @Column(name = "is_active", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
     @Builder.Default
-    private Boolean isActive = true;
+    private Status status = Status.ACTIVE;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -60,4 +61,8 @@ public class Supplier {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public enum Status {
+        ACTIVE, INACTIVE
+    }
 }

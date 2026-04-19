@@ -40,7 +40,7 @@ public class AuditLogService {
 
     public PageResponse<AuditLogDto> findByUserId(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<AuditLog> auditLogs = auditLogRepository.findByUserIdWithUserId(userId, pageable);
+        Page<AuditLog> auditLogs = auditLogRepository.findByUserId(userId, pageable);
         return PageResponse.from(auditLogs.map(this::toDto));
     }
 
@@ -53,7 +53,22 @@ public class AuditLogService {
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void log(Long userId, String action, String entityType, Long entityId, Map<String, Object> changes, String ipAddress, String details) {
-        log.debug("Audit: {} - {} - {}", action, entityType, entityId);
+        try {
+            User user = userId != null ? auditLogRepository.findByUserId(userId).orElse(null) : null;
+            AuditLog auditLog = AuditLog.builder()
+                    .user(user)
+                    .action(action)
+                    .entityType(entityType)
+                    .entityId(entityId)
+                    .changes(changes)
+                    .ipAddress(ipAddress)
+                    .details(details)
+                    .build();
+            auditLogRepository.save(auditLog);
+            log.debug("Audit log created: {} - {} - {}", action, entityType, entityId);
+        } catch (Exception e) {
+            log.error("Failed to create audit log", e);
+        }
     }
 
     private AuditLogDto toDto(AuditLog auditLog) {
