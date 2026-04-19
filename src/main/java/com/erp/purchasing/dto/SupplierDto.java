@@ -24,7 +24,7 @@ public class SupplierDto {
     private String taxId;
     private Integer paymentTerms;
     private BigDecimal totalPurchased;
-    private Boolean isActive;
+    private Supplier.Status status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
