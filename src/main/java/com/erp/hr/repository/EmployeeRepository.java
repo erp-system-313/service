@@ -24,6 +24,8 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     @Query("SELECT e FROM Employee e LEFT JOIN FETCH e.user WHERE e.id = :id")
     Optional<Employee> findByIdWithUser(@Param("id") Long id);
 
+    Optional<Employee> findByUserId(Long userId);
+
     Page<Employee> findByDepartment(String department, Pageable pageable);
 
     Page<Employee> findByStatus(Employee.EmployeeStatus status, Pageable pageable);
