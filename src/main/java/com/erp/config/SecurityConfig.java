@@ -44,6 +44,22 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
+
+                        // 🟡 DEVELOPMENT ONLY - Permit these endpoints for testing
+                        .requestMatchers("/api/v1/customers/**").permitAll()
+                        .requestMatchers("/api/v1/sales-orders/**").permitAll()
+                        .requestMatchers("/api/v1/products/**").permitAll()
+                        .requestMatchers("/api/v1/categories/**").permitAll()
+                        .requestMatchers("/api/v1/dashboard/**").permitAll()
+                        .requestMatchers("/api/v1/employees/**").permitAll()
+                        .requestMatchers("/api/v1/suppliers/**").permitAll()
+                        .requestMatchers("/api/v1/invoices/**").permitAll()
+                        .requestMatchers("/api/v1/accounts/**").permitAll()
+                        .requestMatchers("/api/v1/users/**").permitAll()
+                        .requestMatchers("/api/v1/roles/**").permitAll()
+                        .requestMatchers("/api/v1/payments/**").permitAll()
+                        .requestMatchers("/api/v1/purchase-orders/**").permitAll()
+
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())

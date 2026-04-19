@@ -15,18 +15,20 @@ import java.util.Optional;
 @Repository
 public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
 
-    Optional<User> findByUserId(Long userId);
+    Optional<AuditLog> findFirstByUserId(Long userId);
 
-    @Query("SELECT a FROM AuditLog a LEFT JOIN FETCH a.user WHERE a.entityType = :entityType ORDER BY a.createdAt DESC")
+    Optional<User> findUserByUserId(Long userId);
+
+    @Query("SELECT a FROM AuditLog a WHERE a.entityType = :entityType ORDER BY a.createdAt DESC")
     Page<AuditLog> findByEntityType(@Param("entityType") String entityType, Pageable pageable);
 
-    @Query("SELECT a FROM AuditLog a LEFT JOIN FETCH a.user WHERE a.user.id = :userId ORDER BY a.createdAt DESC")
-    Page<AuditLog> findByUserId(@Param("userId") Long userId, Pageable pageable);
+    @Query("SELECT a FROM AuditLog a WHERE a.user.id = :userId ORDER BY a.createdAt DESC")
+    Page<AuditLog> findByUserIdWithUserId(@Param("userId") Long userId, Pageable pageable);
 
-    @Query("SELECT a FROM AuditLog a LEFT JOIN FETCH a.user WHERE a.action = :action ORDER BY a.createdAt DESC")
+    @Query("SELECT a FROM AuditLog a WHERE a.action = :action ORDER BY a.createdAt DESC")
     Page<AuditLog> findByAction(@Param("action") String action, Pageable pageable);
 
-    @Query("SELECT a FROM AuditLog a LEFT JOIN FETCH a.user WHERE a.createdAt BETWEEN :startDate AND :endDate ORDER BY a.createdAt DESC")
+    @Query("SELECT a FROM AuditLog a WHERE a.createdAt BETWEEN :startDate AND :endDate ORDER BY a.createdAt DESC")
     Page<AuditLog> findByDateRange(
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
