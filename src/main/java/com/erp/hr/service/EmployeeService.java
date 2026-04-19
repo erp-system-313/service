@@ -44,12 +44,12 @@ public class EmployeeService {
             Employee.EmployeeStatus employeeStatus = Employee.EmployeeStatus.valueOf(status.toUpperCase());
             employees = employeeRepository.findByDepartmentAndStatus(department, employeeStatus, pageable);
         } else if (department != null) {
-            employees = employeeRepository.findByDepartment(department, pageable);
+            employees = employeeRepository.findByDepartmentAndStatus(department, Employee.EmployeeStatus.ACTIVE, pageable);
         } else if (status != null) {
             Employee.EmployeeStatus employeeStatus = Employee.EmployeeStatus.valueOf(status.toUpperCase());
             employees = employeeRepository.findByStatus(employeeStatus, pageable);
         } else {
-            employees = employeeRepository.findAll(pageable);
+            employees = employeeRepository.findByStatus(Employee.EmployeeStatus.ACTIVE, pageable);
         }
 
         return PageResponse.from(employees.map(this::toDto));
