@@ -90,7 +90,7 @@ public class InvoiceService {
             
             invoice.setSubtotal(salesOrder.getSubtotal());
             invoice.setTaxAmount(salesOrder.getTaxAmount() != null ? salesOrder.getTaxAmount() : BigDecimal.ZERO);
-            invoice.setTotal(salesOrder.getTotalAmount());
+            invoice.setTotalAmount(salesOrder.getTotalAmount());
         }
 
         invoice = invoiceRepository.save(invoice);
@@ -154,7 +154,7 @@ public class InvoiceService {
         invoice.addPayment(payment);
         invoice.calculatePaidAmount();
         
-        if (invoice.getPaidAmount().compareTo(invoice.getTotal()) >= 0) {
+        if (invoice.getPaidAmount().compareTo(invoice.getTotalAmount()) >= 0) {
             invoice.setStatus(InvoiceStatus.PAID);
         }
         
@@ -187,7 +187,5 @@ public class InvoiceService {
                 .createdAt(invoice.getCreatedAt())
                 .updatedAt(invoice.getUpdatedAt())
                 .build();
-    }
-        return dto;
     }
 }
