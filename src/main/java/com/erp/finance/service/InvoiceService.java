@@ -56,8 +56,8 @@ public class InvoiceService {
         
         InvoiceDto dto = toDto(invoice);
         dto.setPayments(invoice.getPayments().stream()
-                .map(PaymentDto::fromEntity)
-                .toList());
+                .map(p -> PaymentDto.fromEntity(p))
+                .collect(java.util.stream.Collectors.toList()));
         
         return dto;
     }
@@ -75,7 +75,7 @@ public class InvoiceService {
                 .status(InvoiceStatus.DRAFT)
                 .subtotal(BigDecimal.ZERO)
                 .taxAmount(BigDecimal.ZERO)
-                .total(BigDecimal.ZERO)
+                .totalAmount(BigDecimal.ZERO)
                 .paidAmount(BigDecimal.ZERO)
                 .payments(new ArrayList<>())
                 .build();
@@ -171,12 +171,23 @@ public class InvoiceService {
     }
 
     private InvoiceDto toDto(Invoice invoice) {
-        InvoiceDto dto = InvoiceDto.fromEntity(invoice);
-        if (invoice.getPayments() != null) {
-            dto.setPayments(invoice.getPayments().stream()
-                    .map(PaymentDto::fromEntity)
-                    .toList());
-        }
+        return InvoiceDto.builder()
+                .id(invoice.getId())
+                .invoiceNumber(invoice.getInvoiceNumber())
+                .customerId(invoice.getCustomer() != null ? invoice.getCustomer().getId() : null)
+                .customerName(invoice.getCustomer() != null ? invoice.getCustomer().getName() : null)
+                .invoiceDate(invoice.getInvoiceDate())
+                .dueDate(invoice.getDueDate())
+                .status(invoice.getStatus())
+                .subtotal(invoice.getSubtotal())
+                .taxAmount(invoice.getTaxAmount())
+                .totalAmount(invoice.getTotalAmount())
+                .paidAmount(invoice.getPaidAmount())
+                .balance(invoice.getBalance())
+                .createdAt(invoice.getCreatedAt())
+                .updatedAt(invoice.getUpdatedAt())
+                .build();
+    }
         return dto;
     }
 }

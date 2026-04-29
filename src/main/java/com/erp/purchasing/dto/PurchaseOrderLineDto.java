@@ -19,7 +19,7 @@ public class PurchaseOrderLineDto {
     private Integer quantity;
     private BigDecimal unitPrice;
     private BigDecimal discount;
-    private BigDecimal lineTotal;
+    private BigDecimal totalPrice;
     private Integer receivedQty;
     private String notes;
 }

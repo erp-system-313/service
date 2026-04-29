@@ -86,10 +86,10 @@ public class ProductService {
                 .supplier(supplier)
                 .unitPrice(request.getUnitPrice())
                 .costPrice(request.getCostPrice())
-                .reorderLevel(request.getReorderLevel())
+                .reorderPoint(request.getReorderPoint())
                 .reorderQuantity(request.getReorderQuantity())
                 .unitOfMeasure(request.getUnitOfMeasure())
-                .currentStock(0)
+                .stockQuantity(0)
                 .imageUrl(request.getImageUrl())
                 .status(Product.Status.ACTIVE)
                 .build();
@@ -128,7 +128,7 @@ public class ProductService {
         if (request.getDescription() != null) product.setDescription(request.getDescription());
         if (request.getUnitPrice() != null) product.setUnitPrice(request.getUnitPrice());
         if (request.getCostPrice() != null) product.setCostPrice(request.getCostPrice());
-        if (request.getReorderLevel() != null) product.setReorderLevel(request.getReorderLevel());
+        if (request.getReorderPoint() != null) product.setReorderPoint(request.getReorderPoint());
         if (request.getReorderQuantity() != null) product.setReorderQuantity(request.getReorderQuantity());
         if (request.getUnitOfMeasure() != null) product.setUnitOfMeasure(request.getUnitOfMeasure());
         if (request.getImageUrl() != null) product.setImageUrl(request.getImageUrl());
@@ -158,7 +158,7 @@ public class ProductService {
     }
 
     public PageResponse<ProductDto> findLowStock(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("currentStock").ascending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("stockQuantity").ascending());
         Page<Product> products = productRepository.findLowStock(Product.Status.ACTIVE, pageable);
         return PageResponse.from(products.map(this::toDto));
     }
@@ -175,10 +175,10 @@ public class ProductService {
                 .supplierName(product.getSupplier() != null ? product.getSupplier().getName() : null)
                 .unitPrice(product.getUnitPrice())
                 .costPrice(product.getCostPrice())
-                .reorderLevel(product.getReorderLevel())
+                .reorderPoint(product.getReorderPoint())
                 .reorderQuantity(product.getReorderQuantity())
                 .unitOfMeasure(product.getUnitOfMeasure())
-                .currentStock(product.getCurrentStock())
+                .stockQuantity(product.getStockQuantity())
                 .imageUrl(product.getImageUrl())
                 .status(product.getStatus())
                 .createdAt(product.getCreatedAt())

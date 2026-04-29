@@ -74,8 +74,8 @@ public class PurchaseOrderService {
         PurchaseOrder order = PurchaseOrder.builder()
                 .poNumber(poNumber)
                 .supplier(supplier)
-                .date(request.getDate())
-                .expectedDate(request.getExpectedDate())
+                .orderDate(request.getOrderDate())
+                .deliveryDate(request.getDeliveryDate())
                 .notes(request.getNotes())
                 .status(PurchaseOrder.Status.PENDING)
                 .build();
@@ -104,7 +104,7 @@ public class PurchaseOrderService {
         }
 
         order.setSubtotal(subtotal);
-        order.setTax(BigDecimal.ZERO);
+        order.setTaxAmount(BigDecimal.ZERO);
         order.setTotalAmount(subtotal);
         order = purchaseOrderRepository.save(order);
         log.info("Created purchase order with id: {} and poNumber: {}", order.getId(), poNumber);
@@ -125,8 +125,8 @@ public class PurchaseOrderService {
             order.setSupplier(supplier);
         }
 
-        if (request.getDate() != null) order.setDate(request.getDate());
-        if (request.getExpectedDate() != null) order.setExpectedDate(request.getExpectedDate());
+        if (request.getOrderDate() != null) order.setOrderDate(request.getOrderDate());
+        if (request.getDeliveryDate() != null) order.setDeliveryDate(request.getDeliveryDate());
         if (request.getReceivedDate() != null) order.setReceivedDate(request.getReceivedDate());
         if (request.getNotes() != null) order.setNotes(request.getNotes());
         if (request.getStatus() != null) order.setStatus(request.getStatus());
@@ -209,17 +209,31 @@ public class PurchaseOrderService {
         return PurchaseOrderDto.builder()
                 .id(order.getId())
                 .poNumber(order.getPoNumber())
-                .supplierId(order.getSupplier().getId())
-                .supplierName(order.getSupplier().getName())
-                .date(order.getDate())
+                .supplierId(order.getSupplier() != null ? order.getSupplier().getId() : null)
+                .supplierName(order.getSupplier() != null ? order.getSupplier().getName() : null)
+                .orderDate(order.getOrderDate())
                 .status(order.getStatus())
                 .subtotal(order.getSubtotal())
-                .tax(order.getTax())
+                .taxAmount(order.getTaxAmount())
                 .totalAmount(order.getTotalAmount())
-                .expectedDate(order.getExpectedDate())
+                .shippingCost(order.getShippingCost())
+                .deliveryDate(order.getDeliveryDate())
                 .receivedDate(order.getReceivedDate())
                 .notes(order.getNotes())
-                .lines(order.getLines().stream().map(this::toLineDto).collect(Collectors.toList()))
+                .lines(order.getLines() != null ? order.getLines().stream()
+                        .map(line -> PurchaseOrderLineDto.builder()
+                                .id(line.getId())
+                                .orderId(line.getPurchaseOrder() != null ? line.getPurchaseOrder().getId() : null)
+                                .productId(line.getProduct() != null ? line.getProduct().getId() : null)
+                                .productName(line.getProduct() != null ? line.getProduct().getName() : null)
+                                .quantity(line.getQuantity())
+                                .unitPrice(line.getUnitPrice())
+                                .discount(line.getDiscount())
+                                .totalPrice(line.getLineTotal())
+                                .receivedQty(line.getReceivedQty())
+                                .notes(line.getNotes())
+                                .build())
+                        .collect(Collectors.toList()) : null)
                 .createdAt(order.getCreatedAt())
                 .updatedAt(order.getUpdatedAt())
                 .build();

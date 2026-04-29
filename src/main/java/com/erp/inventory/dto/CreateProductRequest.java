@@ -34,8 +34,8 @@ public class CreateProductRequest {
     @Digits(integer = 8, fraction = 2)
     private BigDecimal costPrice;
 
-    @Min(value = 0, message = "Reorder level must be non-negative")
-    private Integer reorderLevel;
+        @Min(value = 0, message = "Reorder point must be non-negative")
+        private Integer reorderPoint;
 
     private Integer reorderQuantity;
 
