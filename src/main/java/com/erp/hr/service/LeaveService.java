@@ -1,6 +1,7 @@
 package com.erp.hr.service;
 
 import com.erp.auth.security.CurrentUserUtil;
+import com.erp.hr.dto.CreateLeaveRequest;
 import com.erp.hr.dto.LeaveBalanceDto;
 import com.erp.hr.dto.LeaveRequestDto;
 import com.erp.hr.entity.Employee;
@@ -76,12 +77,14 @@ public class LeaveService {
     }
 
     @Transactional
+    @Deprecated(since = "Use createFromDto() instead")
     public LeaveRequestDto create(Map<String, Object> payload, Long currentUserId, String ipAddress) {
+        // This method is kept for backward compatibility - use createFromDto() for new code
         Long employeeId = getEmployeeIdByUserId(currentUserId);
         if (employeeId == null) {
             throw new BusinessException("LEAVE_002", "No employee linked to your account. Contact admin.");
         }
-        
+
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee", employeeId));
 
@@ -93,7 +96,34 @@ public class LeaveService {
                 .reason((String) payload.get("reason"))
                 .status(LeaveRequest.LeaveStatus.PENDING)
                 .build();
-        
+
+        leaveRequest = leaveRequestRepository.save(leaveRequest);
+        log.info("Created leave request {} for employee {}", leaveRequest.getId(), employee.getId());
+
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "CREATE", "LeaveRequest", leaveRequest.getId(), null, ipAddress, "Leave request submitted");
+
+        return toDto(leaveRequest);
+    }
+
+    @Transactional
+    public LeaveRequestDto createFromDto(CreateLeaveRequest request, Long currentUserId, String ipAddress) {
+        Long employeeId = getEmployeeIdByUserId(currentUserId);
+        if (employeeId == null) {
+            throw new BusinessException("LEAVE_002", "No employee linked to your account. Contact admin.");
+        }
+
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", employeeId));
+
+        LeaveRequest leaveRequest = LeaveRequest.builder()
+                .employee(employee)
+                .startDate(request.getStartDate())
+                .endDate(request.getEndDate())
+                .type(request.getType())
+                .reason(request.getReason())
+                .status(LeaveRequest.LeaveStatus.PENDING)
+                .build();
+
         leaveRequest = leaveRequestRepository.save(leaveRequest);
         log.info("Created leave request {} for employee {}", leaveRequest.getId(), employee.getId());
 

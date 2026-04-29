@@ -136,12 +136,9 @@ public class AttendanceService {
     }
     
     public Long getFirstActiveEmployeeId() {
-        var anyActive = employeeRepository.findByStatus(Employee.EmployeeStatus.ACTIVE, PageRequest.of(0, 1));
-        if (!anyActive.isEmpty()) {
-            return anyActive.getContent().get(0).getId();
-        }
-        
-        return null;
+        // This method should not pick a random employee - throw exception instead
+        throw new com.erp.common.exception.BusinessException("ATTENDANCE_005", 
+            "No employee linked to your account. Contact admin.");
     }
 
     @Transactional

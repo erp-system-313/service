@@ -97,7 +97,7 @@ public class EmployeeService {
         employee = employeeRepository.save(employee);
         log.info("Created employee with id: {} and code: {}", employee.getId(), employeeCode);
 
-        auditLogService.log(currentUserId, "CREATE", "Employee", employee.getId(), null, ipAddress, "Employee created");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "CREATE", "Employee", employee.getId(), null, ipAddress, "Employee created");
 
         return toDto(employee);
     }
@@ -133,7 +133,7 @@ public class EmployeeService {
         employee = employeeRepository.save(employee);
         log.info("Updated employee with id: {}", employee.getId());
 
-        auditLogService.log(currentUserId, "UPDATE", "Employee", employee.getId(), null, ipAddress, "Employee updated");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "UPDATE", "Employee", employee.getId(), null, ipAddress, "Employee updated");
 
         return toDto(employee);
     }
@@ -148,7 +148,7 @@ public class EmployeeService {
         employeeRepository.save(employee);
         log.info("Terminated employee with id: {}", id);
 
-        auditLogService.log(currentUserId, "DELETE", "Employee", id, null, ipAddress, "Employee terminated");
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "DELETE", "Employee", id, null, ipAddress, "Employee terminated");
     }
 
     public long countActive() {

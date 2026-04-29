@@ -1,11 +1,11 @@
 -- V10: Fix attendance table to match entity schema
--- Entity uses: attendance table with 'date' column, but migration created: attendances with 'attendance_date'
+-- V9 now creates the table with correct name 'attendance' and column 'date'
+-- This migration adds any missing columns
 
--- Rename the table if exists
-ALTER TABLE IF EXISTS attendances RENAME TO attendance;
-
--- Rename the date column
-ALTER TABLE IF EXISTS attendance RENAME COLUMN attendance_date TO date;
+-- Add status column if not exists
+ALTER TABLE IF EXISTS attendance ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'PRESENT';
+ALTER TABLE IF EXISTS attendance ADD COLUMN IF NOT EXISTS notes TEXT;
+ALTER TABLE IF EXISTS attendance ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP;
 
 -- Add status column if not exists
 ALTER TABLE IF EXISTS attendance ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'PRESENT';

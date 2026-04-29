@@ -229,7 +229,7 @@ public class PurchaseOrderService {
                                 .quantity(line.getQuantity())
                                 .unitPrice(line.getUnitPrice())
                                 .discount(line.getDiscount())
-                                .totalPrice(line.getLineTotal())
+                                .lineTotal(line.getLineTotal())
                                 .receivedQty(line.getReceivedQty())
                                 .notes(line.getNotes())
                                 .build())

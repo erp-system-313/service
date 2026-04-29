@@ -49,7 +49,7 @@ public class AttendanceController {
         Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         
-        boolean isAdmin = isCurrentUserAdmin();
+        boolean isAdmin = currentUserUtil.isCurrentUserAdmin();
         Long targetEmployeeId = resolveTargetEmployeeId(employeeId, currentUserId, isAdmin);
         
         if (targetEmployeeId == null) {
@@ -71,7 +71,7 @@ public class AttendanceController {
         Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         
-        boolean isAdmin = isCurrentUserAdmin();
+        boolean isAdmin = currentUserUtil.isCurrentUserAdmin();
         Long targetEmployeeId = resolveTargetEmployeeId(employeeId, currentUserId, isAdmin);
         
         if (targetEmployeeId == null) {
@@ -102,14 +102,6 @@ public class AttendanceController {
         
         return attendanceService.getFirstActiveEmployeeId();
     }
-    
-    private boolean isCurrentUserAdmin() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getPrincipal() instanceof UserPrincipal) {
-            return "ADMIN".equals(((UserPrincipal) auth.getPrincipal()).getRole());
-        }
-        return false;
-    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(
@@ -118,7 +110,7 @@ public class AttendanceController {
         Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         
-        if (!isCurrentUserAdmin()) {
+        if (!currentUserUtil.isCurrentUserAdmin()) {
             throw new BusinessException("ATTENDANCE_006", "Only admins can delete attendance records");
         }
         

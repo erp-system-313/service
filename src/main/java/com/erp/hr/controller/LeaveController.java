@@ -2,6 +2,7 @@ package com.erp.hr.controller;
 
 import com.erp.auth.security.CurrentUserUtil;
 import com.erp.auth.security.UserPrincipal;
+import com.erp.hr.dto.CreateLeaveRequest;
 import com.erp.hr.dto.LeaveBalanceDto;
 import com.erp.hr.dto.LeaveRequestDto;
 import com.erp.hr.entity.LeaveRequest;
@@ -50,20 +51,20 @@ public class LeaveController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<LeaveRequestDto>> create(
-            @RequestBody Map<String, Object> payload,
+            @Valid @RequestBody CreateLeaveRequest request,
             HttpServletRequest httpRequest) {
         Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
-        
-        LeaveRequestDto request = leaveService.create(payload, currentUserId, ipAddress);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(request, "Leave request submitted"));
+
+        LeaveRequestDto response = leaveService.createFromDto(request, currentUserId, ipAddress);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "Leave request submitted"));
     }
 
     @PutMapping("/{id}/approve")
     public ResponseEntity<ApiResponse<LeaveRequestDto>> approve(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
-        if (!isCurrentUserAdmin()) {
+        if (!currentUserUtil.isCurrentUserAdmin()) {
             throw new BusinessException("LEAVE_003", "Only admins can approve leave requests");
         }
         Long currentUserId = currentUserUtil.getCurrentUserId();
@@ -77,7 +78,7 @@ public class LeaveController {
             @PathVariable Long id,
             @RequestBody Map<String, String> body,
             HttpServletRequest httpRequest) {
-        if (!isCurrentUserAdmin()) {
+        if (!currentUserUtil.isCurrentUserAdmin()) {
             throw new BusinessException("LEAVE_003", "Only admins can reject leave requests");
         }
         Long currentUserId = currentUserUtil.getCurrentUserId();

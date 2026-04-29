@@ -3,7 +3,6 @@ package com.erp.sales.controller;
 import com.erp.sales.dto.CreateCustomerRequest;
 import com.erp.sales.dto.CustomerDto;
 import com.erp.sales.dto.SalesOrderDto;
-import com.erp.sales.dto.SalesOrderDto;
 import com.erp.sales.dto.UpdateCustomerRequest;
 import com.erp.sales.service.CustomerService;
 import com.erp.common.dto.ApiResponse;
