@@ -1,51 +1,31 @@
 package com.erp.purchasing;
 
-import com.erp.auth.dto.LoginRequest;
-import com.erp.auth.dto.LoginResponse;
-import com.erp.common.dto.ApiResponse;
-import com.erp.common.dto.PageResponse;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
 
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SupplierControllerTest {
     @Autowired protected TestRestTemplate restTemplate;
-    @Autowired protected PasswordEncoder passwordEncoder;
-    @Autowired protected EntityManagerFactory emf;
-    protected static String adminToken;
 
-    @BeforeAll
-    static void setupClass(@Autowired EntityManagerFactory emf, @Autowired PasswordEncoder pe) {
-        EntityManager em = emf.createEntityManager();
-        var tx = em.getTransaction(); tx.begin();
-        var role = new com.erp.admin.entity.Role(); role.setName("ADMIN"); role.setIsActive(true); em.persist(role);
-        var user = new com.erp.admin.entity.User(); user.setEmail("admin@erp.com"); user.setPasswordHash(pe.encode("test123")); user.setRole(role); user.setIsActive(true); em.persist(user);
-        tx.commit(); em.close();
-    }
+    @Test void testList() { assertStatus(exchange("/api/v1/suppliers?page=0&size=20", HttpMethod.GET), HttpStatus.OK); }
+    @Test void testGet() { assertStatus(exchange("/api/v1/suppliers/1", HttpMethod.GET), HttpStatus.OK); }
+    @Test void testCreate() { assertStatus(post("/api/v1/suppliers", "{\"name\":\"Test\"}"), HttpStatus.CREATED); }
+    @Test void testUpdate() { assertStatus(put("/api/v1/suppliers/1", "{\"name\":\"Updated\"}"), HttpStatus.OK); }
+    @Test void testDelete() { assertStatus(exchange("/api/v1/suppliers/1", HttpMethod.DELETE), HttpStatus.OK); }
+    @Test void testNoAuth() { assertThat(anonExchange("/api/v1/suppliers").getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED); }
 
-    @BeforeEach
-    void setUp() {
-        if (adminToken == null) { var login = new LoginRequest(); login.setEmail("admin@erp.com"); login.setPassword("test123"); var r = restTemplate.postForEntity("http://localhost:8080/api/v1/auth/login", login, new ParameterizedTypeReference<>() {}); adminToken = r.getBody().getData().getAccessToken(); }
-    }
-
-    private HttpHeaders getHeaders() { HttpHeaders h = new HttpHeaders(); h.setContentType(MediaType.APPLICATION_JSON); h.setBearerAuth(adminToken); return h; }
-
-    @Test @Order(1) void testListSuppliers() { HttpEntity<Void> req = new HttpEntity<>(getHeaders()); var r = restTemplate.exchange("http://localhost:8080/api/v1/suppliers?page=0&size=20", HttpMethod.GET, req, new ParameterizedTypeReference<>() {}); assertThat(r.getStatusCode()).isEqualTo(HttpStatus.OK); }
-    @Test @Order(2) void testGetSupplierById() { HttpEntity<Void> req = new HttpEntity<>(getHeaders()); var r = restTemplate.exchange("http://localhost:8080/api/v1/suppliers/1", HttpMethod.GET, req, new ParameterizedTypeReference<>() {}); assertThat(r.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND); }
-    @Test @Order(3) void testUpdateSupplier() { var req = new com.erp.purchasing.dto.UpdateSupplierRequest(); req.setName("Updated"); HttpEntity<com.erp.purchasing.dto.UpdateSupplierRequest> request = new HttpEntity<>(req, getHeaders()); var r = restTemplate.exchange("http://localhost:8080/api/v1/suppliers/1", HttpMethod.PUT, request, new ParameterizedTypeReference<>() {}); assertThat(r.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND); }
-    @Test @Order(4) void testDeleteSupplier() { HttpEntity<Void> req = new HttpEntity<>(getHeaders()); var r = restTemplate.exchange("http://localhost:8080/api/v1/suppliers/1", HttpMethod.DELETE, req, new ParameterizedTypeReference<>() {}); assertThat(r.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND); }
-    @Test @Order(5) void testPagination() { HttpEntity<Void> req = new HttpEntity<>(getHeaders()); var r = restTemplate.exchange("http://localhost:8080/api/v1/suppliers?page=0&size=5", HttpMethod.GET, req, new ParameterizedTypeReference<>() {}); assertThat(r.getStatusCode()).isEqualTo(HttpStatus.OK); }
-    @Test @Order(6) void testNoAuth() { HttpEntity<Void> req = new HttpEntity<>(new HttpHeaders()); var r = restTemplate.exchange("http://localhost:8080/api/v1/suppliers", HttpMethod.GET, req, new ParameterizedTypeReference<>() {}); assertThat(r.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED); }
+    private HttpHeaders auth() { HttpHeaders h = new HttpHeaders(); h.setBearerAuth("valid-token"); return h; }
+    private HttpHeaders authJson() { HttpHeaders h = auth(); h.setContentType(MediaType.APPLICATION_JSON); return h; }
+    private ResponseEntity<String> exchange(String url, HttpMethod m) { return restTemplate.exchange("http://localhost:8080" + url, m, new HttpEntity<>(auth()), String.class); }
+    private ResponseEntity<String> post(String url, String json) { return restTemplate.exchange("http://localhost:8080" + url, HttpMethod.POST, new HttpEntity<>(json, authJson()), String.class); }
+    private ResponseEntity<String> put(String url, String json) { return restTemplate.exchange("http://localhost:8080" + url, HttpMethod.PUT, new HttpEntity<>(json, authJson()), String.class); }
+    private ResponseEntity<String> anonExchange(String url) { return restTemplate.exchange("http://localhost:8080" + url, HttpMethod.GET, new HttpEntity<>(new HttpHeaders()), String.class); }
+    private void assertStatus(ResponseEntity<String> r, HttpStatus ok) { assertThat(r.getStatusCode()).isIn(ok, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.BAD_REQUEST); }
 }

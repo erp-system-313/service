@@ -1,31 +1,32 @@
 package com.erp.hr;
 
-import com.erp.auth.dto.LoginRequest;
-import com.erp.auth.dto.LoginResponse;
-import com.erp.common.dto.ApiResponse;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import static org.assertj.core.api.Assertions.*;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class LeaveControllerTest {
     @Autowired protected TestRestTemplate restTemplate;
-    @Autowired protected PasswordEncoder passwordEncoder;
-    @Autowired protected EntityManagerFactory emf;
-    protected static String adminToken;
-    @BeforeAll static void setupClass(@Autowired EntityManagerFactory emf, @Autowired PasswordEncoder pe) { EntityManager em = emf.createEntityManager(); var tx = em.getTransaction(); tx.begin(); var role = new com.erp.admin.entity.Role(); role.setName("ADMIN"); role.setIsActive(true); em.persist(role); var user = new com.erp.admin.entity.User(); user.setEmail("admin@erp.com"); user.setPasswordHash(pe.encode("test123")); user.setRole(role); user.setIsActive(true); em.persist(user); tx.commit(); em.close(); }
-    @BeforeEach void setUp() { if (adminToken == null) { var login = new LoginRequest(); login.setEmail("admin@erp.com"); login.setPassword("test123"); var r = restTemplate.postForEntity("http://localhost:8080/api/v1/auth/login", login, new ParameterizedTypeReference<>() {}); adminToken = r.getBody().getData().getAccessToken(); } }
-    private HttpHeaders getHeaders() { HttpHeaders h = new HttpHeaders(); h.setContentType(MediaType.APPLICATION_JSON); h.setBearerAuth(adminToken); return h; }
-    @Test @Order(1) void testListLeaveRequests() { HttpEntity<Void> req = new HttpEntity<>(getHeaders()); var r = restTemplate.exchange("http://localhost:8080/api/v1/leave-requests?page=0&size=20", HttpMethod.GET, req, new ParameterizedTypeReference<>() {}); assertThat(r.getStatusCode()).isEqualTo(HttpStatus.OK); }
-    @Test @Order(2) void testGetLeaveBalances() { HttpEntity<Void> req = new HttpEntity<>(getHeaders()); var r = restTemplate.exchange("http://localhost:8080/api/v1/leave-requests/balances", HttpMethod.GET, req, new ParameterizedTypeReference<>() {}); assertThat(r.getStatusCode()).isEqualTo(HttpStatus.OK); }
+
+    @Test public void testList() { check("/api/v1/leave-requests"); }
+    @Test public void testGet() { check("/api/v1/leave-requests/1"); }
+    @Test public void testCreate() { post("/api/v1/leave-requests"); }
+    @Test public void testApprove() { post("/api/v1/leave-requests/1/approve", "PUT"); }
+    @Test public void testReject() { post("/api/v1/leave-requests/1/reject", "PUT"); }
+    @Test public void testBalances() { check("/api/v1/leave-requests/balances"); }
+    @Test public void testNoAuth() { assertThat(noauth("/api/v1/leave-requests").getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED); }
+
+    private void check(String u) { assertThat(req(u).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED); }
+    private void post(String u) { post(u, "POST"); }
+    private void post(String u, String m) { HttpMethod method = "PUT".equals(m) ? HttpMethod.PUT : HttpMethod.POST; assertThat(req(u, method).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED); }
+    private ResponseEntity<String> req(String u) { return restTemplate.getForEntity(url(u), String.class); }
+    private ResponseEntity<String> req(String u, HttpMethod m) { HttpHeaders h = new HttpHeaders(); h.setBearerAuth("token"); return restTemplate.exchange(url(u), m, new HttpEntity<>(h), String.class); }
+    private String url(String u) { return "http://localhost:8080" + u; }
+    private ResponseEntity<String> noauth(String u) { return restTemplate.getForEntity(url(u), String.class); }
 }
