@@ -32,27 +32,31 @@ public class PurchaseOrder {
     private Supplier supplier;
 
     @Column(nullable = false)
-    private LocalDate date;
-
+    private LocalDate orderDate;
+    
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default
     private Status status = Status.PENDING;
-
+    
     @Column(name = "subtotal", precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal subtotal = BigDecimal.ZERO;
-
+    
     @Column(precision = 15, scale = 2)
     @Builder.Default
-    private BigDecimal tax = BigDecimal.ZERO;
-
+    private BigDecimal taxAmount = BigDecimal.ZERO;
+    
     @Column(name = "total_amount", precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal totalAmount = BigDecimal.ZERO;
-
-    @Column(name = "expected_date")
-    private LocalDate expectedDate;
+    
+    @Column(name = "shipping_cost", precision = 15, scale = 2)
+    @Builder.Default
+    private BigDecimal shippingCost = BigDecimal.ZERO;
+    
+    @Column(name = "delivery_date")
+    private LocalDate deliveryDate;
 
     @Column(name = "received_date")
     private LocalDate receivedDate;

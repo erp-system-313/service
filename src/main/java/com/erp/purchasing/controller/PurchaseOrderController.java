@@ -1,5 +1,6 @@
 package com.erp.purchasing.controller;
 
+import com.erp.auth.security.CurrentUserUtil;
 import com.erp.common.dto.ApiResponse;
 import com.erp.common.dto.PageResponse;
 import com.erp.purchasing.dto.CreatePurchaseOrderRequest;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
+    private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<PurchaseOrderDto>>> getAll(
@@ -41,7 +43,7 @@ public class PurchaseOrderController {
     public ResponseEntity<ApiResponse<PurchaseOrderDto>> create(
             @Valid @RequestBody CreatePurchaseOrderRequest request,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         PurchaseOrderDto order = purchaseOrderService.create(request, currentUserId, ipAddress);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(order, "Purchase order created successfully"));
@@ -52,19 +54,25 @@ public class PurchaseOrderController {
             @PathVariable Long id,
             @Valid @RequestBody UpdatePurchaseOrderRequest request,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         PurchaseOrderDto order = purchaseOrderService.update(id, request, currentUserId, ipAddress);
         return ResponseEntity.ok(ApiResponse.success(order, "Purchase order updated successfully"));
+    }
+
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<ApiResponse<PurchaseOrderDto>> cancel(@PathVariable Long id) {
+        PurchaseOrderDto order = purchaseOrderService.cancel(id);
+        return ResponseEntity.ok(ApiResponse.success(order, "Purchase order cancelled successfully"));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         purchaseOrderService.delete(id, currentUserId, ipAddress);
-        return ResponseEntity.ok(ApiResponse.success(null, "Purchase order cancelled successfully"));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

@@ -15,9 +15,9 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     boolean existsByName(String name);
 
-    Page<Category> findByStatus(Category.Status status, Pageable pageable);
+    Page<Category> findByIsActive(Boolean isActive, Pageable pageable);
 
     Page<Category> findByParentId(Long parentId, Pageable pageable);
 
-    long countByStatus(Category.Status status);
+    long countByIsActive(Boolean isActive);
 }

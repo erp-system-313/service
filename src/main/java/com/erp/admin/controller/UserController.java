@@ -73,6 +73,6 @@ public class UserController {
         Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         userService.delete(id, currentUserId, ipAddress);
-        return ResponseEntity.ok(ApiResponse.success(null, "User deactivated successfully"));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

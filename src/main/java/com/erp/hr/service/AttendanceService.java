@@ -56,25 +56,47 @@ public class AttendanceService {
     }
 
     @Transactional
-    public AttendanceDto clockIn(Long employeeId, Long currentUserId, String ipAddress) {
+    public AttendanceDto clockIn(Long employeeId, Long currentUserId, String ipAddress, boolean isAdmin) {
+        if (employeeId == null) {
+            throw new BusinessException("ATTENDANCE_003", "No employee linked to user. Please contact admin.");
+        }
+        
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee", employeeId));
 
         LocalDate today = LocalDate.now();
 
-        if (attendanceRepository.existsByEmployeeIdAndDate(employeeId, today)) {
-            throw new BusinessException("ATTENDANCE_001", "Already clocked in today");
+        var existingOpt = attendanceRepository.findByEmployeeIdAndDate(employeeId, today);
+        Attendance attendance;
+        
+        if (existingOpt.isPresent()) {
+            Attendance existing = existingOpt.get();
+            if (existing.getCheckIn() != null && existing.getCheckOut() == null) {
+                if (isAdmin) {
+                    throw new BusinessException("ATTENDANCE_007", "Employee " + employeeId + " is already clocked in today");
+                }
+                existing.setCheckIn(LocalDateTime.now());
+                attendance = attendanceRepository.save(existing);
+                log.info("Employee {} re-clocked in at {}", employeeId, attendance.getCheckIn());
+            } else if (existing.getCheckOut() != null) {
+                existing.setCheckIn(LocalDateTime.now());
+                existing.setCheckOut(null);
+                existing.setStatus(Attendance.AttendanceStatus.PRESENT);
+                attendance = attendanceRepository.save(existing);
+                log.info("Employee {} clocked in again at {}", employeeId, attendance.getCheckIn());
+            } else {
+                throw new BusinessException("ATTENDANCE_007", "Employee " + employeeId + " is already clocked in today");
+            }
+        } else {
+            attendance = Attendance.builder()
+                    .employee(employee)
+                    .date(today)
+                    .checkIn(LocalDateTime.now())
+                    .status(Attendance.AttendanceStatus.PRESENT)
+                    .build();
+            attendance = attendanceRepository.save(attendance);
+            log.info("Employee {} clocked in at {}", employeeId, attendance.getCheckIn());
         }
-
-        Attendance attendance = Attendance.builder()
-                .employee(employee)
-                .date(today)
-                .checkIn(LocalDateTime.now())
-                .status(Attendance.AttendanceStatus.PRESENT)
-                .build();
-
-        attendance = attendanceRepository.save(attendance);
-        log.info("Employee {} clocked in at {}", employeeId, attendance.getCheckIn());
 
         auditLogService.log(currentUserUtil.getCurrentUserId(), "CLOCK_IN", "Attendance", attendance.getId(), null, ipAddress, "Employee clocked in");
 
@@ -83,6 +105,10 @@ public class AttendanceService {
 
     @Transactional
     public AttendanceDto clockOut(Long employeeId, Long currentUserId, String ipAddress) {
+        if (employeeId == null) {
+            throw new BusinessException("ATTENDANCE_003", "No employee linked to user. Please contact admin.");
+        }
+        
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee", employeeId));
 
@@ -98,6 +124,33 @@ public class AttendanceService {
         auditLogService.log(currentUserUtil.getCurrentUserId(), "CLOCK_OUT", "Attendance", attendance.getId(), null, ipAddress, "Employee clocked out");
 
         return toDto(attendance);
+    }
+
+    public Long getEmployeeIdByUserId(Long userId) {
+        var employee = employeeRepository.findByUserId(userId);
+        if (employee.isPresent()) {
+            return employee.get().getId();
+        }
+        
+        throw new com.erp.common.exception.BusinessException("ATTENDANCE_005", 
+            "No employee linked to your account. Contact admin.");
+    }
+    
+    public Long getFirstActiveEmployeeId() {
+        // This method should not pick a random employee - throw exception instead
+        throw new com.erp.common.exception.BusinessException("ATTENDANCE_005", 
+            "No employee linked to your account. Contact admin.");
+    }
+
+    @Transactional
+    public void delete(Long id, Long currentUserId, String ipAddress) {
+        Attendance attendance = attendanceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Attendance", id));
+        
+        attendanceRepository.delete(attendance);
+        log.info("Deleted attendance record with id: {}", id);
+        
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "DELETE", "Attendance", id, null, ipAddress, "Attendance record deleted");
     }
 
     private AttendanceDto toDto(Attendance attendance) {

@@ -1,6 +1,7 @@
 package com.erp.hr.controller;
 
 import com.erp.auth.security.CurrentUserUtil;
+import com.erp.hr.dto.AttendanceDto;
 import com.erp.hr.dto.CreateEmployeeRequest;
 import com.erp.hr.dto.EmployeeDto;
 import com.erp.hr.dto.UpdateEmployeeRequest;
@@ -10,9 +11,12 @@ import com.erp.common.dto.PageResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/v1/employees")
@@ -67,6 +71,15 @@ public class EmployeeController {
         Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         employeeService.delete(id, currentUserId, ipAddress);
-        return ResponseEntity.ok(ApiResponse.success(null, "Employee terminated successfully"));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @GetMapping("/{id}/attendance")
+    public ResponseEntity<ApiResponse<PageResponse<AttendanceDto>>> getAttendance(
+            @PathVariable Long id,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) {
+        PageResponse<AttendanceDto> attendance = employeeService.getAttendance(id, dateFrom, dateTo);
+        return ResponseEntity.ok(ApiResponse.success(attendance));
     }
 }
