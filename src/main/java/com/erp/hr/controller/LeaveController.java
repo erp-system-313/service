@@ -38,7 +38,7 @@ public class LeaveController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String type) {
 
-        boolean isAdmin = isCurrentUserAdmin();
+        boolean isAdmin = currentUserUtil.isCurrentUserAdmin();
         PageResponse<LeaveRequestDto> requests = leaveService.findAll(page, size, employeeId, status, type, isAdmin);
         return ResponseEntity.ok(ApiResponse.success(requests));
     }
@@ -99,11 +99,4 @@ public class LeaveController {
         return ResponseEntity.ok(ApiResponse.success(balances));
     }
     
-    private boolean isCurrentUserAdmin() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getPrincipal() instanceof UserPrincipal) {
-            return "ADMIN".equals(((UserPrincipal) auth.getPrincipal()).getRole());
-        }
-        return false;
-    }
 }

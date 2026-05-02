@@ -100,7 +100,8 @@ public class AttendanceController {
             return employeeId;
         }
         
-        return attendanceService.getFirstActiveEmployeeId();
+        throw new com.erp.common.exception.BusinessException("ATTENDANCE_005", 
+            "No employee linked to your account. Contact admin.");
     }
 
     @DeleteMapping("/{id}")

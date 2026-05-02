@@ -132,7 +132,8 @@ public class AttendanceService {
             return employee.get().getId();
         }
         
-        return getFirstActiveEmployeeId();
+        throw new com.erp.common.exception.BusinessException("ATTENDANCE_005", 
+            "No employee linked to your account. Contact admin.");
     }
     
     public Long getFirstActiveEmployeeId() {
