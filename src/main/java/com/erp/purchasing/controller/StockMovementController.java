@@ -1,5 +1,6 @@
 package com.erp.purchasing.controller;
 
+import com.erp.auth.security.CurrentUserUtil;
 import com.erp.common.dto.ApiResponse;
 import com.erp.common.dto.PageResponse;
 import com.erp.purchasing.dto.CreateStockMovementRequest;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class StockMovementController {
 
     private final StockMovementService stockMovementService;
+    private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<StockMovementDto>>> getAll(
@@ -40,7 +42,7 @@ public class StockMovementController {
     public ResponseEntity<ApiResponse<StockMovementDto>> create(
             @Valid @RequestBody CreateStockMovementRequest request,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         StockMovementDto movement = stockMovementService.create(request, currentUserId, ipAddress);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(movement, "Stock movement created successfully"));

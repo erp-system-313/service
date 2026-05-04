@@ -26,7 +26,7 @@ public class InvoiceDto {
     private InvoiceStatus status;
     private BigDecimal subtotal;
     private BigDecimal taxAmount;
-    private BigDecimal total;
+    private BigDecimal totalAmount;
     private BigDecimal paidAmount;
     private BigDecimal balance;
     private List<PaymentDto> payments;
@@ -44,7 +44,7 @@ public class InvoiceDto {
                 .status(invoice.getStatus())
                 .subtotal(invoice.getSubtotal())
                 .taxAmount(invoice.getTaxAmount())
-                .total(invoice.getTotal())
+                .totalAmount(invoice.getTotalAmount())
                 .paidAmount(invoice.getPaidAmount())
                 .balance(invoice.getBalance())
                 .createdAt(invoice.getCreatedAt())

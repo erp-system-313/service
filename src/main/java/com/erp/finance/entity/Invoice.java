@@ -46,13 +46,13 @@ public class Invoice {
 
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal subtotal;
-
+    
     @Column(name = "tax_amount", precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal taxAmount = BigDecimal.ZERO;
-
+    
     @Column(name = "total_amount", nullable = false, precision = 15, scale = 2)
-    private BigDecimal total;
+    private BigDecimal totalAmount;
 
     @Column(name = "paid_amount", precision = 15, scale = 2)
     @Builder.Default
@@ -88,6 +88,10 @@ public class Invoice {
     }
 
     public BigDecimal getBalance() {
-        return total.subtract(paidAmount);
+        return totalAmount.subtract(paidAmount);
+    }
+
+    public BigDecimal getTotal() {
+        return totalAmount;
     }
 }

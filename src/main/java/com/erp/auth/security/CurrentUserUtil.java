@@ -34,4 +34,12 @@ public class CurrentUserUtil {
         
         return authentication.getName();
     }
+
+    public boolean isCurrentUserAdmin() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof UserPrincipal) {
+            return "ADMIN".equals(((UserPrincipal) auth.getPrincipal()).getRole());
+        }
+        return false;
+    }
 }

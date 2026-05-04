@@ -31,10 +31,9 @@ public class Category {
     @Column(name = "sort_order")
     private Integer sortOrder;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(name = "is_active", nullable = false)
     @Builder.Default
-    private Status status = Status.ACTIVE;
+    private Boolean isActive = true;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -43,8 +42,4 @@ public class Category {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    public enum Status {
-        ACTIVE, INACTIVE
-    }
 }

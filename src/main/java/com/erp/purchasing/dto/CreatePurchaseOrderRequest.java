@@ -19,10 +19,10 @@ public class CreatePurchaseOrderRequest {
     @NotNull(message = "Supplier ID is required")
     private Long supplierId;
 
-    @NotNull(message = "Date is required")
-    private LocalDate date;
+        @NotNull(message = "Order date is required")
+    private LocalDate orderDate;
 
-    private LocalDate expectedDate;
+    private LocalDate deliveryDate;
 
     private String notes;
 

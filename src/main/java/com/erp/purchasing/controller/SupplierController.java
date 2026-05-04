@@ -1,5 +1,6 @@
 package com.erp.purchasing.controller;
 
+import com.erp.auth.security.CurrentUserUtil;
 import com.erp.common.dto.ApiResponse;
 import com.erp.common.dto.PageResponse;
 import com.erp.purchasing.dto.CreateSupplierRequest;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class SupplierController {
 
     private final SupplierService supplierService;
+    private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<SupplierDto>>> getAll(
@@ -40,7 +42,7 @@ public class SupplierController {
     public ResponseEntity<ApiResponse<SupplierDto>> create(
             @Valid @RequestBody CreateSupplierRequest request,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         SupplierDto supplier = supplierService.create(request, currentUserId, ipAddress);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(supplier, "Supplier created successfully"));
@@ -51,7 +53,7 @@ public class SupplierController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateSupplierRequest request,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         SupplierDto supplier = supplierService.update(id, request, currentUserId, ipAddress);
         return ResponseEntity.ok(ApiResponse.success(supplier, "Supplier updated successfully"));
@@ -61,9 +63,9 @@ public class SupplierController {
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         supplierService.delete(id, currentUserId, ipAddress);
-        return ResponseEntity.ok(ApiResponse.success(null, "Supplier deactivated successfully"));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

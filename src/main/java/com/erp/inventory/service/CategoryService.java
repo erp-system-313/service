@@ -34,8 +34,8 @@ public class CategoryService {
 
         Page<Category> categories;
         if (status != null) {
-            Category.Status categoryStatus = Category.Status.valueOf(status.toUpperCase());
-            categories = categoryRepository.findByStatus(categoryStatus, pageable);
+            Boolean isActive = status.toUpperCase().equals("ACTIVE");
+            categories = categoryRepository.findByIsActive(isActive, pageable);
         } else {
             categories = categoryRepository.findAll(pageable);
         }
@@ -60,7 +60,7 @@ public class CategoryService {
                 .description(request.getDescription())
                 .parentId(request.getParentId())
                 .sortOrder(request.getSortOrder())
-                .status(Category.Status.ACTIVE)
+                .isActive(true)
                 .build();
 
         category = categoryRepository.save(category);
@@ -100,7 +100,7 @@ public class CategoryService {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category", id));
 
-        category.setStatus(Category.Status.INACTIVE);
+        category.setIsActive(false);
         categoryRepository.save(category);
         log.info("Deactivated category with id: {}", id);
 
@@ -108,7 +108,7 @@ public class CategoryService {
     }
 
     public long countActive() {
-        return categoryRepository.countByStatus(Category.Status.ACTIVE);
+        return categoryRepository.countByIsActive(true);
     }
 
     private CategoryDto toDto(Category category) {
@@ -118,7 +118,7 @@ public class CategoryService {
                 .description(category.getDescription())
                 .parentId(category.getParentId())
                 .sortOrder(category.getSortOrder())
-                .status(category.getStatus())
+                .isActive(category.getIsActive())
                 .createdAt(category.getCreatedAt())
                 .updatedAt(category.getUpdatedAt())
                 .build();

@@ -45,18 +45,18 @@ public class Product {
     @Column(name = "cost_price", precision = 10, scale = 2)
     private BigDecimal costPrice;
 
-    @Column(name = "reorder_level")
-    private Integer reorderLevel;
-
+    @Column(name = "reorder_point")
+    private Integer reorderPoint;
+    
     @Column(name = "reorder_quantity")
     private Integer reorderQuantity;
-
+    
     @Column(name = "unit_of_measure", length = 50)
     private String unitOfMeasure;
-
-    @Column(name = "current_stock")
+    
+    @Column(name = "stock_quantity")
     @Builder.Default
-    private Integer currentStock = 0;
+    private Integer stockQuantity = 0;
 
     @Column(name = "image_url")
     private String imageUrl;

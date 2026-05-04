@@ -1,5 +1,6 @@
 package com.erp.inventory.controller;
 
+import com.erp.auth.security.CurrentUserUtil;
 import com.erp.common.dto.ApiResponse;
 import com.erp.common.dto.PageResponse;
 import com.erp.inventory.dto.CategoryDto;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class CategoryController {
 
     private final CategoryService categoryService;
+    private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<CategoryDto>>> getAll(
@@ -41,7 +43,7 @@ public class CategoryController {
     public ResponseEntity<ApiResponse<CategoryDto>> create(
             @Valid @RequestBody CreateCategoryRequest request,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         CategoryDto category = categoryService.create(request, currentUserId, ipAddress);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(category, "Category created successfully"));
@@ -52,7 +54,7 @@ public class CategoryController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateCategoryRequest request,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         CategoryDto category = categoryService.update(id, request, currentUserId, ipAddress);
         return ResponseEntity.ok(ApiResponse.success(category, "Category updated successfully"));
@@ -62,9 +64,9 @@ public class CategoryController {
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
-        Long currentUserId = 1L;
+        Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         categoryService.delete(id, currentUserId, ipAddress);
-        return ResponseEntity.ok(ApiResponse.success(null, "Category deactivated successfully"));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

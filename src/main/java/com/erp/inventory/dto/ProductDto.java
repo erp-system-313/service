@@ -25,10 +25,10 @@ public class ProductDto {
     private String supplierName;
     private BigDecimal unitPrice;
     private BigDecimal costPrice;
-    private Integer reorderLevel;
+    private Integer reorderPoint;
     private Integer reorderQuantity;
     private String unitOfMeasure;
-    private Integer currentStock;
+    private Integer stockQuantity;
     private String imageUrl;
     private Product.Status status;
     private LocalDateTime createdAt;

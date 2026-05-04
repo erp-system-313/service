@@ -79,6 +79,6 @@ public class SalesOrderController {
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         salesOrderService.delete(id);
-        return ResponseEntity.ok(ApiResponse.success(null, "Sales order deleted successfully"));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

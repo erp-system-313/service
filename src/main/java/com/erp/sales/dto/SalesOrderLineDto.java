@@ -18,5 +18,5 @@ public class SalesOrderLineDto {
     private String productSku;
     private BigDecimal quantity;
     private BigDecimal unitPrice;
-    private BigDecimal lineTotal;
+        private BigDecimal lineTotal;
 }

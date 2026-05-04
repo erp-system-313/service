@@ -16,9 +16,12 @@ import java.util.List;
 @Builder
 public class UpdatePurchaseOrderRequest {
     private Long supplierId;
-    private LocalDate date;
+    private LocalDate orderDate;
+
     private PurchaseOrder.Status status;
-    private LocalDate expectedDate;
+
+    private LocalDate deliveryDate;
+
     private LocalDate receivedDate;
     private String notes;
     private List<UpdatePurchaseOrderLineRequest> lines;

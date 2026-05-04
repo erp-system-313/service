@@ -18,7 +18,7 @@ public class CategoryDto {
     private String description;
     private Long parentId;
     private Integer sortOrder;
-    private Category.Status status;
+    private Boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
