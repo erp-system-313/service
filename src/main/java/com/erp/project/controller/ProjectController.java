@@ -47,6 +47,26 @@ public class ProjectController {
                 .body(ApiResponse.success(project, "Project created successfully"));
     }
 
+    @PatchMapping("/{id}/state")
+    public ResponseEntity<ApiResponse<ProjectDto>> updateState(
+            @PathVariable Long id,
+            @RequestBody ProjectState state) {
+        ProjectDto project = projectService.updateState(id, state);
+        return ResponseEntity.ok(ApiResponse.success(project, "Project state updated"));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+        projectService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/stages")
+    public ResponseEntity<ApiResponse<List<TaskStageDto>>> getStages(@PathVariable Long id) {
+        List<TaskStageDto> stages = projectService.getStages(id);
+        return ResponseEntity.ok(ApiResponse.success(stages));
+    }
+
     @GetMapping("/{id}/tasks")
     public ResponseEntity<ApiResponse<List<TaskDto>>> getTasks(@PathVariable Long id) {
         List<TaskDto> tasks = projectService.getTasks(id);

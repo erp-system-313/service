@@ -69,6 +69,28 @@ public class ProjectService {
         return ProjectDto.fromEntity(project);
     }
 
+    @Transactional
+    @Auditable(action = "UPDATE", entityType = "PROJECT")
+    public ProjectDto updateState(Long id, ProjectState state) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Project", id));
+        project.setState(state);
+        project = projectRepository.save(project);
+        log.info("Updated project {} state to {}", id, state);
+        return ProjectDto.fromEntity(project);
+    }
+
+    @Transactional
+    @Auditable(action = "DELETE", entityType = "PROJECT")
+    public void delete(Long id) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Project", id));
+        taskStageRepository.findByProjectIdOrderBySequence(id).forEach(taskStageRepository::delete);
+        taskRepository.findByProjectId(id).forEach(taskRepository::delete);
+        projectRepository.delete(project);
+        log.info("Deleted project with id: {}", id);
+    }
+
     public List<TaskDto> getTasks(Long projectId) {
         if (!projectRepository.existsById(projectId)) {
             throw new ResourceNotFoundException("Project", projectId);
