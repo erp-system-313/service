@@ -85,8 +85,8 @@ public class ProjectService {
     public void delete(Long id) {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Project", id));
-        taskStageRepository.findByProjectIdOrderBySequence(id).forEach(taskStageRepository::delete);
         taskRepository.findByProjectId(id).forEach(taskRepository::delete);
+        taskStageRepository.findByProjectIdOrderBySequence(id).forEach(taskStageRepository::delete);
         projectRepository.delete(project);
         log.info("Deleted project with id: {}", id);
     }
