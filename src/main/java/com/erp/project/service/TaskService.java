@@ -31,7 +31,7 @@ public class TaskService {
             throw new ResourceNotFoundException("Project", projectId);
         }
 
-        if (!taskStageRepository.existsById(request.getStageId())) {
+        if (request.getStageId() != null && !taskStageRepository.existsById(request.getStageId())) {
             throw new ResourceNotFoundException("TaskStage", request.getStageId());
         }
 

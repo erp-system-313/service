@@ -24,7 +24,7 @@ public class CreateTaskRequest {
 
     private Long assignedTo;
 
-    @NotNull(message = "Stage ID is required")
+    @Positive(message = "Stage ID must be positive")
     private Long stageId;
 
     private LocalDate dueDate;
