@@ -38,7 +38,8 @@ public class ProjectService {
 
     public PageResponse<ProjectDto> findAll(int page, int size, ProjectState state, String search) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<Project> projects = projectRepository.findWithFilters(state, search, pageable);
+        String searchPattern = search != null ? "%" + search + "%" : null;
+        Page<Project> projects = projectRepository.findWithFilters(state, searchPattern, pageable);
         return PageResponse.from(projects.map(ProjectDto::fromEntity));
     }
 
