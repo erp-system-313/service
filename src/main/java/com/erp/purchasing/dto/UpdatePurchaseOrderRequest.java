@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -16,11 +17,11 @@ import java.util.List;
 @Builder
 public class UpdatePurchaseOrderRequest {
     private Long supplierId;
-    private LocalDate orderDate;
+    private LocalDateTime orderDate;
 
     private PurchaseOrder.Status status;
 
-    private LocalDate deliveryDate;
+    private LocalDate expectedDate;
 
     private LocalDate receivedDate;
     private String notes;

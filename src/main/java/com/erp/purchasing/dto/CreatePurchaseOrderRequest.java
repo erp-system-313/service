@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -20,9 +21,9 @@ public class CreatePurchaseOrderRequest {
     private Long supplierId;
 
         @NotNull(message = "Order date is required")
-    private LocalDate orderDate;
+    private LocalDateTime orderDate;
 
-    private LocalDate deliveryDate;
+    private LocalDate expectedDate;
 
     private String notes;
 

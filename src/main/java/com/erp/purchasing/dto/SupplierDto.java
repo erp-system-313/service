@@ -1,6 +1,5 @@
 package com.erp.purchasing.dto;
 
-import com.erp.purchasing.entity.Supplier;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,7 +23,7 @@ public class SupplierDto {
     private String taxId;
     private Integer paymentTerms;
     private BigDecimal totalPurchased;
-    private Supplier.Status status;
+    private Boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
