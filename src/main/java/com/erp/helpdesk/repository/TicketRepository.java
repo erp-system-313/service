@@ -24,6 +24,8 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     
     Page<Ticket> findByAssignedToId(Long assignedToId, Pageable pageable);
     
+    long countByStatus(Ticket.TicketStatus status);
+    
     @Query("SELECT t FROM Ticket t WHERE " +
            "(:status IS NULL OR t.status = :status) AND " +
            "(:priority IS NULL OR t.priority = :priority) AND " +

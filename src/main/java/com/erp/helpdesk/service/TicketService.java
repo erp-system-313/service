@@ -11,7 +11,9 @@ import com.erp.helpdesk.dto.UpdateTicketRequest;
 import com.erp.helpdesk.entity.Ticket;
 import com.erp.helpdesk.repository.TicketCommentRepository;
 import com.erp.helpdesk.repository.TicketRepository;
+import com.erp.sales.entity.Customer;
 import com.erp.sales.repository.CustomerRepository;
+import com.erp.hr.entity.Employee;
 import com.erp.hr.repository.EmployeeRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -76,14 +78,19 @@ public class TicketService {
             throw new BusinessException("TICKET_002", "Employee not found");
         }
 
-        Ticket ticket = Ticket.builder()
-                .title(request.getTitle())
-                .description(request.getDescription())
-                .customerId(request.getCustomerId())
-                .priority(request.getPriority())
-                .assignedTo(request.getAssignedTo() != null ? 
-                        employeeRepository.getReferenceById(request.getAssignedTo()) : null)
-                .build();
+        Ticket ticket = new Ticket();
+        ticket.setTitle(request.getTitle());
+        ticket.setDescription(request.getDescription());
+        // Note: customer_id is set via the customer relationship, not directly
+        // We'll set the customer entity instead of customerId
+        if (request.getCustomerId() != null) {
+            Customer customer = new Customer();
+            customer.setId(request.getCustomerId());
+            ticket.setCustomer(customer);
+        }
+        ticket.setPriority(request.getPriority());
+        ticket.setAssignedTo(request.getAssignedTo() != null ? 
+                employeeRepository.getReferenceById(request.getAssignedTo()) : null);
 
         ticket = ticketRepository.save(ticket);
         log.info("Created ticket with id: {}", ticket.getId());

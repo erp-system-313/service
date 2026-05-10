@@ -6,6 +6,7 @@ import com.erp.common.dto.PageResponse;
 import com.erp.helpdesk.dto.CreateTicketRequest;
 import com.erp.helpdesk.dto.TicketDto;
 import com.erp.helpdesk.dto.UpdateTicketRequest;
+import com.erp.helpdesk.entity.Ticket;
 import com.erp.helpdesk.service.TicketService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -37,10 +38,10 @@ public class TicketController {
             @RequestParam(required = false) Long assignedToId) {
 
         // Convert string parameters to enums
-        TicketService.TicketStatus ticketStatus = status != null ? 
-                TicketService.TicketStatus.valueOf(status.toUpperCase()) : null;
-        TicketService.TicketPriority ticketPriority = priority != null ? 
-                TicketService.TicketPriority.valueOf(priority.toUpperCase()) : null;
+        Ticket.TicketStatus ticketStatus = status != null ? 
+                Ticket.TicketStatus.valueOf(status.toUpperCase()) : null;
+        Ticket.TicketPriority ticketPriority = priority != null ? 
+                Ticket.TicketPriority.valueOf(priority.toUpperCase()) : null;
 
         PageResponse<TicketDto> tickets = ticketService.findAll(page, size, ticketStatus, ticketPriority, customerId, assignedToId);
         return ResponseEntity.ok(ApiResponse.success(tickets));

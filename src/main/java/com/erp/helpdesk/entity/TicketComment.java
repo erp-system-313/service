@@ -36,6 +36,7 @@ public class TicketComment {
     private String message;
 
     @Column(name = "is_internal")
+    @Builder.Default
     private Boolean isInternal = false;
 
     @CreationTimestamp
