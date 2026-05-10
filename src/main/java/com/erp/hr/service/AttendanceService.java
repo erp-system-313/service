@@ -32,16 +32,16 @@ public class AttendanceService {
     private final AuditLogService auditLogService;
     private final CurrentUserUtil currentUserUtil;
 
-    public PageResponse<AttendanceDto> findAll(int page, int size, Long employeeId, LocalDate date) {
+    public PageResponse<AttendanceDto> findAll(int page, int size, Long employeeId, LocalDate startDate, LocalDate endDate) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
 
         Page<Attendance> attendances;
-        if (employeeId != null && date != null) {
-            attendances = attendanceRepository.findByEmployeeIdAndDateRange(employeeId, date, date, pageable);
+        if (employeeId != null && startDate != null && endDate != null) {
+            attendances = attendanceRepository.findByEmployeeIdAndDateRange(employeeId, startDate, endDate, pageable);
         } else if (employeeId != null) {
             attendances = attendanceRepository.findByEmployeeId(employeeId, pageable);
-        } else if (date != null) {
-            attendances = attendanceRepository.findByDate(date, pageable);
+        } else if (startDate != null && endDate != null) {
+            attendances = attendanceRepository.findByDateRange(startDate, endDate, pageable);
         } else {
             attendances = attendanceRepository.findAll(pageable);
         }

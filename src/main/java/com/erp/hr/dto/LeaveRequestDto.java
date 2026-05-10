@@ -31,6 +31,6 @@ public class LeaveRequestDto {
     private LocalDateTime updatedAt;
 
     public enum LeaveType {
-        ANNUAL, SICK, PERSONAL, UNPAID, MATERNITY, PATERNITY
+        ANNUAL, SICK, PERSONAL, UNPAID
     }
 }

@@ -34,6 +34,9 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     @Query("SELECT a FROM Attendance a WHERE a.date = :date")
     Page<Attendance> findByDate(@Param("date") LocalDate date, Pageable pageable);
 
+    @Query("SELECT a FROM Attendance a WHERE a.date BETWEEN :startDate AND :endDate")
+    Page<Attendance> findByDateRange(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate, Pageable pageable);
+
     boolean existsByEmployeeIdAndDate(Long employeeId, LocalDate date);
 
     // New methods accepting Employee entity

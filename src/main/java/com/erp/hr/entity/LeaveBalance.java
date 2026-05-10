@@ -34,7 +34,7 @@ public class LeaveBalance {
     @Builder.Default
     private int usedDays = 0;
 
-    @Column(name = "year", nullable = false)
+    @Column(name = "\"year\"", nullable = false)
     private int year;
 
     public int getRemainingDays() {

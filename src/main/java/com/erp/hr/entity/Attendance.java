@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "attendance")
+@Table(name = "attendances")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -46,6 +46,6 @@ public class Attendance {
     private LocalDateTime createdAt;
 
     public enum AttendanceStatus {
-        PRESENT, ABSENT, LATE, LEAVE, HALF_DAY
+        PRESENT, ABSENT, LATE, LEAVE
     }
 }
