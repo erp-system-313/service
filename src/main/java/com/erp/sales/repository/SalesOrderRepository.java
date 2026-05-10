@@ -54,4 +54,9 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
            "GROUP BY sol.product.id, sol.product.name " +
            "ORDER BY totalQty DESC")
     List<Object[]> findTopSellingProducts(@Param("status") OrderStatus status, @Param("startDate") LocalDateTime startDate, Pageable pageable);
+
+    @Query("SELECT s FROM SalesOrder s WHERE " +
+           "LOWER(s.orderNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(s.customer.name) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<SalesOrder> search(@Param("search") String search, Pageable pageable);
 }
