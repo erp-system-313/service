@@ -8,6 +8,9 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * Entity representing a comment on a ticket
+ */
 @Entity
 @Table(name = "helpdesk_comments")
 @Getter
