@@ -22,6 +22,7 @@ public class JournalEntryDto {
     private LocalDate date;
     private String description;
     private String reference;
+    private String journalType;
     private JournalEntryStatus status;
     private Long createdById;
     private String createdByName;
@@ -36,6 +37,7 @@ public class JournalEntryDto {
                 .date(entry.getDate())
                 .description(entry.getDescription())
                 .reference(entry.getReference())
+                .journalType(entry.getJournalType())
                 .status(entry.getStatus())
                 .createdById(entry.getCreatedBy() != null ? entry.getCreatedBy().getId() : null)
                 .createdByName(entry.getCreatedBy() != null ? entry.getCreatedBy().getEmail() : null)

@@ -26,6 +26,8 @@ public class CreateJournalEntryRequest {
 
     private String reference;
 
+    private String journalType;
+
     @NotEmpty(message = "At least one journal entry line is required")
     @Valid
     private List<JournalEntryLineRequest> lines;

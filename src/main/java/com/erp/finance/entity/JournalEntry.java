@@ -30,6 +30,10 @@ public class JournalEntry {
     @Column(nullable = false)
     private LocalDate date;
 
+    @Column(name = "journal_type", length = 20)
+    @Builder.Default
+    private String journalType = "MISC";
+
     @Column(nullable = false, length = 500)
     private String description;
 

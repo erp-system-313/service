@@ -26,15 +26,17 @@ public class InvoiceDto {
     private InvoiceStatus status;
     private BigDecimal subtotal;
     private BigDecimal taxAmount;
-    private BigDecimal totalAmount;
+    private BigDecimal total;
     private BigDecimal paidAmount;
     private BigDecimal balance;
+    private Long salesOrderId;
+    private List<InvoiceLineDto> lines;
     private List<PaymentDto> payments;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public static InvoiceDto fromEntity(Invoice invoice) {
-        return InvoiceDto.builder()
+        InvoiceDto dto = InvoiceDto.builder()
                 .id(invoice.getId())
                 .invoiceNumber(invoice.getInvoiceNumber())
                 .customerId(invoice.getCustomer() != null ? invoice.getCustomer().getId() : null)
@@ -44,11 +46,18 @@ public class InvoiceDto {
                 .status(invoice.getStatus())
                 .subtotal(invoice.getSubtotal())
                 .taxAmount(invoice.getTaxAmount())
-                .totalAmount(invoice.getTotalAmount())
+                .total(invoice.getTotal())
                 .paidAmount(invoice.getPaidAmount())
                 .balance(invoice.getBalance())
+                .salesOrderId(invoice.getSalesOrder() != null ? invoice.getSalesOrder().getId() : null)
                 .createdAt(invoice.getCreatedAt())
                 .updatedAt(invoice.getUpdatedAt())
                 .build();
+        if (invoice.getLines() != null) {
+            dto.setLines(invoice.getLines().stream()
+                    .map(InvoiceLineDto::fromEntity)
+                    .toList());
+        }
+        return dto;
     }
 }

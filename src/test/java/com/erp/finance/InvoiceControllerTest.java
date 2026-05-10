@@ -18,7 +18,7 @@ public class InvoiceControllerTest {
     @Test public void testGet() { check("/api/v1/invoices/1"); }
     @Test public void testGetPdf() { check("/api/v1/invoices/1/pdf"); }
     @Test public void testCreate() { post("/api/v1/invoices"); }
-    @Test public void testAddPayment() { put("/api/v1/invoices/1/add-payment"); }
+    @Test public void testAddPayment() { post("/api/v1/invoices/1/payments"); }
     @Test public void testSend() { put("/api/v1/invoices/1/send"); }
     @Test public void testCancel() { put("/api/v1/invoices/1/cancel"); }
     @Test public void testNoAuth() { assertThat(noauth("/api/v1/invoices").getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN); }
