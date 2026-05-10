@@ -11,10 +11,12 @@ import com.erp.inventory.service.ProductService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
@@ -27,10 +29,11 @@ public class ProductController {
     public ResponseEntity<ApiResponse<PageResponse<ProductDto>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String search,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) String status) {
 
-        PageResponse<ProductDto> products = productService.findAll(page, size, categoryId, status);
+        PageResponse<ProductDto> products = productService.findAll(page, size, search, categoryId, status);
         return ResponseEntity.ok(ApiResponse.success(products));
     }
 

@@ -33,7 +33,7 @@ public class UpdateProductRequest {
     private BigDecimal costPrice;
 
         @Min(value = 0, message = "Reorder point must be non-negative")
-        private Integer reorderPoint;
+        private Integer reorderLevel;
 
     private Integer reorderQuantity;
 
