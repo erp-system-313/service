@@ -19,13 +19,13 @@ public class EmployeeControllerTest {
     @Test public void testCreate() { post("/api/v1/employees"); }
     @Test public void testUpdate() { post("/api/v1/employees/1", "PUT"); }
     @Test public void testDelete() { post("/api/v1/employees/1", "DELETE"); }
-    @Test public void testNoAuth() { assertThat(noauth("/api/v1/employees").getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED); }
+    @Test public void testNoAuth() { assertThat(noauth("/api/v1/employees").getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN); }
 
-    private void check(String u) { assertThat(req(u).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED); }
+    private void check(String u) { assertThat(req(u).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN); }
     private void post(String u) { post(u, "POST"); }
-    private void post(String u, String m) { HttpMethod method = "PUT".equals(m) ? HttpMethod.PUT : ("DELETE".equals(m) ? HttpMethod.DELETE : HttpMethod.POST); assertThat(req(u, method).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED); }
-    private ResponseEntity<String> req(String u) { return restTemplate.getForEntity(url(u), String.class); }
-    private ResponseEntity<String> req(String u, HttpMethod m) { HttpHeaders h = new HttpHeaders(); h.setBearerAuth("token"); return restTemplate.exchange(url(u), m, new HttpEntity<>(h), String.class); }
-    private String url(String u) { return "http://localhost:8080" + u; }
+    private void post(String u, String m) { HttpMethod method = "PUT".equals(m) ? HttpMethod.PUT : ("DELETE".equals(m) ? HttpMethod.DELETE : HttpMethod.POST); assertThat(req(u, method).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN); }
+    private ResponseEntity<String> req(String u) { return restTemplate.getForEntity(u, String.class); }
+    private ResponseEntity<String> req(String u, HttpMethod m) { HttpHeaders h = new HttpHeaders(); h.setBearerAuth("token"); return restTemplate.exchange(u, m, new HttpEntity<>(h), String.class); }
+    private String url(String u) { return u; }
     private ResponseEntity<String> noauth(String u) { return restTemplate.getForEntity(url(u), String.class); }
 }

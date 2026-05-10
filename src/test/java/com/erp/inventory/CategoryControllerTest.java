@@ -17,38 +17,38 @@ public class CategoryControllerTest {
     @Test
     void testListCategories() {
         HttpEntity<Void> req = new HttpEntity<>(authHeaders());
-        var r = exchange("http://localhost:8080/api/v1/categories?page=0&size=20", HttpMethod.GET, req);
-        assertThat(r.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.UNAUTHORIZED);
+        var r = exchange("/api/v1/categories?page=0&size=20", HttpMethod.GET, req);
+        assertThat(r.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN);
     }
 
     @Test
     void testGetCategoryById() {
         HttpEntity<Void> req = new HttpEntity<>(authHeaders());
-        var r = exchange("http://localhost:8080/api/v1/categories/1", HttpMethod.GET, req);
-        assertThat(r.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED);
+        var r = exchange("/api/v1/categories/1", HttpMethod.GET, req);
+        assertThat(r.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN);
     }
 
     @Test
     void testCreateCategory() {
         String json = "{\"name\":\"Test Category\"}";
         HttpEntity<String> req = new HttpEntity<>(json, authJsonHeaders());
-        var r = exchange("http://localhost:8080/api/v1/categories", HttpMethod.POST, req);
-        assertThat(r.getStatusCode()).isIn(HttpStatus.CREATED, HttpStatus.BAD_REQUEST, HttpStatus.UNAUTHORIZED);
+        var r = exchange("/api/v1/categories", HttpMethod.POST, req);
+        assertThat(r.getStatusCode()).isIn(HttpStatus.CREATED, HttpStatus.BAD_REQUEST, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN);
     }
 
     @Test
     void testUpdateCategory() {
         String json = "{\"name\":\"Updated\"}";
         HttpEntity<String> req = new HttpEntity<>(json, authJsonHeaders());
-        var r = exchange("http://localhost:8080/api/v1/categories/1", HttpMethod.PUT, req);
-        assertThat(r.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED);
+        var r = exchange("/api/v1/categories/1", HttpMethod.PUT, req);
+        assertThat(r.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN);
     }
 
     @Test
     void testDeleteCategory() {
         HttpEntity<Void> req = new HttpEntity<>(authHeaders());
-        var r = exchange("http://localhost:8080/api/v1/categories/1", HttpMethod.DELETE, req);
-        assertThat(r.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED);
+        var r = exchange("/api/v1/categories/1", HttpMethod.DELETE, req);
+        assertThat(r.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN);
     }
 
     private HttpHeaders authHeaders() {

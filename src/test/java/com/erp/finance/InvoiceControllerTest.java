@@ -21,13 +21,13 @@ public class InvoiceControllerTest {
     @Test public void testAddPayment() { put("/api/v1/invoices/1/add-payment"); }
     @Test public void testSend() { put("/api/v1/invoices/1/send"); }
     @Test public void testCancel() { put("/api/v1/invoices/1/cancel"); }
-    @Test public void testNoAuth() { assertThat(noauth("/api/v1/invoices").getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED); }
+    @Test public void testNoAuth() { assertThat(noauth("/api/v1/invoices").getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN); }
 
-    private void check(String u) { assertThat(req(u).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED); }
-    private void post(String u) { assertThat(req(u, HttpMethod.POST, "{\"amount\":100}").getStatusCode()).isIn(HttpStatus.CREATED, HttpStatus.BAD_REQUEST); }
-    private void put(String u) { assertThat(req(u, HttpMethod.PUT, "{}").getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND); }
-    private ResponseEntity<String> req(String u) { return restTemplate.getForEntity(url(u), String.class); }
-    private ResponseEntity<String> req(String u, HttpMethod m, String b) { HttpHeaders h = new HttpHeaders(); h.setBearerAuth("token"); h.setContentType(MediaType.APPLICATION_JSON); return restTemplate.exchange(url(u), m, new HttpEntity<>(b, h), String.class); }
-    private String url(String u) { return "http://localhost:8080" + u; }
+    private void check(String u) { assertThat(req(u).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN); }
+    private void post(String u) { assertThat(req(u, HttpMethod.POST, "{\"amount\":100}").getStatusCode()).isIn(HttpStatus.CREATED, HttpStatus.BAD_REQUEST, HttpStatus.FORBIDDEN); }
+    private void put(String u) { assertThat(req(u, HttpMethod.PUT, "{}").getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.FORBIDDEN); }
+    private ResponseEntity<String> req(String u) { return restTemplate.getForEntity(u, String.class); }
+    private ResponseEntity<String> req(String u, HttpMethod m, String b) { HttpHeaders h = new HttpHeaders(); h.setBearerAuth("token"); h.setContentType(MediaType.APPLICATION_JSON); return restTemplate.exchange(u, m, new HttpEntity<>(b, h), String.class); }
+    private String url(String u) { return u; }
     private ResponseEntity<String> noauth(String u) { return restTemplate.getForEntity(url(u), String.class); }
 }

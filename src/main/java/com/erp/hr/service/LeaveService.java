@@ -203,11 +203,9 @@ public class LeaveService {
         if (employee.isPresent()) {
             return employee.get().getId();
         }
-        var anyActive = employeeRepository.findByStatus(Employee.EmployeeStatus.ACTIVE, PageRequest.of(0, 1));
-        if (!anyActive.isEmpty()) {
-            return anyActive.getContent().get(0).getId();
-        }
-        return null;
+        
+        throw new com.erp.common.exception.BusinessException("LEAVE_001", 
+            "No employee linked to your account. Contact admin.");
     }
 
     private LeaveRequestDto toDto(LeaveRequest leaveRequest) {
