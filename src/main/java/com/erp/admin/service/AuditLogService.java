@@ -4,6 +4,7 @@ import com.erp.admin.dto.AuditLogDto;
 import com.erp.admin.entity.AuditLog;
 import com.erp.admin.entity.User;
 import com.erp.admin.repository.AuditLogRepository;
+import com.erp.admin.repository.UserRepository;
 import com.erp.common.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,10 +26,17 @@ import java.util.Map;
 public class AuditLogService {
 
     private final AuditLogRepository auditLogRepository;
+    private final UserRepository userRepository;
 
     public PageResponse<AuditLogDto> findAll(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<AuditLog> auditLogs = auditLogRepository.findAll(pageable);
+        return PageResponse.from(auditLogs.map(this::toDto));
+    }
+
+    public PageResponse<AuditLogDto> findByAction(String action, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<AuditLog> auditLogs = auditLogRepository.findByAction(action, pageable);
         return PageResponse.from(auditLogs.map(this::toDto));
     }
 
@@ -54,7 +62,7 @@ public class AuditLogService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void log(Long userId, String action, String entityType, Long entityId, Map<String, Object> changes, String ipAddress, String details) {
         try {
-            User user = userId != null ? auditLogRepository.findByUserId(userId).orElse(null) : null;
+            User user = userId != null ? userRepository.findById(userId).orElse(null) : null;
             AuditLog auditLog = AuditLog.builder()
                     .user(user)
                     .action(action)
