@@ -22,7 +22,7 @@ public class DashboardControllerTest {
         headers.setBearerAuth("valid-token");
         HttpEntity<Void> request = new HttpEntity<>(headers);
         ResponseEntity<String> response = restTemplate.exchange(
-            "http://localhost:8080/api/v1/dashboard/stats",
+            "/api/v1/dashboard/stats",
             HttpMethod.GET, request, String.class);
         assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.UNAUTHORIZED);
     }
@@ -31,7 +31,7 @@ public class DashboardControllerTest {
     void testGetStats_NoAuth() {
         HttpEntity<Void> request = new HttpEntity<>(new HttpHeaders());
         ResponseEntity<String> response = restTemplate.exchange(
-            "http://localhost:8080/api/v1/dashboard/stats",
+            "/api/v1/dashboard/stats",
             HttpMethod.GET, request, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
