@@ -24,9 +24,9 @@ public class UserControllerTest {
         headers.setBearerAuth("valid-token");
         HttpEntity<Void> request = new HttpEntity<>(headers);
         ResponseEntity<String> response = restTemplate.exchange(
-            "/api/v1/users?page=0&size=20",
+            "http://localhost:8080/api/v1/users?page=0&size=20",
             HttpMethod.GET, request, String.class);
-        assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.UNAUTHORIZED);
     }
 
     @Test
@@ -34,9 +34,9 @@ public class UserControllerTest {
     void testListUsers_NoAuth() {
         HttpEntity<Void> request = new HttpEntity<>(new HttpHeaders());
         ResponseEntity<String> response = restTemplate.exchange(
-            "/api/v1/users",
+            "http://localhost:8080/api/v1/users",
             HttpMethod.GET, request, String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
@@ -46,9 +46,9 @@ public class UserControllerTest {
         headers.setBearerAuth("valid-token");
         HttpEntity<Void> request = new HttpEntity<>(headers);
         ResponseEntity<String> response = restTemplate.exchange(
-            "/api/v1/users/1",
+            "http://localhost:8080/api/v1/users/1",
             HttpMethod.GET, request, String.class);
-        assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED);
     }
 
     @Test
@@ -58,9 +58,9 @@ public class UserControllerTest {
         headers.setBearerAuth("valid-token");
         HttpEntity<Void> request = new HttpEntity<>(headers);
         ResponseEntity<String> response = restTemplate.exchange(
-            "/api/v1/users/99999",
+            "http://localhost:8080/api/v1/users/99999",
             HttpMethod.GET, request, String.class);
-        assertThat(response.getStatusCode()).isIn(HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isIn(HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED);
     }
 
     @Test
@@ -72,9 +72,9 @@ public class UserControllerTest {
         String json = "{\"email\":\"invalid\",\"firstName\":\"Test\"}";
         HttpEntity<String> request = new HttpEntity<>(json, headers);
         ResponseEntity<String> response = restTemplate.exchange(
-            "/api/v1/users",
+            "http://localhost:8080/api/v1/users",
             HttpMethod.POST, request, String.class);
-        assertThat(response.getStatusCode()).isIn(HttpStatus.BAD_REQUEST, HttpStatus.CREATED, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isIn(HttpStatus.BAD_REQUEST, HttpStatus.CREATED, HttpStatus.UNAUTHORIZED);
     }
 
     @Test
@@ -86,9 +86,9 @@ public class UserControllerTest {
         String json = "{\"firstName\":\"Updated\"}";
         HttpEntity<String> request = new HttpEntity<>(json, headers);
         ResponseEntity<String> response = restTemplate.exchange(
-            "/api/v1/users/1",
+            "http://localhost:8080/api/v1/users/1",
             HttpMethod.PUT, request, String.class);
-        assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED);
     }
 
     @Test
@@ -98,9 +98,9 @@ public class UserControllerTest {
         headers.setBearerAuth("valid-token");
         HttpEntity<Void> request = new HttpEntity<>(headers);
         ResponseEntity<String> response = restTemplate.exchange(
-            "/api/v1/users/1",
+            "http://localhost:8080/api/v1/users/1",
             HttpMethod.DELETE, request, String.class);
-        assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED);
     }
 
     @Test
@@ -110,9 +110,9 @@ public class UserControllerTest {
         headers.setBearerAuth("valid-token");
         HttpEntity<Void> request = new HttpEntity<>(headers);
         ResponseEntity<String> response = restTemplate.exchange(
-            "/api/v1/users?page=0&size=10",
+            "http://localhost:8080/api/v1/users?page=0&size=10",
             HttpMethod.GET, request, String.class);
-        assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.UNAUTHORIZED);
     }
 
     @Test
@@ -122,8 +122,8 @@ public class UserControllerTest {
         headers.setBearerAuth("valid-token");
         HttpEntity<Void> request = new HttpEntity<>(headers);
         ResponseEntity<String> response = restTemplate.exchange(
-            "/api/v1/users?roleName=ADMIN",
+            "http://localhost:8080/api/v1/users?roleName=ADMIN",
             HttpMethod.GET, request, String.class);
-        assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.UNAUTHORIZED);
     }
 }

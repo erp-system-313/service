@@ -20,31 +20,31 @@ public class AuthControllerTest {
     @Test
     @Order(1)
     void testLogin_Success() {
-        String url = "/api/v1/auth/login";
+        String url = "http://localhost:8080/api/v1/auth/login";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         String json = "{\"email\":\"admin@erp.com\",\"password\":\"test123\"}";
         HttpEntity<String> request = new HttpEntity<>(json, headers);
         ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
-        assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.BAD_REQUEST);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     @Test
     @Order(2)
     void testLogin_InvalidCredentials() {
-        String url = "/api/v1/auth/login";
+        String url = "http://localhost:8080/api/v1/auth/login";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         String json = "{\"email\":\"admin@erp.com\",\"password\":\"wrongpassword\"}";
         HttpEntity<String> request = new HttpEntity<>(json, headers);
         ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
-        assertThat(response.getStatusCode()).isIn(HttpStatus.UNAUTHORIZED, HttpStatus.BAD_REQUEST);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
     @Order(3)
     void testLogin_MissingEmail() {
-        String url = "/api/v1/auth/login";
+        String url = "http://localhost:8080/api/v1/auth/login";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         String json = "{\"password\":\"test123\"}";
@@ -56,7 +56,7 @@ public class AuthControllerTest {
     @Test
     @Order(4)
     void testForgotPassword_Success() {
-        String url = "/api/v1/auth/forgot-password";
+        String url = "http://localhost:8080/api/v1/auth/forgot-password";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         String json = "{\"email\":\"admin@erp.com\"}";
@@ -68,7 +68,7 @@ public class AuthControllerTest {
     @Test
     @Order(5)
     void testForgotPassword_InvalidEmail() {
-        String url = "/api/v1/auth/forgot-password";
+        String url = "http://localhost:8080/api/v1/auth/forgot-password";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         String json = "{\"email\":\"nonexistent@test.com\"}";
@@ -80,7 +80,7 @@ public class AuthControllerTest {
     @Test
     @Order(6)
     void testResetPassword_InvalidToken() {
-        String url = "/api/v1/auth/reset-password";
+        String url = "http://localhost:8080/api/v1/auth/reset-password";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         String json = "{\"token\":\"invalid-token\",\"newPassword\":\"newpass123\"}";
@@ -92,7 +92,7 @@ public class AuthControllerTest {
     @Test
     @Order(7)
     void testRefreshToken_Invalid() {
-        String url = "/api/v1/auth/refresh";
+        String url = "http://localhost:8080/api/v1/auth/refresh";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         String json = "{\"refreshToken\":\"invalid-token\"}";
@@ -104,7 +104,7 @@ public class AuthControllerTest {
     @Test
     @Order(8)
     void testLogout_NoAuth() {
-        String url = "/api/v1/auth/logout";
+        String url = "http://localhost:8080/api/v1/auth/logout";
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<Void> request = new HttpEntity<>(headers);
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
