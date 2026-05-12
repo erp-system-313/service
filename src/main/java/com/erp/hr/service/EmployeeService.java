@@ -40,14 +40,19 @@ public class EmployeeService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
         Page<Employee> employees;
-        if (department != null && status != null) {
+        boolean includeAllStatuses = status != null && status.equalsIgnoreCase("ALL");
+        if (department != null && status != null && !includeAllStatuses) {
             Employee.EmployeeStatus employeeStatus = Employee.EmployeeStatus.valueOf(status.toUpperCase());
             employees = employeeRepository.findByDepartmentAndStatus(department, employeeStatus, pageable);
         } else if (department != null) {
-            employees = employeeRepository.findByDepartmentAndStatus(department, Employee.EmployeeStatus.ACTIVE, pageable);
-        } else if (status != null) {
+            employees = includeAllStatuses
+                    ? employeeRepository.findByDepartment(department, pageable)
+                    : employeeRepository.findByDepartmentAndStatus(department, Employee.EmployeeStatus.ACTIVE, pageable);
+        } else if (status != null && !includeAllStatuses) {
             Employee.EmployeeStatus employeeStatus = Employee.EmployeeStatus.valueOf(status.toUpperCase());
             employees = employeeRepository.findByStatus(employeeStatus, pageable);
+        } else if (includeAllStatuses) {
+            employees = employeeRepository.findAll(pageable);
         } else {
             employees = employeeRepository.findByStatus(Employee.EmployeeStatus.ACTIVE, pageable);
         }
