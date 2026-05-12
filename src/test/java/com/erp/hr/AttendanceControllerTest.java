@@ -7,12 +7,12 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.erp.BaseControllerTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-public class AttendanceControllerTest {
-    @Autowired protected TestRestTemplate restTemplate;
+public class AttendanceControllerTest extends BaseControllerTest {
 
     @Test public void testList() { check("/api/v1/attendance"); }
     @Test public void testGet() { check("/api/v1/attendance/1"); }
@@ -23,7 +23,7 @@ public class AttendanceControllerTest {
     private void check(String u) { assertThat(req(u).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED); }
     private void post(String u, String m) { HttpMethod method = "PUT".equals(m) ? HttpMethod.PUT : HttpMethod.POST; assertThat(req(u, method).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED); }
     private ResponseEntity<String> req(String u) { return restTemplate.getForEntity(u, String.class); }
-    private ResponseEntity<String> req(String u, HttpMethod m) { HttpHeaders h = new HttpHeaders(); h.setBearerAuth("token"); return restTemplate.exchange(u, m, new HttpEntity<>(h), String.class); }
+    private ResponseEntity<String> req(String u, HttpMethod m) { return restTemplate.exchange(u, m, null, String.class); }
     private String url(String u) { return u; }
     private ResponseEntity<String> noauth(String u) { return restTemplate.getForEntity(u, String.class); }
 }

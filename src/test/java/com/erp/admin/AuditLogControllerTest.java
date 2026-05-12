@@ -7,12 +7,12 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.erp.BaseControllerTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-public class AuditLogControllerTest {
-    @Autowired protected TestRestTemplate restTemplate;
+public class AuditLogControllerTest extends BaseControllerTest {
 
     @Test public void testList() { check("/api/v1/audit-logs"); }
     @Test public void testNoAuth() { assertThat(noauth("/api/v1/audit-logs").getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED); }
