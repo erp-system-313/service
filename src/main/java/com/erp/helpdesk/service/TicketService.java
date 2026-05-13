@@ -16,6 +16,7 @@ import com.erp.sales.repository.CustomerRepository;
 import com.erp.hr.entity.Employee;
 import com.erp.hr.repository.EmployeeRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,9 +24,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Service for managing helpdesk tickets
@@ -42,25 +43,27 @@ public class TicketService {
     private final AuditLogService auditLogService;
     private final CurrentUserUtil currentUserUtil;
 
-    public PageResponse<TicketDto> findAll(int page, int size, 
-                                           Ticket.TicketStatus status, 
-                                           Ticket.TicketPriority priority,
-                                           Long customerId,
-                                           Long assignedToId) {
+@Transactional(readOnly = true)
+    public PageResponse<TicketDto> findAll(int page, int size,
+                                            Ticket.TicketStatus status,
+                                            Ticket.TicketPriority priority,
+                                            Long customerId,
+                                            Long assignedToId) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        
+
         Page<Ticket> tickets;
         if (status != null || priority != null || customerId != null || assignedToId != null) {
             tickets = ticketRepository.findByFilters(status, priority, customerId, assignedToId, pageable);
         } else {
             tickets = ticketRepository.findAll(pageable);
         }
-        
+
         return PageResponse.from(tickets.map(this::toDto));
     }
 
+    @Transactional(readOnly = true)
     public TicketDto findById(Long id) {
-        Ticket ticket = ticketRepository.findById(id)
+        Ticket ticket = ticketRepository.findByIdWithComments(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", id));
         return toDto(ticket);
     }
