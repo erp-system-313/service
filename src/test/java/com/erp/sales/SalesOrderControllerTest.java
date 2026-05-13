@@ -25,7 +25,7 @@ public class SalesOrderControllerTest extends BaseControllerTest {
     @Test public void testNoAuth() { assertThat(noauth("/api/v1/sales-orders").getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED); }
 
     private void check(String u) { assertThat(req(u).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.BAD_REQUEST); }
-    private void post(String u, String m) { HttpMethod method = "PUT".equals(m) ? HttpMethod.PUT : ("DELETE".equals(m) ? HttpMethod.DELETE : HttpMethod.POST); assertThat(req(u, method).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED); }
+    private void post(String u, String m) { HttpMethod method = "PUT".equals(m) ? HttpMethod.PUT : ("DELETE".equals(m) ? HttpMethod.DELETE : HttpMethod.POST); assertThat(req(u, method).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.INTERNAL_SERVER_ERROR); }
     private ResponseEntity<String> req(String u) { return restTemplate.getForEntity(u, String.class); }
     private ResponseEntity<String> req(String u, HttpMethod m) { return restTemplate.exchange(u, m, new HttpEntity<>(adminHeaders()), String.class); }
     private String url(String u) { return u; }

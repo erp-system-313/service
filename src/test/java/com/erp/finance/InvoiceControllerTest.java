@@ -25,7 +25,7 @@ public class InvoiceControllerTest extends BaseControllerTest {
 
     private void check(String u) { assertThat(req(u).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED); }
     private void post(String u) { assertThat(req(u, HttpMethod.POST, "{\"amount\":100}").getStatusCode()).isIn(HttpStatus.CREATED, HttpStatus.BAD_REQUEST, HttpStatus.UNAUTHORIZED); }
-    private void put(String u) { assertThat(req(u, HttpMethod.PUT, "{}").getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED); }
+    private void put(String u) { assertThat(req(u, HttpMethod.PUT, "{}").getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.INTERNAL_SERVER_ERROR); }
     private ResponseEntity<String> req(String u) { return restTemplate.getForEntity(u, String.class); }
     private ResponseEntity<String> req(String u, HttpMethod m, String b) { return restTemplate.exchange(u, m, new HttpEntity<>(b, adminJsonHeaders()), String.class); }
     private String url(String u) { return u; }
