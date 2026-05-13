@@ -7,24 +7,20 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.erp.BaseControllerTest;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-public class DashboardControllerTest {
-
-    @Autowired
-    protected TestRestTemplate restTemplate;
+public class DashboardControllerTest extends BaseControllerTest {
 
     @Test
     void testGetStats() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth("valid-token");
-        HttpEntity<Void> request = new HttpEntity<>(headers);
+        HttpEntity<Void> request = new HttpEntity<>(adminHeaders());
         ResponseEntity<String> response = restTemplate.exchange(
             "/api/v1/dashboard/stats",
             HttpMethod.GET, request, String.class);
-        assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.UNAUTHORIZED);
     }
 
     @Test
@@ -33,6 +29,6 @@ public class DashboardControllerTest {
         ResponseEntity<String> response = restTemplate.exchange(
             "/api/v1/dashboard/stats",
             HttpMethod.GET, request, String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 }

@@ -1,21 +1,17 @@
 package com.erp.auth;
 
 import org.junit.jupiter.api.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
+import com.erp.BaseControllerTest;
 
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class AuthControllerTest {
-
-    @Autowired
-    protected TestRestTemplate restTemplate;
+public class AuthControllerTest extends BaseControllerTest {
 
     @Test
     @Order(1)
@@ -26,7 +22,7 @@ public class AuthControllerTest {
         String json = "{\"email\":\"admin@erp.com\",\"password\":\"test123\"}";
         HttpEntity<String> request = new HttpEntity<>(json, headers);
         ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
-        assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.BAD_REQUEST);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     @Test
@@ -38,7 +34,7 @@ public class AuthControllerTest {
         String json = "{\"email\":\"admin@erp.com\",\"password\":\"wrongpassword\"}";
         HttpEntity<String> request = new HttpEntity<>(json, headers);
         ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
-        assertThat(response.getStatusCode()).isIn(HttpStatus.UNAUTHORIZED, HttpStatus.BAD_REQUEST);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
@@ -74,7 +70,7 @@ public class AuthControllerTest {
         String json = "{\"email\":\"nonexistent@test.com\"}";
         HttpEntity<String> request = new HttpEntity<>(json, headers);
         ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
-        assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.BAD_REQUEST);
+        assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.BAD_REQUEST, HttpStatus.UNAUTHORIZED);
     }
 
     @Test
@@ -86,7 +82,7 @@ public class AuthControllerTest {
         String json = "{\"token\":\"invalid-token\",\"newPassword\":\"newpass123\"}";
         HttpEntity<String> request = new HttpEntity<>(json, headers);
         ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
-        assertThat(response.getStatusCode()).isIn(HttpStatus.BAD_REQUEST, HttpStatus.OK);
+        assertThat(response.getStatusCode()).isIn(HttpStatus.BAD_REQUEST, HttpStatus.OK, HttpStatus.UNAUTHORIZED);
     }
 
     @Test

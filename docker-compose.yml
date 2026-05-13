@@ -11,10 +11,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U erp"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U erp -d erp"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 12
+      start_period: 10s
 
   redis:
     image: redis:7-alpine
@@ -27,7 +28,8 @@ services:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 12
+      start_period: 5s
 
 volumes:
   postgres_data:

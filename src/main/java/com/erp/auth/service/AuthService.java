@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,7 @@ public class AuthService {
     private final JwtTokenProvider tokenProvider;
     private final PasswordEncoder passwordEncoder;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmailWithRole(request.getEmail())
                 .orElseThrow(() -> new BusinessException("AUTH_001", "Invalid email or password"));
@@ -35,9 +36,14 @@ public class AuthService {
             throw new BusinessException("AUTH_002", "Account is inactive");
         }
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+            );
+        } catch (AuthenticationException ex) {
+            throw new BusinessException("AUTH_001", "Invalid email or password");
+        }
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 

@@ -7,18 +7,18 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.erp.BaseControllerTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-public class AuditLogControllerTest {
-    @Autowired protected TestRestTemplate restTemplate;
+public class AuditLogControllerTest extends BaseControllerTest {
 
     @Test public void testList() { check("/api/v1/audit-logs"); }
-    @Test public void testNoAuth() { assertThat(noauth("/api/v1/audit-logs").getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN); }
+    @Test public void testNoAuth() { assertThat(noauth("/api/v1/audit-logs").getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED); }
 
-    private void check(String u) { assertThat(req(u).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN); }
+    private void check(String u) { assertThat(req(u).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED); }
     private ResponseEntity<String> req(String u) { return restTemplate.getForEntity(u, String.class); }
     private String url(String u) { return u; }
-    private ResponseEntity<String> noauth(String u) { return restTemplate.getForEntity(url(u), String.class); }
+    private ResponseEntity<String> noauth(String u) { return restTemplate.getForEntity(u, String.class); }
 }
