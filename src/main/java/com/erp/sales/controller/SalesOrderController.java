@@ -58,6 +58,12 @@ public class SalesOrderController {
         return ResponseEntity.ok(ApiResponse.success(order, "Sales order updated successfully"));
     }
 
+    @PutMapping("/{id}/send")
+    public ResponseEntity<ApiResponse<SalesOrderDto>> send(@PathVariable Long id) {
+        SalesOrderDto order = salesOrderService.send(id);
+        return ResponseEntity.ok(ApiResponse.success(order, "Quotation sent successfully"));
+    }
+
     @PutMapping("/{id}/confirm")
     public ResponseEntity<ApiResponse<SalesOrderDto>> confirm(@PathVariable Long id) {
         SalesOrderDto order = salesOrderService.confirm(id);

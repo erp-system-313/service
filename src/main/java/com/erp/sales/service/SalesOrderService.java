@@ -140,12 +140,28 @@ public class SalesOrderService {
     }
 
     @Transactional
-    public SalesOrderDto confirm(Long id) {
+    public SalesOrderDto send(Long id) {
         SalesOrder order = salesOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("SalesOrder", id));
 
         if (order.getStatus() != OrderStatus.DRAFT) {
-            throw new BusinessException("ORDER_002", "Only DRAFT orders can be confirmed");
+            throw new BusinessException("ORDER_007", "Only DRAFT orders can be sent");
+        }
+
+        order.setStatus(OrderStatus.SENT);
+        order = salesOrderRepository.save(order);
+
+        log.info("Sent quotation with id: {}", id);
+        return SalesOrderDto.fromEntity(order);
+    }
+
+    @Transactional
+    public SalesOrderDto confirm(Long id) {
+        SalesOrder order = salesOrderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("SalesOrder", id));
+
+        if (order.getStatus() != OrderStatus.SENT && order.getStatus() != OrderStatus.DRAFT) {
+            throw new BusinessException("ORDER_002", "Only SENT or DRAFT orders can be confirmed");
         }
 
         productClient.validateStock(order);
@@ -186,8 +202,8 @@ public class SalesOrderService {
         SalesOrder order = salesOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("SalesOrder", id));
 
-        if (order.getStatus() == OrderStatus.INVOICED || order.getStatus() == OrderStatus.SHIPPED) {
-            throw new BusinessException("ORDER_005", "Cannot cancel INVOICED or SHIPPED orders");
+        if (order.getStatus() == OrderStatus.SHIPPED) {
+            throw new BusinessException("ORDER_005", "Cannot cancel SHIPPED orders");
         }
 
         order.setStatus(OrderStatus.CANCELLED);
