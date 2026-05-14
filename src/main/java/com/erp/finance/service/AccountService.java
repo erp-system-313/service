@@ -1,121 +1,129 @@
 package com.erp.finance.service;
 
-import com.erp.finance.dto.AccountDto;
-import com.erp.finance.dto.CreateAccountRequest;
-import com.erp.finance.dto.UpdateAccountRequest;
-import com.erp.finance.entity.Account;
-import com.erp.finance.entity.AccountType;
-import com.erp.finance.repository.AccountRepository;
-import com.erp.common.dto.PageResponse;
-import com.erp.common.exception.BusinessException;
-import com.erp.common.exception.ResourceNotFoundException;
+import com.erp.finance.entity.*;
+import com.erp.finance.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.util.*;
 
+/**
+ * Account service — enhanced with balance computation from move lines and COA management.
+ * Balances are computed on-the-fly (Odoo-style) rather than stored.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AccountService {
 
     private final AccountRepository accountRepository;
+    private final AccountGroupRepository accountGroupRepository;
+    private final MoveLineRepository moveLineRepository;
 
-    public PageResponse<AccountDto> findAll(int page, int size, AccountType type, Long parentId) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("code").ascending());
-
-        Page<Account> accounts;
-        if (type != null) {
-            accounts = accountRepository.findByType(type, pageable);
-        } else if (parentId != null) {
-            accounts = accountRepository.findByParentId(parentId, pageable);
-        } else {
-            accounts = accountRepository.findAll(pageable);
-        }
-
-        return PageResponse.from(accounts.map(this::toDto));
+    public List<Account> findAllActive() {
+        return accountRepository.findAllActiveWithGroups();
     }
 
-    public AccountDto findById(Long id) {
-        Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Account", id));
-        return toDto(account);
+    public Account findById(Long id) {
+        return accountRepository.findById(id)
+                .orElseThrow(() -> new com.erp.common.exception.ResourceNotFoundException("Account", id));
     }
 
-    public List<AccountDto> findByType(AccountType type) {
-        return accountRepository.findByTypeAndIsActiveTrue(type).stream()
-                .map(this::toDto)
-                .toList();
+    public List<Account> findByType(AccountType type) {
+        return accountRepository.findByAccountTypeAndDeprecatedFalse(type);
     }
 
-    @Transactional
-    public AccountDto create(CreateAccountRequest request) {
-        if (accountRepository.existsByCode(request.getCode())) {
-            throw new BusinessException("ACCOUNT_001", "Account code already exists");
+    public List<Account> findByGroup(InternalGroup group) {
+        return accountRepository.findByInternalGroup(group);
+    }
+
+    /**
+     * Compute the balance of an account by aggregating all posted move lines.
+     * Balance = SUM(debits) - SUM(credits) for the account.
+     */
+    public BigDecimal computeBalance(Long accountId) {
+        BigDecimal balance = moveLineRepository.getAccountBalance(accountId);
+        return balance != null ? balance.setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
+    }
+
+    /**
+     * Compute balance up to a specific date.
+     */
+    public BigDecimal computeBalanceUpToDate(Long accountId, LocalDate date) {
+        BigDecimal balance = moveLineRepository.getAccountBalanceUpToDate(accountId, date);
+        return balance != null ? balance.setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
+    }
+
+    /**
+     * Get all open (unreconciled) items for an account.
+     */
+    public List<MoveLine> getOpenItems(Long accountId) {
+        return moveLineRepository.findOpenItemsByAccount(accountId);
+    }
+
+    /**
+     * Get the balance summary for a group of accounts.
+     */
+    public Map<InternalGroup, BigDecimal> getGroupBalances() {
+        Map<InternalGroup, BigDecimal> balances = new EnumMap<>(InternalGroup.class);
+        for (InternalGroup group : InternalGroup.values()) {
+            List<Account> accounts = accountRepository.findByInternalGroup(group);
+            BigDecimal total = accounts.stream()
+                    .map(a -> computeBalance(a.getId()))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            balances.put(group, total);
         }
+        return balances;
+    }
 
-        Account parent = null;
-        if (request.getParentId() != null) {
-            parent = accountRepository.findById(request.getParentId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Parent Account", request.getParentId()));
+    // --- Account management ---
+
+    public Account create(Account account) {
+        if (accountRepository.existsByCode(account.getCode())) {
+            throw new com.erp.common.exception.BusinessException("ACCOUNT_001",
+                    "Account code already exists: " + account.getCode());
         }
-
-        Account account = Account.builder()
-                .code(request.getCode())
-                .name(request.getName())
-                .type(request.getType())
-                .parent(parent)
-                .isActive(true)
-                .build();
-
+        account.setDeprecated(false);
         account = accountRepository.save(account);
-        log.info("Created account with id: {} and code: {}", account.getId(), account.getCode());
-
-        return toDto(account);
+        log.info("Created account: {} ({})", account.getCode(), account.getName());
+        return account;
     }
 
-    @Transactional
-    public AccountDto update(Long id, UpdateAccountRequest request) {
-        Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Account", id));
-
-        if (request.getName() != null) account.setName(request.getName());
-        if (request.getType() != null) account.setType(request.getType());
-        if (request.getIsActive() != null) account.setIsActive(request.getIsActive());
-        
-        if (request.getParentId() != null) {
-            Account parent = accountRepository.findById(request.getParentId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Parent Account", request.getParentId()));
-            account.setParent(parent);
-        }
-
+    public Account update(Long id, Account updated) {
+        Account account = findById(id);
+        if (updated.getName() != null) account.setName(updated.getName());
+        if (updated.getAccountType() != null) account.setAccountType(updated.getAccountType());
+        if (updated.getReconcile() != null) account.setReconcile(updated.getReconcile());
+        if (updated.getDeprecated() != null) account.setDeprecated(updated.getDeprecated());
+        if (updated.getIncludeInitialBalance() != null) account.setIncludeInitialBalance(updated.getIncludeInitialBalance());
+        if (updated.getGroup() != null) account.setGroup(updated.getGroup());
         account = accountRepository.save(account);
-        log.info("Updated account with id: {}", id);
-
-        return toDto(account);
+        log.info("Updated account: {}", id);
+        return account;
     }
 
-    @Transactional
     public void delete(Long id) {
-        Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Account", id));
-
+        Account account = findById(id);
         if (accountRepository.hasTransactions(id)) {
-            throw new BusinessException("ACCOUNT_002", "Cannot delete account with transactions");
+            throw new com.erp.common.exception.BusinessException("ACCOUNT_002",
+                    "Cannot delete account with transactions");
         }
-
-        account.setIsActive(false);
+        account.setDeprecated(true);
         accountRepository.save(account);
-        log.info("Deleted account with id: {}", id);
+        log.info("Deprecated account: {}", id);
     }
 
-    private AccountDto toDto(Account account) {
-        return AccountDto.fromEntity(account);
+    // --- Account Groups ---
+
+    public List<AccountGroup> getAllGroups() {
+        return accountGroupRepository.findByParentIsNull();
+    }
+
+    public AccountGroup createGroup(AccountGroup group) {
+        return accountGroupRepository.save(group);
     }
 }
