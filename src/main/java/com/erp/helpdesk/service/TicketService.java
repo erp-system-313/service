@@ -115,6 +115,7 @@ public class TicketService {
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .priority(request.getPriority() != null ? request.getPriority() : Ticket.TicketPriority.MEDIUM)
+                .status(Ticket.TicketStatus.OPEN)
                 .stageId(request.getStageId())
                 .teamId(request.getTeamId())
                 .categoryId(request.getCategoryId())
