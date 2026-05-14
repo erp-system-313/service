@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 /**
- * DTO for TicketComment entity
+ * DTO for TicketComment entity.
  */
 @Data
 @NoArgsConstructor
@@ -33,7 +33,7 @@ public class TicketCommentDto {
                 .id(comment.getId())
                 .ticketId(comment.getTicket() != null ? comment.getTicket().getId() : null)
                 .authorId(comment.getAuthor() != null ? comment.getAuthor().getId() : null)
-                .authorName(comment.getAuthor() != null ? comment.getAuthor().getEmail() : null) // Using email as name for simplicity
+                .authorName(comment.getAuthor() != null ? comment.getAuthor().getFullName() : null)
                 .message(comment.getMessage())
                 .isInternal(comment.getIsInternal())
                 .createdAt(comment.getCreatedAt())
