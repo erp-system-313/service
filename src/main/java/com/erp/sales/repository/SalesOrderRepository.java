@@ -22,10 +22,14 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
 
     @Query("SELECT so FROM SalesOrder so WHERE " +
            "(:status IS NULL OR so.status = :status) AND " +
-           "(:customerId IS NULL OR so.customer.id = :customerId)")
+           "(:customerId IS NULL OR so.customer.id = :customerId) AND " +
+           "(:dateFrom IS NULL OR so.orderDate >= :dateFrom) AND " +
+           "(:dateTo IS NULL OR so.orderDate <= :dateTo)")
     Page<SalesOrder> findWithFilters(
             @Param("status") OrderStatus status,
             @Param("customerId") Long customerId,
+            @Param("dateFrom") LocalDateTime dateFrom,
+            @Param("dateTo") LocalDateTime dateTo,
             Pageable pageable);
 
     Optional<SalesOrder> findByOrderNumber(String orderNumber);

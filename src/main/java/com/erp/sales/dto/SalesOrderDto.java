@@ -47,7 +47,7 @@ public class SalesOrderDto {
                 .totalAmount(order.getTotalAmount())
                 .notes(order.getNotes())
                 .createdById(order.getCreatedBy() != null ? order.getCreatedBy().getId() : null)
-                .createdByName(order.getCreatedBy() != null ? order.getCreatedBy().getEmail() : null)
+                .createdByName(order.getCreatedBy() != null ? order.getCreatedBy().getFullName() : null)
                 .lines(order.getLines() != null ? order.getLines().stream()
                         .map(line -> SalesOrderLineDto.builder()
                                 .id(line.getId())
