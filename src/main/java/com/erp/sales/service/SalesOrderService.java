@@ -75,7 +75,7 @@ public class SalesOrderService {
 
     @Transactional(readOnly = true)
     public SalesOrderDto findById(Long id) {
-        SalesOrder order = salesOrderRepository.findById(id)
+        SalesOrder order = salesOrderRepository.findByIdWithJoins(id)
                 .orElseThrow(() -> new ResourceNotFoundException("SalesOrder", id));
         return SalesOrderDto.fromEntity(order);
     }
