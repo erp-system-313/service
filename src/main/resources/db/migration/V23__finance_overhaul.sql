@@ -396,10 +396,10 @@ CREATE TABLE currency_rates (
     currency_id BIGINT NOT NULL,
     rate NUMERIC(15,6) NOT NULL,
     date DATE NOT NULL,
-    company_id BIGINT,
-    UNIQUE (currency_id, date, COALESCE(company_id, 0))
+    company_id BIGINT
 );
 
+CREATE UNIQUE INDEX idx_currency_rates_unique ON currency_rates(currency_id, date, COALESCE(company_id, 0));
 CREATE INDEX idx_currency_rates_date ON currency_rates(currency_id, date);
 
 -- ============================================================
