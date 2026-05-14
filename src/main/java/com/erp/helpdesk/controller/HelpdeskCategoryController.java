@@ -37,7 +37,7 @@ public class HelpdeskCategoryController {
         Long teamId = body.get("teamId") != null ? ((Number) body.get("teamId")).longValue() : null;
 
         if (name == null || name.isBlank()) {
-            return ResponseEntity.badRequest().body(ApiResponse.error("Category name is required"));
+            return ResponseEntity.badRequest().body(ApiResponse.error("VALIDATION_ERROR", "Category name is required"));
         }
 
         HelpdeskCategoryDto category = helpdeskCategoryService.create(name, teamId);

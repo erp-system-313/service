@@ -30,7 +30,7 @@ public class HelpdeskTagController {
         String color = (String) body.get("color");
 
         if (name == null || name.isBlank()) {
-            return ResponseEntity.badRequest().body(ApiResponse.error("Tag name is required"));
+            return ResponseEntity.badRequest().body(ApiResponse.error("VALIDATION_ERROR", "Tag name is required"));
         }
 
         HelpdeskTagDto tag = helpdeskTagService.create(name, color);

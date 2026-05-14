@@ -46,7 +46,7 @@ public class HelpdeskStageController {
         Long teamId = body.get("teamId") != null ? ((Number) body.get("teamId")).longValue() : null;
 
         if (name == null || name.isBlank()) {
-            return ResponseEntity.badRequest().body(ApiResponse.error("Stage name is required"));
+            return ResponseEntity.badRequest().body(ApiResponse.error("VALIDATION_ERROR", "Stage name is required"));
         }
 
         HelpdeskStageDto stage = helpdeskStageService.create(name, sequence, fold, teamId);
