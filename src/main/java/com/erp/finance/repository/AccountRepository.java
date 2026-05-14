@@ -35,4 +35,6 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     @Query("SELECT a FROM Account a LEFT JOIN FETCH a.group WHERE a.deprecated = false ORDER BY a.code")
     List<Account> findAllActiveWithGroups();
+
+    Page<Account> findByDeprecatedFalse(Pageable pageable);
 }
