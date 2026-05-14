@@ -1,3 +1,4 @@
+
 {
   description = "ERP Backend Dev Shell";
 
@@ -20,7 +21,14 @@
             docker
             docker-compose
           ];
+          shellHook = ''
+            export DOCKER_HOST="unix:///run/user/$UID/podman/podman.sock"
+            if ! systemctl --user is-active --quiet podman.socket 2>/dev/null; then
+              systemctl --user start podman.socket 2>/dev/null || true
+            fi
+          '';
         };
       }
     );
 }
+
