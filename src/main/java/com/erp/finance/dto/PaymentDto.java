@@ -1,6 +1,7 @@
 package com.erp.finance.dto;
 
-import com.erp.finance.entity.PaymentMethod;
+import com.erp.finance.entity.Payment;
+import com.erp.finance.entity.PaymentDirection;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,33 +11,33 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import com.erp.finance.entity.Payment;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class PaymentDto {
     private Long id;
-    private Long invoiceId;
-    private String invoiceNumber;
+    private Long partnerId;
+    private String partnerName;
     private BigDecimal amount;
-    private LocalDate paymentDate;
-    private PaymentMethod method;
-    private String reference;
-    private String notes;
+    private Long currencyId;
+    private LocalDate date;
+    private PaymentDirection paymentType;
+    private String paymentReference;
+    private Long moveId;
     private LocalDateTime createdAt;
 
     public static PaymentDto fromEntity(Payment payment) {
         return PaymentDto.builder()
                 .id(payment.getId())
-                .invoiceId(payment.getInvoice() != null ? payment.getInvoice().getId() : null)
-                .invoiceNumber(payment.getInvoice() != null ? payment.getInvoice().getInvoiceNumber() : null)
+                .partnerId(payment.getPartnerId())
+                .partnerName(payment.getPartnerName())
                 .amount(payment.getAmount())
-                .paymentDate(payment.getPaymentDate())
-                .method(payment.getMethod())
-                .reference(payment.getReference())
-                .notes(payment.getNotes())
+                .currencyId(payment.getCurrencyId())
+                .date(payment.getDate())
+                .paymentType(payment.getPaymentType())
+                .paymentReference(payment.getPaymentReference())
+                .moveId(payment.getMove() != null ? payment.getMove().getId() : null)
                 .createdAt(payment.getCreatedAt())
                 .build();
     }

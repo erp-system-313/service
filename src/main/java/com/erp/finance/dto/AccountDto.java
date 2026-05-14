@@ -1,5 +1,6 @@
 package com.erp.finance.dto;
 
+import com.erp.finance.entity.Account;
 import com.erp.finance.entity.AccountType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +10,6 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import com.erp.finance.entity.Account;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,11 +18,14 @@ public class AccountDto {
     private Long id;
     private String code;
     private String name;
-    private AccountType type;
+    private AccountType accountType;
+    private String internalGroup;
     private Long parentId;
     private String parentName;
-    private BigDecimal balance;
-    private Boolean isActive;
+    private Long groupId;
+    private String groupName;
+    private Boolean reconcile;
+    private Boolean deprecated;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -32,11 +34,14 @@ public class AccountDto {
                 .id(account.getId())
                 .code(account.getCode())
                 .name(account.getName())
-                .type(account.getType())
+                .accountType(account.getAccountType())
+                .internalGroup(account.getInternalGroup() != null ? account.getInternalGroup().name() : null)
                 .parentId(account.getParent() != null ? account.getParent().getId() : null)
                 .parentName(account.getParent() != null ? account.getParent().getName() : null)
-                .balance(account.getBalance())
-                .isActive(account.getIsActive())
+                .groupId(account.getGroup() != null ? account.getGroup().getId() : null)
+                .groupName(account.getGroup() != null ? account.getGroup().getName() : null)
+                .reconcile(account.getReconcile())
+                .deprecated(account.getDeprecated())
                 .createdAt(account.getCreatedAt())
                 .updatedAt(account.getUpdatedAt())
                 .build();

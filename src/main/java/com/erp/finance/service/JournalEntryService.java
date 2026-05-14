@@ -115,16 +115,7 @@ public class JournalEntryService {
             throw new BusinessException("JOURNAL_003", "Journal entry must be balanced to post");
         }
 
-        for (JournalEntryLine line : entry.getLines()) {
-            Account account = line.getAccount();
-            BigDecimal debit = line.getDebit() != null ? line.getDebit() : BigDecimal.ZERO;
-            BigDecimal credit = line.getCredit() != null ? line.getCredit() : BigDecimal.ZERO;
-
-            BigDecimal change = debit.subtract(credit);
-            account.setBalance(account.getBalance().add(change));
-            accountRepository.save(account);
-        }
-
+        // Balance is now computed from lines, not stored on Account
         entry.setStatus(JournalEntryStatus.POSTED);
         entry.setPostedAt(LocalDateTime.now());
         entry = journalEntryRepository.save(entry);
@@ -142,16 +133,7 @@ public class JournalEntryService {
             throw new BusinessException("JOURNAL_004", "Only POSTED journal entries can be reversed");
         }
 
-        for (JournalEntryLine line : original.getLines()) {
-            Account account = line.getAccount();
-            BigDecimal debit = line.getDebit() != null ? line.getDebit() : BigDecimal.ZERO;
-            BigDecimal credit = line.getCredit() != null ? line.getCredit() : BigDecimal.ZERO;
-
-            BigDecimal change = credit.subtract(debit);
-            account.setBalance(account.getBalance().add(change));
-            accountRepository.save(account);
-        }
-
+        // Balance is now computed from lines, not stored on Account
         JournalEntry reversal = JournalEntry.builder()
                 .entryNumber(generateEntryNumber())
                 .date(LocalDate.now())

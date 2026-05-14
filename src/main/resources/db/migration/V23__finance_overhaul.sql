@@ -192,7 +192,7 @@ CREATE TABLE payment_terms (
 CREATE TABLE payment_term_lines (
     id BIGSERIAL PRIMARY KEY,
     payment_term_id BIGINT NOT NULL REFERENCES payment_terms(id),
-    value VARCHAR(10) NOT NULL CHECK (value IN ('PERCENT','FIXED')),
+    line_value VARCHAR(10) NOT NULL CHECK (line_value IN ('PERCENT','FIXED')),
     value_amount NUMERIC(10,4) NOT NULL,
     delay_type VARCHAR(30) NOT NULL CHECK (delay_type IN ('DAYS_AFTER','DAYS_AFTER_END_OF_MONTH','DAYS_AFTER_END_OF_NEXT_MONTH')),
     nb_days INTEGER NOT NULL DEFAULT 0,

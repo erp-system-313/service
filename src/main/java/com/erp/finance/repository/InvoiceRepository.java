@@ -23,7 +23,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
             @Param("customerId") Long customerId,
             Pageable pageable);
 
-    @Query("SELECT i FROM Invoice i LEFT JOIN FETCH i.payments WHERE i.id = :id")
+    @Query("SELECT i FROM Invoice i WHERE i.id = :id")
     Optional<Invoice> findByIdWithPayments(@Param("id") Long id);
 
     Optional<Invoice> findByInvoiceNumber(String invoiceNumber);

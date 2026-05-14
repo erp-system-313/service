@@ -36,6 +36,7 @@ public class MoveService {
     private final AccountRepository accountRepository;
     private final JournalRepository journalRepository;
     private final TaxService taxService;
+    private final TaxRepository taxRepository;
     private final HashService hashService;
     private final PaymentTermService paymentTermService;
 
@@ -153,6 +154,9 @@ public class MoveService {
                         ? accountRepository.findById(detail.accountId()).orElse(null)
                         : null;
 
+                // Load the Tax entity for the tax line reference
+                Tax taxDetail = detail.taxId() != null ? taxRepository.findById(detail.taxId()).orElse(null) : null;
+
                 MoveLine taxLine = MoveLine.builder()
                         .move(move)
                         .account(taxAccount)
@@ -160,7 +164,7 @@ public class MoveService {
                         .name(detail.name())
                         .debit(move.isSaleType() ? detail.amount() : BigDecimal.ZERO)
                         .credit(move.isPurchaseType() ? detail.amount() : BigDecimal.ZERO)
-                        .taxLineId(detail.taxId())
+                        .taxLine(taxDetail)
                         .taxBaseAmount(detail.base())
                         .sequence(seq++)
                         .build();

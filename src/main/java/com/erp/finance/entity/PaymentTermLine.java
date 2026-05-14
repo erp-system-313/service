@@ -27,7 +27,7 @@ public class PaymentTermLine {
     private PaymentTerm paymentTerm;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
+    @Column(name = "line_value", nullable = false, length = 10)
     private PaymentTermLineValueType value;
 
     @Column(name = "value_amount", nullable = false, precision = 10, scale = 4)

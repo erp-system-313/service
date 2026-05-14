@@ -8,7 +8,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +57,9 @@ public class Invoice {
     @Builder.Default
     private BigDecimal paidAmount = BigDecimal.ZERO;
 
-    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    // Payments are now handled via the new Move-based system.
+    // This field is kept for backward compatibility but not mapped via JPA.
+    @Transient
     @Builder.Default
     private List<Payment> payments = new ArrayList<>();
 
@@ -78,7 +79,6 @@ public class Invoice {
 
     public void addPayment(Payment payment) {
         payments.add(payment);
-        payment.setInvoice(this);
     }
 
     public void calculatePaidAmount() {

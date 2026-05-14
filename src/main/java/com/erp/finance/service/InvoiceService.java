@@ -25,6 +25,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.erp.finance.entity.PaymentDirection;
+import com.erp.finance.entity.PaymentPartnerType;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -140,18 +142,22 @@ public class InvoiceService {
             throw new BusinessException("INVOICE_004", "Cannot add payment to cancelled invoice");
         }
 
-        Payment payment = Payment.builder()
-                .invoice(invoice)
+        // Using the old payment creation for backward compatibility
+        com.erp.finance.entity.Payment payment = com.erp.finance.entity.Payment.builder()
                 .amount(request.getAmount())
-                .paymentDate(request.getPaymentDate())
-                .method(request.getMethod())
-                .reference(request.getReference())
-                .notes(request.getNotes())
+                .date(request.getPaymentDate())
+                .paymentReference(request.getReference())
+                .paymentType(PaymentDirection.INBOUND)
+                .partnerType(PaymentPartnerType.CUSTOMER)
+                .partnerId(invoice.getCustomer() != null ? invoice.getCustomer().getId() : null)
+                .partnerName(invoice.getCustomer() != null ? invoice.getCustomer().getName() : null)
                 .build();
 
         payment = paymentRepository.save(payment);
-        
-        invoice.addPayment(payment);
+
+        // Update invoice paid amount directly
+        invoice.setPaidAmount(invoice.getPaidAmount() != null ?
+                invoice.getPaidAmount().add(request.getAmount()) : request.getAmount());
         invoice.calculatePaidAmount();
         
         if (invoice.getPaidAmount().compareTo(invoice.getTotalAmount()) >= 0) {

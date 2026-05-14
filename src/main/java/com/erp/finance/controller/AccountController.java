@@ -64,9 +64,9 @@ public class AccountController {
     }
 
     @GetMapping("/balances")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getGroupBalances() {
+    public ResponseEntity<ApiResponse<Map<InternalGroup, BigDecimal>>> getGroupBalances() {
         Map<InternalGroup, BigDecimal> balances = accountService.getGroupBalances();
-        return ResponseEntity.ok(ApiResponse.success(Map.copyOf(balances)));
+        return ResponseEntity.ok(ApiResponse.success(balances));
     }
 
     @PostMapping
