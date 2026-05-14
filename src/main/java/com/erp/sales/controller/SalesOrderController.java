@@ -58,6 +58,8 @@ public class SalesOrderController {
         return ResponseEntity.ok(ApiResponse.success(order, "Sales order updated successfully"));
     }
 
+    // ---- Lifecycle endpoints ----
+
     @PutMapping("/{id}/send")
     public ResponseEntity<ApiResponse<SalesOrderDto>> send(@PathVariable Long id) {
         SalesOrderDto order = salesOrderService.send(id);
@@ -80,6 +82,21 @@ public class SalesOrderController {
     public ResponseEntity<ApiResponse<SalesOrderDto>> cancel(@PathVariable Long id) {
         SalesOrderDto order = salesOrderService.cancel(id);
         return ResponseEntity.ok(ApiResponse.success(order, "Sales order cancelled successfully"));
+    }
+
+    // ---- New endpoints ----
+
+    @PostMapping("/{id}/duplicate")
+    public ResponseEntity<ApiResponse<SalesOrderDto>> duplicate(@PathVariable Long id) {
+        SalesOrderDto order = salesOrderService.duplicate(id);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(order, "Sales order duplicated successfully"));
+    }
+
+    @PostMapping("/{id}/invoice")
+    public ResponseEntity<ApiResponse<SalesOrderDto>> createInvoice(@PathVariable Long id) {
+        SalesOrderDto order = salesOrderService.createInvoice(id);
+        return ResponseEntity.ok(ApiResponse.success(order, "Invoice created from sales order successfully"));
     }
 
     @DeleteMapping("/{id}")
