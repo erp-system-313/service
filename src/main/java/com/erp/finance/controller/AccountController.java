@@ -1,5 +1,6 @@
 package com.erp.finance.controller;
 
+import com.erp.finance.dto.AccountDto;
 import com.erp.finance.entity.Account;
 import com.erp.finance.entity.AccountGroup;
 import com.erp.finance.entity.AccountType;
@@ -9,6 +10,8 @@ import com.erp.common.dto.ApiResponse;
 import com.erp.common.dto.PageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,9 +28,11 @@ public class AccountController {
     private final AccountService accountService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Account>>> getAll() {
-        List<Account> accounts = accountService.findAllActive();
-        return ResponseEntity.ok(ApiResponse.success(accounts));
+    public ResponseEntity<PageResponse<AccountDto>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int size) {
+        Page<AccountDto> accountPage = accountService.findAllActiveDto(PageRequest.of(page, size));
+        return ResponseEntity.ok(PageResponse.from(accountPage));
     }
 
     @GetMapping("/{id}")
