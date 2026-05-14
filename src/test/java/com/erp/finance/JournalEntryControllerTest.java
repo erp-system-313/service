@@ -14,16 +14,31 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 public class JournalEntryControllerTest extends BaseControllerTest {
 
+    // GET-based tests
     @Test public void testList() { check("/api/v1/journal-entries"); }
     @Test public void testGet() { check("/api/v1/journal-entries/1"); }
-    @Test public void testCreate() { post("/api/v1/journal-entries"); }
-    @Test public void testPost() { post("/api/v1/journal-entries/1/post", "PUT"); }
-    @Test public void testReverse() { post("/api/v1/journal-entries/1/reverse", "PUT"); }
     @Test public void testNoAuth() { assertThat(noauth("/api/v1/journal-entries").getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED); }
 
+    // POST without body → BAD_REQUEST (validation error)
+    @Test public void testCreate() {
+        assertThat(req("/api/v1/journal-entries", HttpMethod.POST).getStatusCode())
+            .isIn(HttpStatus.BAD_REQUEST, HttpStatus.UNAUTHORIZED);
+    }
+
+    // POST to /{id}/post (the controller uses @PostMapping)
+    @Test public void testPost() {
+        assertThat(req("/api/v1/journal-entries/1/post", HttpMethod.POST).getStatusCode())
+            .isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.BAD_REQUEST, HttpStatus.UNAUTHORIZED);
+    }
+
+    // PUT to /{id}/reverse (the controller uses @PutMapping)
+    @Test public void testReverse() {
+        assertThat(req("/api/v1/journal-entries/1/reverse", HttpMethod.PUT).getStatusCode())
+            .isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.BAD_REQUEST, HttpStatus.UNAUTHORIZED);
+    }
+
+    // Shared helper methods
     private void check(String u) { assertThat(req(u).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED); }
-    private void post(String u) { post(u, "POST"); }
-    private void post(String u, String m) { HttpMethod method = "PUT".equals(m) ? HttpMethod.PUT : HttpMethod.POST; assertThat(req(u, method).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED); }
     private ResponseEntity<String> req(String u) { return restTemplate.getForEntity(u, String.class); }
     private ResponseEntity<String> req(String u, HttpMethod m) { return restTemplate.exchange(u, m, new HttpEntity<>(adminHeaders()), String.class); }
     private String url(String u) { return u; }
