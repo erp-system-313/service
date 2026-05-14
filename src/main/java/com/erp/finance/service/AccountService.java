@@ -1,9 +1,12 @@
 package com.erp.finance.service;
 
+import com.erp.finance.dto.AccountDto;
 import com.erp.finance.entity.*;
 import com.erp.finance.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -26,6 +29,14 @@ public class AccountService {
 
     public List<Account> findAllActive() {
         return accountRepository.findAllActiveWithGroups();
+    }
+
+    public Page<AccountDto> findAllActiveDto(Pageable pageable) {
+        Page<Account> page = accountRepository.findByDeprecatedFalse(pageable);
+        return page.map(account -> {
+            BigDecimal balance = computeBalance(account.getId());
+            return AccountDto.fromEntity(account, balance);
+        });
     }
 
     public Account findById(Long id) {
