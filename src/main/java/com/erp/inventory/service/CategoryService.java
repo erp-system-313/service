@@ -32,13 +32,11 @@ public class CategoryService {
     public PageResponse<CategoryDto> findAll(int page, int size, String status) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        Page<Category> categories;
-        if (status != null) {
-            Boolean isActive = status.toUpperCase().equals("ACTIVE");
-            categories = categoryRepository.findByIsActive(isActive, pageable);
-        } else {
-            categories = categoryRepository.findAll(pageable);
+        if (status == null) {
+            status = "ACTIVE";
         }
+        Boolean isActive = status.toUpperCase().equals("ACTIVE");
+        Page<Category> categories = categoryRepository.findByIsActive(isActive, pageable);
 
         return PageResponse.from(categories.map(this::toDto));
     }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import com.erp.inventory.entity.Product;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -22,6 +23,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<Product> findByIdWithCategory(@Param("id") Long id);
 
     Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
+
+    Page<Product> findByCategoryIdIn(List<Long> categoryIds, Pageable pageable);
 
     Page<Product> findByIsActive(Boolean isActive, Pageable pageable);
 
@@ -40,4 +43,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
            "LOWER(p.sku) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Product> search(@Param("search") String search, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.isActive = :isActive AND (" +
+           "LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(p.sku) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Product> searchByIsActive(@Param("search") String search, @Param("isActive") Boolean isActive, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.isActive = :isActive AND p.category.id IN :categoryIds")
+    Page<Product> findByCategoryIdInAndIsActive(@Param("categoryIds") List<Long> categoryIds, @Param("isActive") Boolean isActive, Pageable pageable);
 }

@@ -24,6 +24,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -38,16 +41,19 @@ public class ProductService {
     public PageResponse<ProductDto> findAll(int page, int size, String search, Long categoryId, String status) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
+        if (status == null) {
+            status = "ACTIVE";
+        }
+        Boolean isActive = "ACTIVE".equalsIgnoreCase(status);
+
         Page<Product> products;
         if (search != null && !search.isEmpty()) {
-            products = productRepository.search(search, pageable);
+            products = productRepository.searchByIsActive(search, isActive, pageable);
         } else if (categoryId != null) {
-            products = productRepository.findByCategoryId(categoryId, pageable);
-        } else if (status != null) {
-            Boolean isActive = "ACTIVE".equalsIgnoreCase(status);
-            products = productRepository.findByIsActive(isActive, pageable);
+            List<Long> categoryIds = getAllDescendantCategoryIds(categoryId);
+            products = productRepository.findByCategoryIdInAndIsActive(categoryIds, isActive, pageable);
         } else {
-            products = productRepository.findAll(pageable);
+            products = productRepository.findByIsActive(isActive, pageable);
         }
 
         return PageResponse.from(products.map(this::toDto));
@@ -131,6 +137,7 @@ public class ProductService {
         if (request.getReorderQuantity() != null) product.setReorderQuantity(request.getReorderQuantity());
         if (request.getUnitOfMeasure() != null) product.setUnitOfMeasure(request.getUnitOfMeasure());
         if (request.getImageUrl() != null) product.setImageUrl(request.getImageUrl());
+        if (request.getCurrentStock() != null) product.setCurrentStock(request.getCurrentStock());
 
         product = productRepository.save(product);
         log.info("Updated product with id: {}", product.getId());
@@ -162,14 +169,36 @@ public class ProductService {
         return PageResponse.from(products.map(this::toDto));
     }
 
+    private List<Long> getAllDescendantCategoryIds(Long categoryId) {
+        List<Long> ids = new ArrayList<>();
+        ids.add(categoryId);
+        collectChildIds(categoryId, ids);
+        return ids;
+    }
+
+    private void collectChildIds(Long parentId, List<Long> ids) {
+        List<Category> children = categoryRepository.findByParentId(parentId);
+        for (Category child : children) {
+            ids.add(child.getId());
+            collectChildIds(child.getId(), ids);
+        }
+    }
+
     private ProductDto toDto(Product product) {
+        Long categoryId = null;
+        String categoryName = null;
+        if (product.getCategory() != null && Boolean.TRUE.equals(product.getCategory().getIsActive())) {
+            categoryId = product.getCategory().getId();
+            categoryName = product.getCategory().getName();
+        }
+
         return ProductDto.builder()
                 .id(product.getId())
                 .sku(product.getSku())
                 .name(product.getName())
                 .description(product.getDescription())
-                .categoryId(product.getCategory() != null ? product.getCategory().getId() : null)
-                .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
+                .categoryId(categoryId)
+                .categoryName(categoryName)
                 .supplierId(product.getSupplier() != null ? product.getSupplier().getId() : null)
                 .supplierName(product.getSupplier() != null ? product.getSupplier().getName() : null)
                 .unitPrice(product.getUnitPrice())
