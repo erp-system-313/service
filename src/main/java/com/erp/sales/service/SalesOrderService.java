@@ -61,6 +61,7 @@ public class SalesOrderService {
 
     // ---- Queries ----
 
+    @Transactional(readOnly = true)
     public PageResponse<SalesOrderDto> findAll(int page, int size, OrderStatus status, 
                                                 Long customerId, LocalDateTime dateFrom, 
                                                 LocalDateTime dateTo) {
@@ -72,6 +73,7 @@ public class SalesOrderService {
         return PageResponse.from(orders.map(SalesOrderDto::fromEntity));
     }
 
+    @Transactional(readOnly = true)
     public SalesOrderDto findById(Long id) {
         SalesOrder order = salesOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("SalesOrder", id));
