@@ -14,14 +14,17 @@
 | `85ac25d` | **Incoterm**: New reference entity (EXW, FOB, CIF, etc.). `GET /api/v1/incoterms`. |
 | `d16319a` | **Enhanced SalesOrder/SalesOrderLine**: Add Odoo-inspired fields — `paymentTerm`, `pricelistId`, `currencyId`, `incoterm`, `team`, `salespersonId`, `partnerInvoiceId`, `partnerShippingId`, `validityDate`, `amountUntaxed`, `amountDiscount`, `@Version` optimistic locking on SalesOrder; `discount`, `taxIds` (M2M → finance `Tax`), `priceSubtotal`, `priceTotal`, `sequence`, `displayType`, `productUom` on SalesOrderLine. |
 | `00690fc` | **Partner**: New entity (Odoo `res.partner` equivalent) with company/contact hierarchy, tax ID, address details, payment terms link, pricelist assignment. `GET/POST /api/v1/partners`, `GET /{id}/contacts`. |
+| `162cb90` | **DTO updates**: SalesOrderDto, SalesOrderLineDto, CreateSalesOrderRequest — all new fields (discount, taxIds, pricelistId, currencyId, etc.) |
+| `2cdbb34` | **Service+Controller**: enhanced SalesOrderService with `duplicate()`, `createInvoice()` (creates a finance Move), sequence-based order number; new `POST /{id}/duplicate`, `POST /{id}/invoice` endpoints |
+| `1f04656` | **V24 migration**: new tables (sales_teams, price_lists, price_list_items, incoterms, partners, sales_team_members, sales_order_line_taxes), ALTER existing tables with new columns, seed incoterms |
 
 ## Phase Status
 
 | Phase | Sub-phases | Status |
 |-------|------------|--------|
 | B: Fixes | B1 (PaymentTerms), B2 (OrderStatus), B3 (date filtering), B4 (createdByName) | ✅ Done |
-| A: Foundation | A1 (SalesTeam), A2 (PriceList), A3 (SENT status), A4 (Partner), A5 (tax link), A6 (discount), A7 (payment terms), A8 (multi-currency), A9 (Incoterm), A10 (sequence) | ⏳ A10 pending |
-| C: Services | C1 (PriceListService), C2 (SalesTeamService) | ⏳ In progress |
-| D: Controllers | D1-D10 | ⏳ Not started |
-| E: DTOs | E1-E5 | ⏳ Not started |
-| M: Migration | V24__sales_overhaul.sql | ⏳ Not started |
+| A: Foundation | A1 (SalesTeam), A2 (PriceList), A3 (SENT status), A4 (Partner), A5 (tax link), A6 (discount), A7 (payment terms), A8 (multi-currency), A9 (Incoterm), A10 (sequence) | ✅ Done |
+| C: Services | C1-C5 (PriceListService, SalesTeamService, PartnerService, IncotermService, enhanced SalesOrderService) | ✅ Done |
+| D: Controllers | D1-D10 (SalesTeam, PriceList, Partner, Incoterm, enhanced SalesOrder) | ✅ Done |
+| E: DTOs | E1-E5 (SalesOrderDto, SalesOrderLineDto, Create/Update request DTOs) | ✅ Done |
+| M: Migration | V24__sales_overhaul.sql | ✅ Done |
