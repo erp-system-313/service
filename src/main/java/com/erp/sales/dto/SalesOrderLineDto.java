@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -18,5 +19,14 @@ public class SalesOrderLineDto {
     private String productSku;
     private BigDecimal quantity;
     private BigDecimal unitPrice;
-        private BigDecimal lineTotal;
+    private BigDecimal lineTotal;
+
+    // ---- New Odoo-inspired fields ----
+    private BigDecimal discount;
+    private Set<Long> taxIds;
+    private BigDecimal priceSubtotal;
+    private BigDecimal priceTotal;
+    private Integer sequence;
+    private String displayType;
+    private String productUom;
 }
