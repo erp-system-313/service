@@ -102,7 +102,7 @@ public class ProductService {
         product = productRepository.save(product);
         log.info("Created product with id: {} and sku: {}", product.getId(), request.getSku());
 
-        auditLogService.log(currentUserUtil.getCurrentUserId(), "CREATE", "Product", product.getId(), null, ipAddress, "Product created");
+        auditLogService.log(currentUserId, "CREATE", "Product", product.getId(), null, ipAddress, "Product created");
 
         return toDto(product);
     }
@@ -142,7 +142,7 @@ public class ProductService {
         product = productRepository.save(product);
         log.info("Updated product with id: {}", product.getId());
 
-        auditLogService.log(currentUserUtil.getCurrentUserId(), "UPDATE", "Product", product.getId(), null, ipAddress, "Product updated");
+        auditLogService.log(currentUserId, "UPDATE", "Product", product.getId(), null, ipAddress, "Product updated");
 
         return toDto(product);
     }
@@ -156,7 +156,7 @@ public class ProductService {
         productRepository.save(product);
         log.info("Deactivated product with id: {}", id);
 
-        auditLogService.log(currentUserUtil.getCurrentUserId(), "DELETE", "Product", id, null, ipAddress, "Product deactivated");
+        auditLogService.log(currentUserId, "DELETE", "Product", id, null, ipAddress, "Product deactivated");
     }
 
     public long countActive() {

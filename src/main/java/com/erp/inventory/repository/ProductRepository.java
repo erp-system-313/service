@@ -32,6 +32,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     long countByCategoryId(Long categoryId);
 
+    long countByCategoryIdAndIsActive(Long categoryId, Boolean isActive);
+
     @Query("SELECT COUNT(p) FROM Product p WHERE p.currentStock < p.reorderLevel AND p.isActive = :isActive")
     long countLowStock(@Param("isActive") Boolean isActive);
 
