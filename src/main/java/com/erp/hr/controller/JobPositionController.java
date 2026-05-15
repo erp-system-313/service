@@ -24,7 +24,7 @@ public class JobPositionController {
     private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') or hasAuthority('HR_READ')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<PageResponse<JobPositionDto>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -33,14 +33,14 @@ public class JobPositionController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') or hasAuthority('HR_READ')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<JobPositionDto>> getById(@PathVariable Long id) {
         JobPositionDto position = jobPositionService.findById(id);
         return ResponseEntity.ok(ApiResponse.success(position));
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HR_WRITE')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<JobPositionDto>> create(
             @Valid @RequestBody CreateJobPositionRequest request,
             HttpServletRequest httpRequest) {
@@ -51,7 +51,7 @@ public class JobPositionController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HR_WRITE')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<JobPositionDto>> update(
             @PathVariable Long id,
             @Valid @RequestBody UpdateJobPositionRequest request,
@@ -63,7 +63,7 @@ public class JobPositionController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HR_DELETE')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {

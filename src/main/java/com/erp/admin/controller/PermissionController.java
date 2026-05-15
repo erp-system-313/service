@@ -22,7 +22,7 @@ public class PermissionController {
     private final PermissionRepository permissionRepository;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('ADMIN_READ')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getAll() {
         List<Map<String, Object>> permissions = permissionRepository.findAllByOrderByModuleAscActionAsc()
                 .stream()

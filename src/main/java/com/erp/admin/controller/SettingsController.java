@@ -25,21 +25,21 @@ public class SettingsController {
     private final SettingsService settingsService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('ADMIN_READ')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Map<String, String>>> getAll() {
         Map<String, String> settings = settingsService.getAllSettings();
         return ResponseEntity.ok(ApiResponse.success(settings));
     }
 
     @GetMapping("/company")
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('ADMIN_READ')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<CompanySettingsDto>> getCompanySettings() {
         CompanySettingsDto settings = settingsService.getCompanySettings();
         return ResponseEntity.ok(ApiResponse.success(settings));
     }
 
     @PutMapping("/company")
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('ADMIN_WRITE')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<CompanySettingsDto>> updateCompanySettings(
             @Valid @RequestBody CompanySettingsDto request) {
         CompanySettingsDto settings = settingsService.updateCompanySettings(request);
@@ -47,14 +47,14 @@ public class SettingsController {
     }
 
     @GetMapping("/notifications")
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('ADMIN_READ')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<NotificationSettingsDto>> getNotificationSettings() {
         NotificationSettingsDto settings = settingsService.getNotificationSettings();
         return ResponseEntity.ok(ApiResponse.success(settings));
     }
 
     @PutMapping("/notifications")
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('ADMIN_WRITE')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<NotificationSettingsDto>> updateNotificationSettings(
             @Valid @RequestBody NotificationSettingsDto request) {
         NotificationSettingsDto settings = settingsService.updateNotificationSettings(request);
@@ -62,14 +62,14 @@ public class SettingsController {
     }
 
     @GetMapping("/hr")
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('ADMIN_READ')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<HrSettingsDto>> getHrSettings() {
         HrSettingsDto settings = settingsService.getHrSettings();
         return ResponseEntity.ok(ApiResponse.success(settings));
     }
 
     @PutMapping("/hr")
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('ADMIN_WRITE')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<HrSettingsDto>> updateHrSettings(
             @Valid @RequestBody HrSettingsDto request) {
         HrSettingsDto settings = settingsService.updateHrSettings(request);
@@ -77,21 +77,21 @@ public class SettingsController {
     }
 
     @GetMapping("/{key}")
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('ADMIN_READ')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<SettingsDto>> getByKey(@PathVariable String key) {
         SettingsDto settings = settingsService.getByKey(key);
         return ResponseEntity.ok(ApiResponse.success(settings));
     }
 
     @PutMapping
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('ADMIN_WRITE')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<SettingsDto>> update(@Valid @RequestBody UpdateSettingsRequest request) {
         SettingsDto settings = settingsService.update(request);
         return ResponseEntity.ok(ApiResponse.success(settings, "Settings updated successfully"));
     }
 
     @DeleteMapping("/{key}")
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('ADMIN_DELETE')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable String key,
             HttpServletRequest httpRequest) {

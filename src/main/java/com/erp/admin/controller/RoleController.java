@@ -58,14 +58,14 @@ public class RoleController {
     }
 
     @GetMapping("/{id}/permissions")
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('ADMIN_READ')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<Long>>> getPermissions(@PathVariable Long id) {
         List<Long> permissionIds = roleService.getPermissionIds(id);
         return ResponseEntity.ok(ApiResponse.success(permissionIds));
     }
 
     @PutMapping("/{id}/permissions")
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('ADMIN_WRITE')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> assignPermissions(
             @PathVariable Long id,
             @RequestBody Map<String, List<Long>> body) {
