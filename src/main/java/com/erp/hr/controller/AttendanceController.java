@@ -1,7 +1,6 @@
 package com.erp.hr.controller;
 
 import com.erp.auth.security.CurrentUserUtil;
-import com.erp.auth.security.UserPrincipal;
 import com.erp.hr.dto.AttendanceDto;
 import com.erp.hr.dto.ClockedInEmployeeDto;
 import com.erp.hr.service.AttendanceService;
@@ -12,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -26,6 +26,7 @@ public class AttendanceController {
     private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<PageResponse<AttendanceDto>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -36,16 +37,18 @@ public class AttendanceController {
         return ResponseEntity.ok(ApiResponse.success(attendances));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<AttendanceDto>> getById(@PathVariable Long id) {
-        AttendanceDto attendance = attendanceService.findById(id);
-        return ResponseEntity.ok(ApiResponse.success(attendance));
-    }
-
     @GetMapping("/clocked-in")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<List<ClockedInEmployeeDto>>> getClockedIn() {
         List<ClockedInEmployeeDto> employees = attendanceService.findClockedIn();
         return ResponseEntity.ok(ApiResponse.success(employees));
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public ResponseEntity<ApiResponse<AttendanceDto>> getById(@PathVariable Long id) {
+        AttendanceDto attendance = attendanceService.findById(id);
+        return ResponseEntity.ok(ApiResponse.success(attendance));
     }
 
     @PostMapping("/clock-in")
@@ -77,34 +80,31 @@ public class AttendanceController {
     }
     
     private Long resolveTargetEmployeeId(Long requestedEmployeeId, Long currentUserId, boolean isAdmin) {
-        if (requestedEmployeeId != null) {
+        Long ownEmployeeId = attendanceService.getEmployeeIdByUserId(currentUserId);
+        
+        if (isAdmin) {
+            if (requestedEmployeeId == null) {
+                throw new BusinessException("ATTENDANCE_004",
+                    "Admin users must provide employeeId when clocking in or out for an employee");
+            }
             return requestedEmployeeId;
         }
         
-        if (isAdmin) {
-            throw new BusinessException("ATTENDANCE_004",
-                "Admin users must provide employeeId when clocking in or out for an employee");
+        if (requestedEmployeeId != null && !requestedEmployeeId.equals(ownEmployeeId)) {
+            throw new BusinessException("ATTENDANCE_008",
+                "You can only clock in or out for yourself");
         }
         
-        Long employeeId = attendanceService.getEmployeeIdByUserId(currentUserId);
-        if (employeeId != null) {
-            return employeeId;
-        }
-        
-        throw new BusinessException("ATTENDANCE_005", 
-            "No employee linked to your account. Contact admin.");
+        return ownEmployeeId;
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
         Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
-        
-        if (!currentUserUtil.isCurrentUserAdmin()) {
-            throw new BusinessException("ATTENDANCE_006", "Only admins can delete attendance records");
-        }
         
         attendanceService.delete(id, currentUserId, ipAddress);
         return ResponseEntity.noContent().build();
