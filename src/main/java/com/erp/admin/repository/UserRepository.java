@@ -30,4 +30,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Page<User> findByRoleName(@Param("roleName") String roleName, Pageable pageable);
 
     Optional<User> findByResetToken(String resetToken);
+
+    @Query("SELECT COUNT(u) FROM User u WHERE u.role.name = 'ADMIN' AND u.isActive = true")
+    long countActiveAdmins();
 }
