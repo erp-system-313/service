@@ -74,16 +74,16 @@ public class LeaveController {
     @PutMapping("/{id}/reject")
     public ResponseEntity<ApiResponse<LeaveRequestDto>> reject(
             @PathVariable Long id,
-            @RequestBody Map<String, String> body,
+            @RequestBody(required = false) Map<String, String> body,
             HttpServletRequest httpRequest) {
         if (!currentUserUtil.isCurrentUserAdmin()) {
             throw new BusinessException("LEAVE_003", "Only admins can reject leave requests");
         }
         Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
-        String reason = body.get("reason");
+        String reason = body != null ? body.get("reason") : null;
         if (reason == null || reason.isBlank()) {
-            throw new BusinessException("LEAVE_004", "Rejection reason is required");
+            reason = "Rejected by admin";
         }
         LeaveRequestDto request = leaveService.reject(id, currentUserId, reason, ipAddress);
         return ResponseEntity.ok(ApiResponse.success(request, "Leave request rejected"));
@@ -92,8 +92,9 @@ public class LeaveController {
     @GetMapping("/balances")
     public ResponseEntity<ApiResponse<List<LeaveBalanceDto>>> getBalances(
             @RequestParam(required = false) Long employeeId,
-            @RequestParam(defaultValue = "2026") int year) {
-        List<LeaveBalanceDto> balances = leaveService.getBalances(employeeId, year);
+            @RequestParam(required = false) Integer year) {
+        int targetYear = year != null ? year : java.time.Year.now().getValue();
+        List<LeaveBalanceDto> balances = leaveService.getBalances(employeeId, targetYear);
         return ResponseEntity.ok(ApiResponse.success(balances));
     }
     

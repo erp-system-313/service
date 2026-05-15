@@ -92,7 +92,7 @@ public class AttendanceController {
         }
 
         if (isAdmin) {
-            return null;
+            return attendanceService.getFirstActiveEmployeeId();
         }
 
         Long employeeId = attendanceService.getEmployeeIdByUserId(currentUserId);

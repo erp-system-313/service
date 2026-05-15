@@ -27,7 +27,7 @@ public class JournalEntry {
     @Column(name = "entry_number", nullable = false, unique = true, length = 50)
     private String entryNumber;
 
-    @Column(nullable = false)
+    @Column(name = "entry_date", nullable = false)
     private LocalDate date;
 
     @Column(name = "journal_type", length = 20)
