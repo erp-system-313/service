@@ -24,6 +24,10 @@ public class EmployeeDto {
     private String phone;
     private String department;
     private String position;
+    private Long departmentId;
+    private String departmentName;
+    private Long positionId;
+    private String positionName;
     private LocalDate hireDate;
     private LocalDate terminationDate;
     private BigDecimal salary;

@@ -8,6 +8,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 public class UserPrincipal implements UserDetails {
@@ -19,23 +21,35 @@ public class UserPrincipal implements UserDetails {
     private final boolean isActive;
     private final Collection<? extends GrantedAuthority> authorities;
 
-    public UserPrincipal(Long id, String email, String password, String role, boolean isActive) {
+    public UserPrincipal(Long id, String email, String password, String role, boolean isActive,
+                         Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.email = email;
         this.password = password;
         this.role = role;
         this.isActive = isActive;
-        this.authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
+        this.authorities = authorities;
     }
 
     public static UserPrincipal create(User user) {
         String roleName = user.getRole() != null ? user.getRole().getName() : "USER";
+        Set<GrantedAuthority> authorities = new HashSet<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + roleName));
+
+        if (user.getRole() != null && user.getRole().getRolePermissions() != null) {
+            user.getRole().getRolePermissions().forEach(permission -> {
+                String authority = permission.getModule() + "_" + permission.getAction();
+                authorities.add(new SimpleGrantedAuthority(authority));
+            });
+        }
+
         return new UserPrincipal(
                 user.getId(),
                 user.getEmail(),
                 user.getPasswordHash(),
                 roleName,
-                user.getIsActive()
+                user.getIsActive(),
+                Collections.unmodifiableSet(authorities)
         );
     }
 

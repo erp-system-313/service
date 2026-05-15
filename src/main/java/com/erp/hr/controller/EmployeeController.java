@@ -1,6 +1,7 @@
 package com.erp.hr.controller;
 
 import com.erp.auth.security.CurrentUserUtil;
+import com.erp.hr.dto.ActiveEmployeeDto;
 import com.erp.hr.dto.AttendanceDto;
 import com.erp.hr.dto.CreateEmployeeRequest;
 import com.erp.hr.dto.EmployeeDto;
@@ -15,9 +16,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -29,23 +32,33 @@ public class EmployeeController {
     private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<PageResponse<EmployeeDto>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) String department,
+            @RequestParam(required = false) Long departmentId,
             @RequestParam(required = false) String status) {
 
-        PageResponse<EmployeeDto> employees = employeeService.findAll(page, size, department, status);
+        PageResponse<EmployeeDto> employees = employeeService.findAll(page, size, departmentId, status);
+        return ResponseEntity.ok(ApiResponse.success(employees));
+    }
+
+    @GetMapping("/active")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public ResponseEntity<ApiResponse<List<ActiveEmployeeDto>>> getActiveEmployees() {
+        List<ActiveEmployeeDto> employees = employeeService.findAllActive();
         return ResponseEntity.ok(ApiResponse.success(employees));
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<EmployeeDto>> getById(@PathVariable Long id) {
         EmployeeDto employee = employeeService.findById(id);
         return ResponseEntity.ok(ApiResponse.success(employee));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<EmployeeDto>> create(
             @Valid @RequestBody CreateEmployeeRequest request,
             HttpServletRequest httpRequest) {
@@ -56,6 +69,7 @@ public class EmployeeController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<EmployeeDto>> update(
             @PathVariable Long id,
             @Valid @RequestBody UpdateEmployeeRequest request,
@@ -67,6 +81,7 @@ public class EmployeeController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
@@ -77,6 +92,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/{id}/attendance")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<PageResponse<AttendanceDto>>> getAttendance(
             @PathVariable Long id,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,

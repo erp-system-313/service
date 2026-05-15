@@ -16,6 +16,7 @@ public class AttendanceControllerTest {
 
     @Test public void testList() { check("/api/v1/attendance"); }
     @Test public void testGet() { check("/api/v1/attendance/1"); }
+    @Test public void testClockedIn() { check("/api/v1/attendance/clocked-in"); }
     @Test public void testClockIn() { post("/api/v1/attendance/clock-in", "POST"); }
     @Test public void testClockOut() { post("/api/v1/attendance/clock-out", "POST"); }
     @Test public void testNoAuth() { assertThat(noauth("/api/v1/attendance").getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN); }

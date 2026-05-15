@@ -17,10 +17,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByEmail(String email);
 
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.role WHERE u.id = :id")
+    boolean existsByRoleIdAndIsActiveTrue(Long roleId);
+
+    @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.role r LEFT JOIN FETCH r.rolePermissions WHERE u.id = :id")
     Optional<User> findByIdWithRole(@Param("id") Long id);
 
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.role WHERE u.email = :email")
+    @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.role r LEFT JOIN FETCH r.rolePermissions WHERE u.email = :email")
     Optional<User> findByEmailWithRole(@Param("email") String email);
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.role WHERE u.isActive = true")
@@ -30,6 +32,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Page<User> findByRoleName(@Param("roleName") String roleName, Pageable pageable);
 
     Optional<User> findByResetToken(String resetToken);
+
+    @Query("SELECT COUNT(u) FROM User u WHERE u.role.name = 'ADMIN' AND u.isActive = true")
+    long countActiveAdmins();
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.role WHERE LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(u.firstName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<User> search(@Param("search") String search, Pageable pageable);

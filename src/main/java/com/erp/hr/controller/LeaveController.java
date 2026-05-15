@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +30,7 @@ public class LeaveController {
     private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<PageResponse<LeaveRequestDto>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -42,6 +44,7 @@ public class LeaveController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<LeaveRequestDto>> getById(@PathVariable Long id) {
         LeaveRequestDto request = leaveService.findById(id);
         return ResponseEntity.ok(ApiResponse.success(request));
@@ -59,12 +62,10 @@ public class LeaveController {
     }
 
     @PutMapping("/{id}/approve")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<LeaveRequestDto>> approve(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
-        if (!currentUserUtil.isCurrentUserAdmin()) {
-            throw new BusinessException("LEAVE_003", "Only admins can approve leave requests");
-        }
         Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         LeaveRequestDto request = leaveService.approve(id, currentUserId, ipAddress);
@@ -72,13 +73,11 @@ public class LeaveController {
     }
 
     @PutMapping("/{id}/reject")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<LeaveRequestDto>> reject(
             @PathVariable Long id,
             @RequestBody(required = false) Map<String, String> body,
             HttpServletRequest httpRequest) {
-        if (!currentUserUtil.isCurrentUserAdmin()) {
-            throw new BusinessException("LEAVE_003", "Only admins can reject leave requests");
-        }
         Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
         String reason = body != null ? body.get("reason") : null;
@@ -90,6 +89,7 @@ public class LeaveController {
     }
 
     @GetMapping("/balances")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<List<LeaveBalanceDto>>> getBalances(
             @RequestParam(required = false) Long employeeId,
             @RequestParam(required = false) Integer year) {

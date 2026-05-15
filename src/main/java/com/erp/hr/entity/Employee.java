@@ -10,6 +10,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.erp.hr.entity.Department;
+import com.erp.hr.entity.JobPosition;
+
 @Entity
 @Table(name = "employees")
 @Getter
@@ -47,6 +50,14 @@ public class Employee {
 
     @Column(length = 100)
     private String position;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id")
+    private Department departmentRef;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "position_id")
+    private JobPosition positionRef;
 
     @Column(name = "hire_date", nullable = false)
     private LocalDate hireDate;

@@ -1,14 +1,19 @@
 package com.erp.hr.service;
 
 import com.erp.auth.security.CurrentUserUtil;
+import com.erp.hr.dto.ActiveEmployeeDto;
 import com.erp.hr.dto.AttendanceDto;
 import com.erp.hr.dto.CreateEmployeeRequest;
 import com.erp.hr.dto.EmployeeDto;
 import com.erp.hr.dto.UpdateEmployeeRequest;
 import com.erp.hr.entity.Attendance;
+import com.erp.hr.entity.Department;
 import com.erp.hr.entity.Employee;
+import com.erp.hr.entity.JobPosition;
 import com.erp.hr.repository.AttendanceRepository;
 import com.erp.hr.repository.EmployeeRepository;
+import com.erp.hr.repository.DepartmentRepository;
+import com.erp.hr.repository.JobPositionRepository;
 import com.erp.admin.repository.UserRepository;
 import com.erp.admin.service.AuditLogService;
 import com.erp.common.dto.PageResponse;
@@ -24,6 +29,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,21 +40,23 @@ public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final AttendanceRepository attendanceRepository;
     private final UserRepository userRepository;
+    private final DepartmentRepository departmentRepository;
+    private final JobPositionRepository jobPositionRepository;
     private final AuditLogService auditLogService;
     private final CurrentUserUtil currentUserUtil;
 
-    public PageResponse<EmployeeDto> findAll(int page, int size, String department, String status) {
+    public PageResponse<EmployeeDto> findAll(int page, int size, Long departmentId, String status) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
         Page<Employee> employees;
         boolean includeAllStatuses = status != null && status.equalsIgnoreCase("ALL");
-        if (department != null && status != null && !includeAllStatuses) {
+        if (departmentId != null && status != null && !includeAllStatuses) {
             Employee.EmployeeStatus employeeStatus = Employee.EmployeeStatus.valueOf(status.toUpperCase());
-            employees = employeeRepository.findByDepartmentAndStatus(department, employeeStatus, pageable);
-        } else if (department != null) {
+            employees = employeeRepository.findByDepartmentRefIdAndStatus(departmentId, employeeStatus, pageable);
+        } else if (departmentId != null) {
             employees = includeAllStatuses
-                    ? employeeRepository.findByDepartment(department, pageable)
-                    : employeeRepository.findByDepartmentAndStatus(department, Employee.EmployeeStatus.ACTIVE, pageable);
+                    ? employeeRepository.findByDepartmentRefId(departmentId, pageable)
+                    : employeeRepository.findByDepartmentRefIdAndStatus(departmentId, Employee.EmployeeStatus.ACTIVE, pageable);
         } else if (status != null && !includeAllStatuses) {
             Employee.EmployeeStatus employeeStatus = Employee.EmployeeStatus.valueOf(status.toUpperCase());
             employees = employeeRepository.findByStatus(employeeStatus, pageable);
@@ -85,13 +94,25 @@ public class EmployeeService {
                 .lastName(request.getLastName())
                 .email(request.getEmail())
                 .phone(request.getPhone())
-                .department(request.getDepartment())
-                .position(request.getPosition())
                 .hireDate(hireDate)
                 .salary(request.getSalary())
                 .address(request.getAddress())
                 .status(Employee.EmployeeStatus.ACTIVE)
                 .build();
+
+        if (request.getDepartmentId() != null) {
+            Department dept = departmentRepository.findById(request.getDepartmentId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Department", request.getDepartmentId()));
+            employee.setDepartmentRef(dept);
+            employee.setDepartment(dept.getName());
+        }
+
+        if (request.getPositionId() != null) {
+            JobPosition pos = jobPositionRepository.findById(request.getPositionId())
+                    .orElseThrow(() -> new ResourceNotFoundException("JobPosition", request.getPositionId()));
+            employee.setPositionRef(pos);
+            employee.setPosition(pos.getTitle());
+        }
 
         if (request.getUserId() != null) {
             var user = userRepository.findById(request.getUserId())
@@ -122,13 +143,26 @@ public class EmployeeService {
         if (request.getFirstName() != null) employee.setFirstName(request.getFirstName());
         if (request.getLastName() != null) employee.setLastName(request.getLastName());
         if (request.getPhone() != null) employee.setPhone(request.getPhone());
-        if (request.getDepartment() != null) employee.setDepartment(request.getDepartment());
-        if (request.getPosition() != null) employee.setPosition(request.getPosition());
         if (request.getHireDate() != null) employee.setHireDate(request.getHireDate());
         if (request.getTerminationDate() != null) employee.setTerminationDate(request.getTerminationDate());
         if (request.getSalary() != null) employee.setSalary(request.getSalary());
         if (request.getStatus() != null) employee.setStatus(request.getStatus());
         if (request.getAddress() != null) employee.setAddress(request.getAddress());
+
+        if (request.getDepartmentId() != null) {
+            Department dept = departmentRepository.findById(request.getDepartmentId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Department", request.getDepartmentId()));
+            employee.setDepartmentRef(dept);
+            employee.setDepartment(dept.getName());
+        }
+
+        if (request.getPositionId() != null) {
+            JobPosition pos = jobPositionRepository.findById(request.getPositionId())
+                    .orElseThrow(() -> new ResourceNotFoundException("JobPosition", request.getPositionId()));
+            employee.setPositionRef(pos);
+            employee.setPosition(pos.getTitle());
+        }
+
         if (request.getUserId() != null) {
             var user = userRepository.findById(request.getUserId())
                     .orElseThrow(() -> new ResourceNotFoundException("User", request.getUserId()));
@@ -149,18 +183,38 @@ public class EmployeeService {
                 .orElseThrow(() -> new ResourceNotFoundException("Employee", id));
 
         employee.setStatus(Employee.EmployeeStatus.TERMINATED);
-        employee.setTerminationDate(java.time.LocalDate.now());
+        employee.setTerminationDate(LocalDate.now());
+
+        if (employee.getUser() != null) {
+            employee.getUser().setIsActive(false);
+        }
+
         employeeRepository.save(employee);
         log.info("Terminated employee with id: {}", id);
 
         auditLogService.log(currentUserUtil.getCurrentUserId(), "DELETE", "Employee", id, null, ipAddress, "Employee terminated");
     }
 
+    public List<ActiveEmployeeDto> findAllActive() {
+        return employeeRepository.findByStatus(Employee.EmployeeStatus.ACTIVE).stream()
+                .map(e -> ActiveEmployeeDto.builder()
+                        .id(e.getId())
+                        .employeeCode(e.getEmployeeCode())
+                        .firstName(e.getFirstName())
+                        .lastName(e.getLastName())
+                        .department(e.getDepartment())
+                        .position(e.getPosition())
+                        .departmentId(e.getDepartmentRef() != null ? e.getDepartmentRef().getId() : null)
+                        .positionId(e.getPositionRef() != null ? e.getPositionRef().getId() : null)
+                        .build())
+                .collect(Collectors.toList());
+    }
+
     public long countActive() {
         return employeeRepository.countByStatus(Employee.EmployeeStatus.ACTIVE);
     }
 
-    public PageResponse<AttendanceDto> getAttendance(Long employeeId, java.time.LocalDate dateFrom, java.time.LocalDate dateTo) {
+    public PageResponse<AttendanceDto> getAttendance(Long employeeId, LocalDate dateFrom, LocalDate dateTo) {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee", employeeId));
 
@@ -195,6 +249,10 @@ public class EmployeeService {
                 .phone(employee.getPhone())
                 .department(employee.getDepartment())
                 .position(employee.getPosition())
+                .departmentId(employee.getDepartmentRef() != null ? employee.getDepartmentRef().getId() : null)
+                .departmentName(employee.getDepartmentRef() != null ? employee.getDepartmentRef().getName() : null)
+                .positionId(employee.getPositionRef() != null ? employee.getPositionRef().getId() : null)
+                .positionName(employee.getPositionRef() != null ? employee.getPositionRef().getTitle() : null)
                 .hireDate(employee.getHireDate())
                 .terminationDate(employee.getTerminationDate())
                 .salary(employee.getSalary())

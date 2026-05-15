@@ -6,6 +6,7 @@ import com.erp.auth.dto.*;
 import com.erp.auth.security.JwtTokenProvider;
 import com.erp.auth.security.UserPrincipal;
 import com.erp.common.exception.BusinessException;
+import com.erp.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -119,5 +120,26 @@ public class AuthService {
         userRepository.save(user);
 
         log.info("Password reset successfully for user: {}", user.getEmail());
+    }
+
+    @Transactional
+    public void changePassword(Long currentUserId, ChangePasswordRequest request) {
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", currentUserId));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
+            throw new BusinessException("AUTH_008", "Current password is incorrect");
+        }
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new BusinessException("AUTH_009", "Password confirmation does not match");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        user.setResetToken(null);
+        user.setResetTokenExpiresAt(null);
+        userRepository.save(user);
+
+        log.info("Password changed for user: {}", user.getEmail());
     }
 }

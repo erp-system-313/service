@@ -3,6 +3,7 @@ package com.erp.admin.service;
 import com.erp.admin.dto.CreateUserRequest;
 import com.erp.admin.dto.UpdateUserRequest;
 import com.erp.admin.dto.UserDto;
+import com.erp.auth.dto.UpdateProfileRequest;
 import com.erp.admin.entity.Role;
 import com.erp.admin.entity.User;
 import com.erp.admin.repository.RoleRepository;
@@ -122,14 +123,39 @@ user = userRepository.save(user);
 
     @Transactional
     public void delete(Long id, Long currentUserId, String ipAddress) {
+        if (id.equals(currentUserId)) {
+            throw new BusinessException("USER_004", "You cannot deactivate your own account");
+        }
+
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", id));
+
+        if (user.getRole() != null && "ADMIN".equals(user.getRole().getName())) {
+            long activeAdmins = userRepository.countActiveAdmins();
+            if (activeAdmins <= 1) {
+                throw new BusinessException("USER_005", "Cannot deactivate the last active admin");
+            }
+        }
 
         user.setIsActive(false);
         userRepository.save(user);
         log.info("Soft deleted user with id: {}", id);
 
         auditLogService.log(currentUserUtil.getCurrentUserId(), "DELETE", "User", id, null, ipAddress, "User deactivated");
+    }
+
+    @Transactional
+    public UserDto updateProfile(Long userId, UpdateProfileRequest request) {
+        User user = userRepository.findByIdWithRole(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+
+        if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
+        if (request.getLastName() != null) user.setLastName(request.getLastName());
+
+        user = userRepository.save(user);
+        log.info("Profile updated for user: {}", user.getEmail());
+
+        return toDto(user);
     }
 
     private UserDto toDto(User user) {

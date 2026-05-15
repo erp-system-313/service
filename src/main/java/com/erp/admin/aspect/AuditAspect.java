@@ -47,7 +47,6 @@ public class AuditAspect {
                 } else if (args[i] instanceof com.erp.hr.dto.CreateEmployeeRequest) {
                     var request = (com.erp.hr.dto.CreateEmployeeRequest) args[i];
                     changes.put("email", request.getEmail());
-                    changes.put("department", request.getDepartment());
                 }
             }
         }

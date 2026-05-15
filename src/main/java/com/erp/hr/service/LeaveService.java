@@ -1,6 +1,7 @@
 package com.erp.hr.service;
 
 import com.erp.auth.security.CurrentUserUtil;
+import com.erp.hr.dto.CreateLeaveBalanceRequest;
 import com.erp.hr.dto.CreateLeaveRequest;
 import com.erp.hr.dto.LeaveBalanceDto;
 import com.erp.hr.dto.LeaveRequestDto;
@@ -58,11 +59,7 @@ public class LeaveService {
             leaveRequests = leaveRequestRepository.findByType(leaveType, pageable);
         } else if (!isAdmin) {
             Long empId = getEmployeeIdByUserId(currentUserUtil.getCurrentUserId());
-            if (empId != null) {
-                leaveRequests = leaveRequestRepository.findByEmployeeId(empId, pageable);
-            } else {
-                leaveRequests = leaveRequestRepository.findAll(pageable);
-            }
+            leaveRequests = leaveRequestRepository.findByEmployeeId(empId, pageable);
         } else {
             leaveRequests = leaveRequestRepository.findAll(pageable);
         }
@@ -73,6 +70,16 @@ public class LeaveService {
     public LeaveRequestDto findById(Long id) {
         LeaveRequest leaveRequest = leaveRequestRepository.findByIdWithEmployee(id)
                 .orElseThrow(() -> new ResourceNotFoundException("LeaveRequest", id));
+
+        Long currentUserId = currentUserUtil.getCurrentUserId();
+        boolean isAdmin = currentUserUtil.isCurrentUserAdmin();
+        if (!isAdmin) {
+            Long ownEmployeeId = getEmployeeIdByUserId(currentUserId);
+            if (!leaveRequest.getEmployee().getId().equals(ownEmployeeId)) {
+                throw new BusinessException("LEAVE_004", "You cannot view this leave request");
+            }
+        }
+
         return toDto(leaveRequest);
     }
 
@@ -176,12 +183,38 @@ public class LeaveService {
         return toDto(leaveRequest);
     }
 
+    @Transactional
+    public LeaveBalanceDto createBalance(CreateLeaveBalanceRequest request) {
+        Employee employee = employeeRepository.findById(request.getEmployeeId())
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", request.getEmployeeId()));
+
+        LeaveRequest.LeaveType leaveType = LeaveRequest.LeaveType.valueOf(request.getType().toUpperCase());
+        if (leaveBalanceRepository.existsByEmployeeIdAndTypeAndYear(
+                request.getEmployeeId(), leaveType, request.getYear())) {
+            throw new BusinessException("LEAVE_003",
+                    "Leave balance already exists for this employee, type, and year");
+        }
+
+        LeaveBalance balance = LeaveBalance.builder()
+                .employee(employee)
+                .type(leaveType)
+                .totalDays(request.getTotalDays())
+                .usedDays(0)
+                .year(request.getYear())
+                .build();
+
+        balance = leaveBalanceRepository.save(balance);
+        log.info("Created leave balance id: {} for employee id: {}", balance.getId(), employee.getId());
+        return toBalanceDto(balance);
+    }
+
+    @Transactional(readOnly = true)
     public List<LeaveBalanceDto> getBalances(Long employeeId, int year) {
-        List<LeaveBalance> balances = leaveBalanceRepository.findAll();
+        List<LeaveBalance> balances = employeeId != null
+                ? leaveBalanceRepository.findByEmployeeIdAndYear(employeeId, year)
+                : leaveBalanceRepository.findByYear(year);
 
         return balances.stream()
-                .filter(b -> employeeId == null || b.getEmployee().getId().equals(employeeId))
-                .filter(b -> b.getYear() == year)
                 .map(this::toBalanceDto)
                 .toList();
     }
@@ -203,9 +236,7 @@ public class LeaveService {
         if (employee.isPresent()) {
             return employee.get().getId();
         }
-        
-        throw new com.erp.common.exception.BusinessException("LEAVE_001", 
-            "No employee linked to your account. Contact admin.");
+        throw new BusinessException("LEAVE_002", "No employee linked to your account. Contact admin.");
     }
 
     private LeaveRequestDto toDto(LeaveRequest leaveRequest) {
