@@ -37,6 +37,10 @@ public class Customer {
     @Builder.Default
     private BigDecimal creditLimit = BigDecimal.ZERO;
 
+    @Column(name = "payment_terms", length = 20)
+    @Builder.Default
+    private String paymentTerms = "NET_30";
+
     @Column(name = "is_active")
     @Builder.Default
     private Boolean isActive = true;

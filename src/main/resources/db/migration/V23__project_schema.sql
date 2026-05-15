@@ -1,3 +1,5 @@
+-- V23: Project Management Schema
+
 CREATE TABLE projects (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,

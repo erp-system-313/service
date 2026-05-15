@@ -65,6 +65,6 @@ public class StockMovement {
     private LocalDateTime updatedAt;
 
     public enum MovementType {
-        INBOUND, OUTBOUND, ADJUSTMENT, RETURN, DAMAGED
+        IN, OUT, ADJUSTMENT
     }
 }

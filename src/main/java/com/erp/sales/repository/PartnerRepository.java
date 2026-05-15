@@ -27,13 +27,4 @@ public interface PartnerRepository extends JpaRepository<Partner, Long> {
     @Query("SELECT p FROM Partner p WHERE " +
            "(:search IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(p.email) LIKE LOWER(CONCAT('%', :search, '%')))")
     Page<Partner> searchAll(@Param("search") String search, Pageable pageable);
-
-    // Customer/vendor queries (Odoo: customer_rank > 0, supplier_rank > 0)
-    List<Partner> findByCustomerRankGreaterThan(int rank);
-
-    List<Partner> findBySupplierRankGreaterThan(int rank);
-
-    long countByCustomerRankGreaterThan(int rank);
-
-    long countBySupplierRankGreaterThan(int rank);
 }

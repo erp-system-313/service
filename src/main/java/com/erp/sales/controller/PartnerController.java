@@ -60,40 +60,4 @@ public class PartnerController {
         partnerService.delete(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
-
-    // ---- Customer / Vendor endpoints ----
-
-    @PostMapping("/customers")
-    public ResponseEntity<ApiResponse<PartnerDto>> createCustomer(
-            @Valid @RequestBody CreatePartnerRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(partnerService.createCustomer(request), "Customer created"));
-    }
-
-    @PostMapping("/vendors")
-    public ResponseEntity<ApiResponse<PartnerDto>> createVendor(
-            @Valid @RequestBody CreatePartnerRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(partnerService.createVendor(request), "Vendor created"));
-    }
-
-    @GetMapping("/customers")
-    public ResponseEntity<ApiResponse<java.util.List<PartnerDto>>> getCustomers() {
-        return ResponseEntity.ok(ApiResponse.success(partnerService.getCustomers()));
-    }
-
-    @GetMapping("/vendors")
-    public ResponseEntity<ApiResponse<java.util.List<PartnerDto>>> getVendors() {
-        return ResponseEntity.ok(ApiResponse.success(partnerService.getVendors()));
-    }
-
-    @GetMapping("/stats/customer-count")
-    public ResponseEntity<ApiResponse<Long>> getCustomerCount() {
-        return ResponseEntity.ok(ApiResponse.success(partnerService.getCustomerCount()));
-    }
-
-    @GetMapping("/stats/vendor-count")
-    public ResponseEntity<ApiResponse<Long>> getVendorCount() {
-        return ResponseEntity.ok(ApiResponse.success(partnerService.getVendorCount()));
-    }
 }

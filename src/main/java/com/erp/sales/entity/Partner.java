@@ -93,62 +93,6 @@ public class Partner {
     @Column(name = "team_id")
     private Long teamId;
 
-    // ---- Odoo res.partner fields ----
-
-    /** Customer rank — > 0 means this partner is a customer. */
-    @Column(name = "customer_rank")
-    @Builder.Default
-    private Integer customerRank = 0;
-
-    /** Supplier rank — > 0 means this partner is a vendor. */
-    @Column(name = "supplier_rank")
-    @Builder.Default
-    private Integer supplierRank = 0;
-
-    /** VAT / Tax ID number. */
-    @Column(name = "vat", length = 50)
-    private String vat;
-
-    /** Internal reference. */
-    @Column(length = 50)
-    private String ref;
-
-    /** Default receivable account ID. */
-    @Column(name = "account_receivable_id")
-    private Long accountReceivableId;
-
-    /** Default payable account ID. */
-    @Column(name = "account_payable_id")
-    private Long accountPayableId;
-
-    /** Bank account ID. */
-    @Column(name = "bank_account_id")
-    private Long bankAccountId;
-
-    /** Fiscal position ID. */
-    @Column(name = "fiscal_position_id")
-    private Long fiscalPositionId;
-
-    /** Tags (comma-separated). */
-    @Column(length = 500)
-    private String tags;
-
-    /** Industry ID. */
-    @Column(name = "industry_id")
-    private Long industryId;
-
-    /** Language code. */
-    @Column(length = 10)
-    private String lang;
-
-    /** Company ID (multi-company). */
-    @Column(name = "company_id")
-    private Long companyId;
-
-    /** Company registry number. */
-    @Column(name = "company_registry", length = 50)
-    private String companyRegistry;
-
     @Column(columnDefinition = "TEXT")
     private String notes;
 
@@ -159,12 +103,4 @@ public class Partner {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    public boolean isCustomer() {
-        return customerRank != null && customerRank > 0;
-    }
-
-    public boolean isVendor() {
-        return supplierRank != null && supplierRank > 0;
-    }
 }

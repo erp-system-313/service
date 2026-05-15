@@ -9,6 +9,7 @@ import com.erp.common.dto.ApiResponse;
 import com.erp.common.dto.PageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/sales-orders")
 @RequiredArgsConstructor
@@ -27,12 +29,13 @@ public class SalesOrderController {
     public ResponseEntity<ApiResponse<PageResponse<SalesOrderDto>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String search,
             @RequestParam(required = false) OrderStatus status,
             @RequestParam(required = false) Long customerId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFrom,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTo) {
 
-        PageResponse<SalesOrderDto> orders = salesOrderService.findAll(page, size, status, customerId, dateFrom, dateTo);
+        PageResponse<SalesOrderDto> orders = salesOrderService.findAll(page, size, search, status, customerId, dateFrom, dateTo);
         return ResponseEntity.ok(ApiResponse.success(orders));
     }
 

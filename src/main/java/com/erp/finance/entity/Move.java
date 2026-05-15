@@ -73,23 +73,6 @@ public class Move {
     @JoinColumn(name = "payment_term_id")
     private PaymentTerm paymentTerm;
 
-    /** Incoterm ID (Odoo: invoice_incoterm_id). */
-    @Column(name = "incoterm_id")
-    private Long incotermId;
-
-    /** Shipping partner ID. */
-    @Column(name = "partner_shipping_id")
-    private Long partnerShippingId;
-
-    /** Source email (for vendor bills received by email). */
-    @Column(name = "invoice_source_email", length = 255)
-    private String invoiceSourceEmail;
-
-    /** Whether this is a Storno (reversal) entry. */
-    @Column(name = "is_storno")
-    @Builder.Default
-    private Boolean isStorno = false;
-
     /** Invoice-specific fields. */
     @Column(name = "invoice_date")
     private LocalDate invoiceDate;

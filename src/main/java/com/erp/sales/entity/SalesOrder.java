@@ -1,7 +1,6 @@
 package com.erp.sales.entity;
 
 import com.erp.admin.entity.User;
-import com.erp.finance.entity.Incoterm;
 import com.erp.finance.entity.PaymentTerm;
 import jakarta.persistence.*;
 import lombok.*;

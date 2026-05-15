@@ -30,4 +30,9 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Lo
 
     @Query("SELECT COALESCE(SUM(p.totalAmount), 0) FROM PurchaseOrder p WHERE p.status = :status")
     java.math.BigDecimal sumTotalAmountByStatus(@Param("status") PurchaseOrder.Status status);
+
+    @Query("SELECT p FROM PurchaseOrder p WHERE " +
+           "LOWER(p.poNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(p.supplier.name) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<PurchaseOrder> search(@Param("search") String search, Pageable pageable);
 }

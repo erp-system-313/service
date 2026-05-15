@@ -8,6 +8,7 @@ import com.erp.common.dto.ApiResponse;
 import com.erp.common.dto.PageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/journal-entries")
 @RequiredArgsConstructor
@@ -26,11 +28,12 @@ public class JournalEntryController {
     public ResponseEntity<ApiResponse<PageResponse<JournalEntryDto>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String search,
             @RequestParam(required = false) JournalEntryStatus status,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) {
 
-        PageResponse<JournalEntryDto> entries = journalEntryService.findAll(page, size, status, dateFrom, dateTo);
+        PageResponse<JournalEntryDto> entries = journalEntryService.findAll(page, size, search, status, dateFrom, dateTo);
         return ResponseEntity.ok(ApiResponse.success(entries));
     }
 
@@ -46,6 +49,14 @@ public class JournalEntryController {
         JournalEntryDto entry = journalEntryService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(entry, "Journal entry created successfully"));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<JournalEntryDto>> update(
+            @PathVariable Long id,
+            @Valid @RequestBody CreateJournalEntryRequest request) {
+        JournalEntryDto entry = journalEntryService.update(id, request);
+        return ResponseEntity.ok(ApiResponse.success(entry, "Journal entry updated successfully"));
     }
 
     @PostMapping("/{id}/post")

@@ -34,6 +34,12 @@ public class AuditLogService {
         return PageResponse.from(auditLogs.map(this::toDto));
     }
 
+    public PageResponse<AuditLogDto> findByAction(String action, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<AuditLog> auditLogs = auditLogRepository.findByAction(action, pageable);
+        return PageResponse.from(auditLogs.map(this::toDto));
+    }
+
     public PageResponse<AuditLogDto> findByEntityType(String entityType, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<AuditLog> auditLogs = auditLogRepository.findByEntityType(entityType, pageable);

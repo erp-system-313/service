@@ -10,10 +10,12 @@ import com.erp.common.dto.PageResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
@@ -26,10 +28,11 @@ public class UserController {
     public ResponseEntity<ApiResponse<PageResponse<UserDto>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String search,
             @RequestParam(required = false) String roleName,
             @RequestParam(required = false) Boolean isActive) {
 
-        PageResponse<UserDto> users = userService.findAll(page, size, roleName, isActive);
+        PageResponse<UserDto> users = userService.findAll(page, size, search, roleName, isActive);
         return ResponseEntity.ok(ApiResponse.success(users));
     }
 

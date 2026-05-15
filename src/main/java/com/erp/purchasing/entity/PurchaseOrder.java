@@ -1,5 +1,6 @@
 package com.erp.purchasing.entity;
 
+import com.erp.admin.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -31,19 +32,19 @@ public class PurchaseOrder {
     @JoinColumn(name = "supplier_id", nullable = false)
     private Supplier supplier;
 
-    @Column(nullable = false)
-    private LocalDate orderDate;
+    @Column(name = "order_date", nullable = false)
+    private LocalDateTime orderDate;
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default
-    private Status status = Status.PENDING;
+    private Status status = Status.DRAFT;
     
     @Column(name = "subtotal", precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal subtotal = BigDecimal.ZERO;
     
-    @Column(precision = 15, scale = 2)
+    @Column(name = "tax_amount", precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal taxAmount = BigDecimal.ZERO;
     
@@ -56,13 +57,17 @@ public class PurchaseOrder {
     private BigDecimal shippingCost = BigDecimal.ZERO;
     
     @Column(name = "delivery_date")
-    private LocalDate deliveryDate;
+    private LocalDate expectedDate;
 
     @Column(name = "received_date")
     private LocalDate receivedDate;
 
     @Column(columnDefinition = "TEXT")
     private String notes;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private User createdBy;
 
     @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -77,6 +82,6 @@ public class PurchaseOrder {
     private LocalDateTime updatedAt;
 
     public enum Status {
-        PENDING, APPROVED, RECEIVED, CANCELLED
+        DRAFT, SENT, RECEIVED, PARTIAL, CANCELLED
     }
 }

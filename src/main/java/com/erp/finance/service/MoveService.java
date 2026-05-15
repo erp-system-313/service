@@ -353,38 +353,6 @@ public class MoveService {
         return reversal;
     }
 
-    /**
-     * Register a payment against a move — reduces the residual amount.
-     */
-    @Transactional
-    public Move registerPayment(Long id, BigDecimal amount) {
-        Move move = findById(id);
-
-        if (move.getState() != MoveState.POSTED) {
-            throw new BusinessException("MOVE_012", "Can only register payment on posted moves");
-        }
-        if (!move.isInvoice()) {
-            throw new BusinessException("MOVE_013", "Can only register payment on invoice-type moves");
-        }
-
-        BigDecimal newResidual = move.getAmountResidual().subtract(amount);
-        if (newResidual.compareTo(BigDecimal.ZERO) < 0) {
-            newResidual = BigDecimal.ZERO;
-        }
-
-        move.setAmountResidual(newResidual);
-
-        if (newResidual.compareTo(BigDecimal.ZERO) == 0) {
-            move.setPaymentState(PaymentState.PAID);
-        } else if (newResidual.compareTo(move.getAmountTotal()) < 0) {
-            move.setPaymentState(PaymentState.PARTIAL);
-        }
-
-        move = moveRepository.save(move);
-        log.info("Registered payment {} on move {}, residual: {}", amount, move.getName(), newResidual);
-        return move;
-    }
-
     // --- Helper methods ---
 
     private void validateBeforeCreate(Move move) {
