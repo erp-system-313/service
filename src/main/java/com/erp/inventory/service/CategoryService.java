@@ -10,6 +10,7 @@ import com.erp.inventory.dto.CategoryDto;
 import com.erp.inventory.dto.CreateCategoryRequest;
 import com.erp.inventory.dto.UpdateCategoryRequest;
 import com.erp.inventory.repository.CategoryRepository;
+import com.erp.inventory.repository.ProductRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
     private final AuditLogService auditLogService;
     private final CurrentUserUtil currentUserUtil;
 
@@ -64,7 +66,7 @@ public class CategoryService {
         category = categoryRepository.save(category);
         log.info("Created category with id: {} and name: {}", category.getId(), request.getName());
 
-        auditLogService.log(currentUserUtil.getCurrentUserId(), "CREATE", "Category", category.getId(), null, ipAddress, "Category created");
+        auditLogService.log(currentUserId, "CREATE", "Category", category.getId(), null, ipAddress, "Category created");
 
         return toDto(category);
     }
@@ -88,7 +90,7 @@ public class CategoryService {
         category = categoryRepository.save(category);
         log.info("Updated category with id: {}", category.getId());
 
-        auditLogService.log(currentUserUtil.getCurrentUserId(), "UPDATE", "Category", category.getId(), null, ipAddress, "Category updated");
+        auditLogService.log(currentUserId, "UPDATE", "Category", category.getId(), null, ipAddress, "Category updated");
 
         return toDto(category);
     }
@@ -102,7 +104,7 @@ public class CategoryService {
         categoryRepository.save(category);
         log.info("Deactivated category with id: {}", id);
 
-        auditLogService.log(currentUserUtil.getCurrentUserId(), "DELETE", "Category", id, null, ipAddress, "Category deactivated");
+        auditLogService.log(currentUserId, "DELETE", "Category", id, null, ipAddress, "Category deactivated");
     }
 
     public long countActive() {
@@ -110,6 +112,7 @@ public class CategoryService {
     }
 
     private CategoryDto toDto(Category category) {
+        Long productCount = productRepository.countByCategoryIdAndIsActive(category.getId(), true);
         return CategoryDto.builder()
                 .id(category.getId())
                 .name(category.getName())
@@ -117,6 +120,7 @@ public class CategoryService {
                 .parentId(category.getParentId())
                 .sortOrder(category.getSortOrder())
                 .isActive(category.getIsActive())
+                .productCount(productCount)
                 .createdAt(category.getCreatedAt())
                 .updatedAt(category.getUpdatedAt())
                 .build();

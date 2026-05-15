@@ -19,6 +19,7 @@ public class CategoryDto {
     private Long parentId;
     private Integer sortOrder;
     private Boolean isActive;
+    private Long productCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
