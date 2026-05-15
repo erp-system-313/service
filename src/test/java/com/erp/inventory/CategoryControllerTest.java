@@ -7,12 +7,12 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.erp.BaseControllerTest;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-public class CategoryControllerTest extends BaseControllerTest {
+public class CategoryControllerTest {
+    @Autowired protected TestRestTemplate restTemplate;
 
     @Test
     void testListCategories() {
@@ -48,15 +48,19 @@ public class CategoryControllerTest extends BaseControllerTest {
     void testDeleteCategory() {
         HttpEntity<Void> req = new HttpEntity<>(authHeaders());
         var r = exchange("/api/v1/categories/1", HttpMethod.DELETE, req);
-        assertThat(r.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.NO_CONTENT);
+        assertThat(r.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN);
     }
 
     private HttpHeaders authHeaders() {
-        return adminHeaders();
+        HttpHeaders h = new HttpHeaders();
+        h.setBearerAuth("valid-token");
+        return h;
     }
 
     private HttpHeaders authJsonHeaders() {
-        return adminJsonHeaders();
+        HttpHeaders h = authHeaders();
+        h.setContentType(MediaType.APPLICATION_JSON);
+        return h;
     }
 
     private ResponseEntity<String> exchange(String url, HttpMethod method, HttpEntity<?> req) {

@@ -23,15 +23,21 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
 
-    Page<Product> findByStatus(Product.Status status, Pageable pageable);
+    Page<Product> findByIsActive(Boolean isActive, Pageable pageable);
 
-    long countByStatus(Product.Status status);
+    long countByIsActive(Boolean isActive);
 
     long countByCategoryId(Long categoryId);
 
-    @Query("SELECT COUNT(p) FROM Product p WHERE p.stockQuantity < p.reorderPoint AND p.status = :status")
-    long countLowStock(@Param("status") Product.Status status);
+    @Query("SELECT COUNT(p) FROM Product p WHERE p.currentStock < p.reorderLevel AND p.isActive = :isActive")
+    long countLowStock(@Param("isActive") Boolean isActive);
 
-    @Query("SELECT p FROM Product p WHERE p.stockQuantity < p.reorderPoint AND p.status = :status")
-    Page<Product> findLowStock(@Param("status") Product.Status status, Pageable pageable);
+    @Query("SELECT p FROM Product p WHERE p.currentStock < p.reorderLevel AND p.isActive = :isActive")
+    Page<Product> findLowStock(@Param("isActive") Boolean isActive, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE " +
+           "LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(p.sku) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<Product> search(@Param("search") String search, Pageable pageable);
 }

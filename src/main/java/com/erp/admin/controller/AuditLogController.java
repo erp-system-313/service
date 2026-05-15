@@ -5,12 +5,14 @@ import com.erp.admin.service.AuditLogService;
 import com.erp.common.dto.ApiResponse;
 import com.erp.common.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/audit-logs")
 @RequiredArgsConstructor
@@ -22,13 +24,16 @@ public class AuditLogController {
     public ResponseEntity<ApiResponse<PageResponse<AuditLogDto>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String action,
             @RequestParam(required = false) String entityType,
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
 
         PageResponse<AuditLogDto> logs;
-        if (entityType != null) {
+        if (action != null) {
+            logs = auditLogService.findByAction(action, page, size);
+        } else if (entityType != null) {
             logs = auditLogService.findByEntityType(entityType, page, size);
         } else if (userId != null) {
             logs = auditLogService.findByUserId(userId, page, size);

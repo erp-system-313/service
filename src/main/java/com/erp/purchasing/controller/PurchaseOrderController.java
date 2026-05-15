@@ -5,15 +5,18 @@ import com.erp.common.dto.ApiResponse;
 import com.erp.common.dto.PageResponse;
 import com.erp.purchasing.dto.CreatePurchaseOrderRequest;
 import com.erp.purchasing.dto.PurchaseOrderDto;
+import com.erp.purchasing.dto.ReceivePurchaseOrderRequest;
 import com.erp.purchasing.dto.UpdatePurchaseOrderRequest;
 import com.erp.purchasing.service.PurchaseOrderService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/purchase-orders")
 @RequiredArgsConstructor
@@ -26,10 +29,11 @@ public class PurchaseOrderController {
     public ResponseEntity<ApiResponse<PageResponse<PurchaseOrderDto>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String search,
             @RequestParam(required = false) Long supplierId,
             @RequestParam(required = false) String status) {
 
-        PageResponse<PurchaseOrderDto> orders = purchaseOrderService.findAll(page, size, supplierId, status);
+        PageResponse<PurchaseOrderDto> orders = purchaseOrderService.findAll(page, size, search, supplierId, status);
         return ResponseEntity.ok(ApiResponse.success(orders));
     }
 
@@ -58,6 +62,17 @@ public class PurchaseOrderController {
         String ipAddress = httpRequest.getRemoteAddr();
         PurchaseOrderDto order = purchaseOrderService.update(id, request, currentUserId, ipAddress);
         return ResponseEntity.ok(ApiResponse.success(order, "Purchase order updated successfully"));
+    }
+
+    @PutMapping("/{id}/receive")
+    public ResponseEntity<ApiResponse<PurchaseOrderDto>> receive(
+            @PathVariable Long id,
+            @Valid @RequestBody ReceivePurchaseOrderRequest request,
+            HttpServletRequest httpRequest) {
+        Long currentUserId = currentUserUtil.getCurrentUserId();
+        String ipAddress = httpRequest.getRemoteAddr();
+        PurchaseOrderDto order = purchaseOrderService.receive(id, request, currentUserId, ipAddress);
+        return ResponseEntity.ok(ApiResponse.success(order, "Goods received successfully"));
     }
 
     @PutMapping("/{id}/cancel")

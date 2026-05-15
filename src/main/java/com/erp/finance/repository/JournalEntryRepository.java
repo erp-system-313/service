@@ -31,4 +31,9 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long
     Optional<JournalEntry> findByEntryNumber(String entryNumber);
 
     boolean existsByEntryNumber(String entryNumber);
+
+    @Query("SELECT j FROM JournalEntry j WHERE " +
+           "LOWER(j.entryNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(j.description) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<JournalEntry> search(@Param("search") String search, Pageable pageable);
 }

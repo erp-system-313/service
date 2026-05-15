@@ -5,7 +5,7 @@ import com.erp.finance.repository.InvoiceRepository;
 import com.erp.finance.entity.InvoiceStatus;
 import com.erp.hr.entity.Employee;
 import com.erp.hr.repository.EmployeeRepository;
-import com.erp.inventory.entity.Product;
+
 import com.erp.inventory.repository.ProductRepository;
 import com.erp.purchasing.entity.PurchaseOrder;
 import com.erp.purchasing.repository.PurchaseOrderRepository;
@@ -40,7 +40,7 @@ public class DashboardService {
         BigDecimal totalPurchases = purchaseOrderRepository.sumTotalAmountByStatus(PurchaseOrder.Status.RECEIVED);
         long pendingOrders = salesOrderRepository.countByStatus(OrderStatus.CONFIRMED);
         long pendingInvoices = invoiceRepository.countByStatus(InvoiceStatus.SENT);
-        long lowStockProducts = productRepository.countLowStock(Product.Status.ACTIVE);
+        long lowStockProducts = productRepository.countLowStock(true);
         long totalEmployees = employeeRepository.countByStatus(Employee.EmployeeStatus.ACTIVE);
 
         List<DashboardStatsDto.RecentOrderDto> recentOrders = getRecentOrders();

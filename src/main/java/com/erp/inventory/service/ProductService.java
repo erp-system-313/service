@@ -35,18 +35,17 @@ public class ProductService {
     private final AuditLogService auditLogService;
     private final CurrentUserUtil currentUserUtil;
 
-    public PageResponse<ProductDto> findAll(int page, int size, Long categoryId, String status) {
+    public PageResponse<ProductDto> findAll(int page, int size, String search, Long categoryId, String status) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
         Page<Product> products;
-        if (categoryId != null && status != null) {
-            Product.Status productStatus = Product.Status.valueOf(status.toUpperCase());
-            products = productRepository.findByStatus(productStatus, pageable);
+        if (search != null && !search.isEmpty()) {
+            products = productRepository.search(search, pageable);
         } else if (categoryId != null) {
             products = productRepository.findByCategoryId(categoryId, pageable);
         } else if (status != null) {
-            Product.Status productStatus = Product.Status.valueOf(status.toUpperCase());
-            products = productRepository.findByStatus(productStatus, pageable);
+            Boolean isActive = "ACTIVE".equalsIgnoreCase(status);
+            products = productRepository.findByIsActive(isActive, pageable);
         } else {
             products = productRepository.findAll(pageable);
         }
@@ -86,12 +85,12 @@ public class ProductService {
                 .supplier(supplier)
                 .unitPrice(request.getUnitPrice())
                 .costPrice(request.getCostPrice())
-                .reorderPoint(request.getReorderPoint())
+                .reorderLevel(request.getReorderLevel())
                 .reorderQuantity(request.getReorderQuantity())
                 .unitOfMeasure(request.getUnitOfMeasure())
-                .stockQuantity(0)
+                .currentStock(request.getCurrentStock() != null ? request.getCurrentStock() : 0)
                 .imageUrl(request.getImageUrl())
-                .status(Product.Status.ACTIVE)
+                .isActive(true)
                 .build();
 
         product = productRepository.save(product);
@@ -128,7 +127,7 @@ public class ProductService {
         if (request.getDescription() != null) product.setDescription(request.getDescription());
         if (request.getUnitPrice() != null) product.setUnitPrice(request.getUnitPrice());
         if (request.getCostPrice() != null) product.setCostPrice(request.getCostPrice());
-        if (request.getReorderPoint() != null) product.setReorderPoint(request.getReorderPoint());
+        if (request.getReorderLevel() != null) product.setReorderLevel(request.getReorderLevel());
         if (request.getReorderQuantity() != null) product.setReorderQuantity(request.getReorderQuantity());
         if (request.getUnitOfMeasure() != null) product.setUnitOfMeasure(request.getUnitOfMeasure());
         if (request.getImageUrl() != null) product.setImageUrl(request.getImageUrl());
@@ -146,7 +145,7 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", id));
 
-        product.setStatus(Product.Status.INACTIVE);
+        product.setIsActive(false);
         productRepository.save(product);
         log.info("Deactivated product with id: {}", id);
 
@@ -154,12 +153,12 @@ public class ProductService {
     }
 
     public long countActive() {
-        return productRepository.countByStatus(Product.Status.ACTIVE);
+        return productRepository.countByIsActive(true);
     }
 
     public PageResponse<ProductDto> findLowStock(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("stockQuantity").ascending());
-        Page<Product> products = productRepository.findLowStock(Product.Status.ACTIVE, pageable);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("currentStock").ascending());
+        Page<Product> products = productRepository.findLowStock(true, pageable);
         return PageResponse.from(products.map(this::toDto));
     }
 
@@ -175,12 +174,12 @@ public class ProductService {
                 .supplierName(product.getSupplier() != null ? product.getSupplier().getName() : null)
                 .unitPrice(product.getUnitPrice())
                 .costPrice(product.getCostPrice())
-                .reorderPoint(product.getReorderPoint())
+                .reorderLevel(product.getReorderLevel())
                 .reorderQuantity(product.getReorderQuantity())
                 .unitOfMeasure(product.getUnitOfMeasure())
-                .stockQuantity(product.getStockQuantity())
+                .currentStock(product.getCurrentStock())
                 .imageUrl(product.getImageUrl())
-                .status(product.getStatus())
+                .isActive(product.getIsActive())
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
                 .build();

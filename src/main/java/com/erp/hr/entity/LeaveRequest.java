@@ -43,7 +43,7 @@ public class LeaveRequest {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String reason;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "rejection_reason", columnDefinition = "TEXT")
     private String rejectionReason;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -66,7 +66,7 @@ public class LeaveRequest {
     }
 
     public enum LeaveType {
-        ANNUAL, SICK, PERSONAL, UNPAID, MATERNITY, PATERNITY
+        ANNUAL, SICK, PERSONAL, UNPAID
     }
 
     public enum LeaveStatus {
