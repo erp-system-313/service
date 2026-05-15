@@ -21,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -136,13 +138,17 @@ public class AttendanceService {
             "No employee linked to your account. Contact admin.");
     }
     
-    public Long getFirstActiveEmployeeId() {
-        var firstActive = employeeRepository.findByStatus(Employee.EmployeeStatus.ACTIVE, PageRequest.of(0, 1));
-        if (!firstActive.isEmpty()) {
-            return firstActive.getContent().get(0).getId();
-        }
-        throw new com.erp.common.exception.BusinessException("ATTENDANCE_005", 
-            "No active employee exists yet. Create an employee first.");
+    public List<com.erp.hr.dto.ClockedInEmployeeDto> findClockedIn() {
+        LocalDate today = LocalDate.now();
+        return attendanceRepository.findClockedInByDate(today).stream()
+                .map(a -> com.erp.hr.dto.ClockedInEmployeeDto.builder()
+                        .employeeId(a.getEmployee().getId())
+                        .employeeName(a.getEmployee().getFullName())
+                        .employeeCode(a.getEmployee().getEmployeeCode())
+                        .department(a.getEmployee().getDepartment())
+                        .clockInTime(a.getCheckIn())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     @Transactional
