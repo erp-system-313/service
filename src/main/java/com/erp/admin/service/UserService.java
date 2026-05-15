@@ -120,8 +120,19 @@ user = userRepository.save(user);
 
     @Transactional
     public void delete(Long id, Long currentUserId, String ipAddress) {
+        if (id.equals(currentUserId)) {
+            throw new BusinessException("USER_004", "You cannot deactivate your own account");
+        }
+
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", id));
+
+        if (user.getRole() != null && "ADMIN".equals(user.getRole().getName())) {
+            long activeAdmins = userRepository.countActiveAdmins();
+            if (activeAdmins <= 1) {
+                throw new BusinessException("USER_005", "Cannot deactivate the last active admin");
+            }
+        }
 
         user.setIsActive(false);
         userRepository.save(user);
