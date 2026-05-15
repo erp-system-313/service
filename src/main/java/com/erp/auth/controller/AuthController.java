@@ -1,6 +1,7 @@
 package com.erp.auth.controller;
 
 import com.erp.auth.dto.*;
+import com.erp.auth.security.CurrentUserUtil;
 import com.erp.auth.security.UserPrincipal;
 import com.erp.auth.service.AuthService;
 import com.erp.common.dto.ApiResponse;
@@ -19,6 +20,7 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+    private final CurrentUserUtil currentUserUtil;
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
@@ -48,6 +50,13 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         authService.resetPassword(request);
         return ResponseEntity.ok(ApiResponse.success(null, "Password reset successfully"));
+    }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        Long currentUserId = currentUserUtil.getCurrentUserId();
+        authService.changePassword(currentUserId, request);
+        return ResponseEntity.ok(ApiResponse.success(null, "Password changed successfully"));
     }
 
     @GetMapping("/me")
