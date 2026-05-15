@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.erp.finance.entity.Payment;
@@ -21,7 +20,7 @@ public class PaymentDto {
     private Long invoiceId;
     private String invoiceNumber;
     private BigDecimal amount;
-    private LocalDate paymentDate;
+    private LocalDateTime paymentDate;
     private PaymentMethod method;
     private String reference;
     private String notes;

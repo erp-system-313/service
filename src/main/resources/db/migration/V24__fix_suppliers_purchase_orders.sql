@@ -1,3 +1,5 @@
+-- V24: Fix suppliers and purchase_orders
+
 -- Fix suppliers table: add missing columns to match entity
 ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS code VARCHAR(50);
 UPDATE suppliers SET code = 'SUP-' || id WHERE code IS NULL;
@@ -13,8 +15,18 @@ UPDATE suppliers SET status = CASE WHEN is_active THEN 'ACTIVE' ELSE 'INACTIVE' 
 ALTER TABLE suppliers ALTER COLUMN status SET NOT NULL;
 ALTER TABLE suppliers DROP COLUMN IF EXISTS is_active;
 
--- Change payment_terms from VARCHAR to INTEGER
-ALTER TABLE suppliers ALTER COLUMN payment_terms TYPE INTEGER USING NULLIF(payment_terms, '')::INTEGER;
+-- Change payment_terms from VARCHAR to INTEGER only if not already INTEGER
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'suppliers'
+          AND column_name = 'payment_terms'
+          AND data_type = 'character varying'
+    ) THEN
+        ALTER TABLE suppliers ALTER COLUMN payment_terms TYPE INTEGER USING NULLIF(payment_terms, '')::INTEGER;
+    END IF;
+END $$;
 
 -- Fix purchase_orders table: add missing columns
 ALTER TABLE purchase_orders ADD COLUMN IF NOT EXISTS shipping_cost NUMERIC(15, 2) DEFAULT 0;

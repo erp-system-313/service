@@ -41,7 +41,7 @@ public class CreateSalesOrderRequest {
 
         @NotNull(message = "Quantity is required")
         @Positive(message = "Quantity must be positive")
-        private BigDecimal quantity;
+        private Integer quantity;
 
         @NotNull(message = "Unit price is required")
         private java.math.BigDecimal unitPrice;

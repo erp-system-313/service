@@ -31,7 +31,7 @@ public class UpdateSalesOrderRequest {
         private Long id;
         private Long productId;
         @Positive
-        private BigDecimal quantity;
+        private Integer quantity;
         private BigDecimal unitPrice;
     }
 }

@@ -20,16 +20,17 @@ public class PurchaseOrderDto {
     private String poNumber;
     private Long supplierId;
     private String supplierName;
-    private LocalDate orderDate;
+    private LocalDateTime orderDate;
     private PurchaseOrder.Status status;
     private BigDecimal subtotal;
     private BigDecimal taxAmount;
     private BigDecimal totalAmount;
     private BigDecimal shippingCost;
-    private LocalDate deliveryDate;
+    private LocalDate expectedDate;
     private LocalDate receivedDate;
     private String notes;
     private List<PurchaseOrderLineDto> lines;
+    private Long createdById;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

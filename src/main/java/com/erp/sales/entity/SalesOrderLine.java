@@ -28,7 +28,7 @@ public class SalesOrderLine {
     private Product product;
 
     @Column(nullable = false)
-    private BigDecimal quantity;
+    private Integer quantity;
 
     @Column(name = "unit_price", nullable = false, precision = 15, scale = 2)
     private BigDecimal unitPrice;

@@ -6,6 +6,7 @@ import com.erp.hr.service.LeaveService;
 import com.erp.common.dto.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,14 +14,15 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
-@RequestMapping("/api/v1/leave-balances")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class LeaveBalanceController {
 
     private final LeaveService leaveService;
 
-    @GetMapping
+    @GetMapping("/leave-balances")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<List<LeaveBalanceDto>>> getBalances(
             @RequestParam(required = false) Long employeeId,
@@ -30,7 +32,7 @@ public class LeaveBalanceController {
         return ResponseEntity.ok(ApiResponse.success(balances));
     }
 
-    @PostMapping
+    @PostMapping("/leave-balances")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<LeaveBalanceDto>> createBalance(
             @Valid @RequestBody CreateLeaveBalanceRequest request) {

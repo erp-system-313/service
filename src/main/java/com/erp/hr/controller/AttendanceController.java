@@ -12,6 +12,7 @@ import com.erp.common.exception.BusinessException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/attendance")
 @RequiredArgsConstructor
@@ -61,10 +63,18 @@ public class AttendanceController {
             HttpServletRequest httpRequest) {
         Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
-        
+
         boolean isAdmin = currentUserUtil.isCurrentUserAdmin();
         Long targetEmployeeId = resolveTargetEmployeeId(employeeId, currentUserId, isAdmin);
-        
+
+        if (targetEmployeeId == null) {
+            if (isAdmin) {
+                throw new BusinessException("ATTENDANCE_004", "Please provide employee ID to clock in");
+            } else {
+                throw new BusinessException("ATTENDANCE_005", "No employee linked to your account. Contact admin.");
+            }
+        }
+
         AttendanceDto attendance = attendanceService.clockIn(targetEmployeeId, currentUserId, ipAddress, isAdmin);
         return ResponseEntity.ok(ApiResponse.success(attendance, "Clocked in successfully"));
     }
@@ -75,14 +85,22 @@ public class AttendanceController {
             HttpServletRequest httpRequest) {
         Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
-        
+
         boolean isAdmin = currentUserUtil.isCurrentUserAdmin();
         Long targetEmployeeId = resolveTargetEmployeeId(employeeId, currentUserId, isAdmin);
-        
+
+        if (targetEmployeeId == null) {
+            if (isAdmin) {
+                throw new BusinessException("ATTENDANCE_004", "Please provide employee ID to clock out");
+            } else {
+                throw new BusinessException("ATTENDANCE_005", "No employee linked to your account. Contact admin.");
+            }
+        }
+
         AttendanceDto attendance = attendanceService.clockOut(targetEmployeeId, currentUserId, ipAddress);
         return ResponseEntity.ok(ApiResponse.success(attendance, "Clocked out successfully"));
     }
-    
+
     @PostMapping("/manual")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<AttendanceDto>> createManual(
@@ -102,7 +120,7 @@ public class AttendanceController {
 
     private Long resolveTargetEmployeeId(Long requestedEmployeeId, Long currentUserId, boolean isAdmin) {
         Long ownEmployeeId = attendanceService.getEmployeeIdByUserId(currentUserId);
-        
+
         if (isAdmin) {
             if (requestedEmployeeId == null) {
                 throw new BusinessException("ATTENDANCE_004",
@@ -110,12 +128,12 @@ public class AttendanceController {
             }
             return requestedEmployeeId;
         }
-        
+
         if (requestedEmployeeId != null && !requestedEmployeeId.equals(ownEmployeeId)) {
             throw new BusinessException("ATTENDANCE_008",
                 "You can only clock in or out for yourself");
         }
-        
+
         return ownEmployeeId;
     }
 
@@ -126,7 +144,7 @@ public class AttendanceController {
             HttpServletRequest httpRequest) {
         Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
-        
+
         attendanceService.delete(id, currentUserId, ipAddress);
         return ResponseEntity.noContent().build();
     }

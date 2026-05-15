@@ -33,11 +33,13 @@ public class UserService {
     private final AuditLogService auditLogService;
     private final CurrentUserUtil currentUserUtil;
 
-    public PageResponse<UserDto> findAll(int page, int size, String roleName, Boolean isActive) {
+    public PageResponse<UserDto> findAll(int page, int size, String search, String roleName, Boolean isActive) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
         Page<User> users;
-        if (roleName != null && !roleName.isEmpty()) {
+        if (search != null && !search.isEmpty()) {
+            users = userRepository.search(search, pageable);
+        } else if (roleName != null && !roleName.isEmpty()) {
             users = userRepository.findByRoleName(roleName, pageable);
         } else if (Boolean.TRUE.equals(isActive)) {
             users = userRepository.findAllActive(pageable);

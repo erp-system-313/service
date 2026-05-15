@@ -52,15 +52,23 @@ public class Invoice {
     private BigDecimal taxAmount = BigDecimal.ZERO;
     
     @Column(name = "total_amount", nullable = false, precision = 15, scale = 2)
-    private BigDecimal totalAmount;
+    private BigDecimal total;
 
     @Column(name = "paid_amount", precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal paidAmount = BigDecimal.ZERO;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sales_order_id")
+    private SalesOrder salesOrder;
+
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Payment> payments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<InvoiceLine> lines = new ArrayList<>();
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -81,6 +89,11 @@ public class Invoice {
         payment.setInvoice(this);
     }
 
+    public void addLine(InvoiceLine line) {
+        lines.add(line);
+        line.setInvoice(this);
+    }
+
     public void calculatePaidAmount() {
         this.paidAmount = payments.stream()
                 .map(Payment::getAmount)
@@ -88,10 +101,6 @@ public class Invoice {
     }
 
     public BigDecimal getBalance() {
-        return totalAmount.subtract(paidAmount);
-    }
-
-    public BigDecimal getTotal() {
-        return totalAmount;
+        return total.subtract(paidAmount);
     }
 }

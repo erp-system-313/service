@@ -28,13 +28,15 @@ public class SupplierService {
     private final AuditLogService auditLogService;
     private final CurrentUserUtil currentUserUtil;
 
-    public PageResponse<SupplierDto> findAll(int page, int size, String status) {
+    public PageResponse<SupplierDto> findAll(int page, int size, String search, String status) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
         Page<Supplier> suppliers;
-        if (status != null) {
-            Supplier.Status supplierStatus = Supplier.Status.valueOf(status.toUpperCase());
-            suppliers = supplierRepository.findByStatus(supplierStatus, pageable);
+        if (search != null && !search.isEmpty()) {
+            suppliers = supplierRepository.search(search, pageable);
+        } else if (status != null) {
+            Boolean isActive = "ACTIVE".equalsIgnoreCase(status);
+            suppliers = supplierRepository.findByIsActive(isActive, pageable);
         } else {
             suppliers = supplierRepository.findAll(pageable);
         }
@@ -66,7 +68,7 @@ public class SupplierService {
                 .address(request.getAddress())
                 .taxId(request.getTaxId())
                 .paymentTerms(request.getPaymentTerms())
-                .status(Supplier.Status.ACTIVE)
+                .isActive(true)
                 .build();
 
         supplier = supplierRepository.save(supplier);
@@ -110,7 +112,7 @@ public class SupplierService {
         Supplier supplier = supplierRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Supplier", id));
 
-        supplier.setStatus(Supplier.Status.INACTIVE);
+        supplier.setIsActive(false);
         supplierRepository.save(supplier);
         log.info("Deactivated supplier with id: {}", id);
 
@@ -118,7 +120,7 @@ public class SupplierService {
     }
 
     public long countActive() {
-        return supplierRepository.countByStatus(Supplier.Status.ACTIVE);
+        return supplierRepository.countByIsActive(true);
     }
 
     private SupplierDto toDto(Supplier supplier) {
@@ -133,7 +135,7 @@ public class SupplierService {
                 .taxId(supplier.getTaxId())
                 .paymentTerms(supplier.getPaymentTerms())
                 .totalPurchased(supplier.getTotalPurchased())
-                .status(supplier.getStatus())
+                .isActive(supplier.getIsActive())
                 .createdAt(supplier.getCreatedAt())
                 .updatedAt(supplier.getUpdatedAt())
                 .build();
