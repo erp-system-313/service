@@ -351,7 +351,7 @@ public class SalesOrderService {
             moveLine.setName(line.getProduct() != null ? line.getProduct().getName() : "Order Line");
             moveLine.setDebit(line.getLineTotal());
             moveLine.setCredit(BigDecimal.ZERO);
-            moveLine.setQuantity(line.getQuantity());
+            moveLine.setQuantity(BigDecimal.valueOf(line.getQuantity()));
             moveLines.add(moveLine);
         }
         move.setLines(moveLines);
@@ -370,7 +370,7 @@ public class SalesOrderService {
             seq++;
             Product product = productClient.getProductById(lineRequest.getProductId());
 
-            BigDecimal lineTotal = lineRequest.getUnitPrice().multiply(lineRequest.getQuantity());
+            BigDecimal lineTotal = lineRequest.getUnitPrice().multiply(BigDecimal.valueOf(lineRequest.getQuantity()));
             BigDecimal discount = lineRequest.getDiscount() != null ? lineRequest.getDiscount() : BigDecimal.ZERO;
 
             // Apply discount to line total
@@ -412,7 +412,7 @@ public class SalesOrderService {
             seq++;
             Product product = productClient.getProductById(lineRequest.getProductId());
 
-            BigDecimal lineTotal = lineRequest.getUnitPrice().multiply(lineRequest.getQuantity());
+            BigDecimal lineTotal = lineRequest.getUnitPrice().multiply(BigDecimal.valueOf(lineRequest.getQuantity()));
             BigDecimal discount = lineRequest.getDiscount() != null ? lineRequest.getDiscount() : BigDecimal.ZERO;
 
             BigDecimal discountedTotal = lineTotal;
