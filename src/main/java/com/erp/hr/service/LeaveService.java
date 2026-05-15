@@ -1,6 +1,7 @@
 package com.erp.hr.service;
 
 import com.erp.auth.security.CurrentUserUtil;
+import com.erp.hr.dto.CreateLeaveBalanceRequest;
 import com.erp.hr.dto.CreateLeaveRequest;
 import com.erp.hr.dto.LeaveBalanceDto;
 import com.erp.hr.dto.LeaveRequestDto;
@@ -180,6 +181,31 @@ public class LeaveService {
         auditLogService.log(currentUserUtil.getCurrentUserId(), "REJECT", "LeaveRequest", id, null, ipAddress, "Leave request rejected: " + reason);
 
         return toDto(leaveRequest);
+    }
+
+    @Transactional
+    public LeaveBalanceDto createBalance(CreateLeaveBalanceRequest request) {
+        Employee employee = employeeRepository.findById(request.getEmployeeId())
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", request.getEmployeeId()));
+
+        LeaveRequest.LeaveType leaveType = LeaveRequest.LeaveType.valueOf(request.getType().toUpperCase());
+        if (leaveBalanceRepository.existsByEmployeeIdAndTypeAndYear(
+                request.getEmployeeId(), leaveType, request.getYear())) {
+            throw new BusinessException("LEAVE_003",
+                    "Leave balance already exists for this employee, type, and year");
+        }
+
+        LeaveBalance balance = LeaveBalance.builder()
+                .employee(employee)
+                .type(leaveType)
+                .totalDays(request.getTotalDays())
+                .usedDays(0)
+                .year(request.getYear())
+                .build();
+
+        balance = leaveBalanceRepository.save(balance);
+        log.info("Created leave balance id: {} for employee id: {}", balance.getId(), employee.getId());
+        return toBalanceDto(balance);
     }
 
     public List<LeaveBalanceDto> getBalances(Long employeeId, int year) {
