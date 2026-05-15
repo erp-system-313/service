@@ -74,21 +74,13 @@ public class AttendanceService {
         if (existingOpt.isPresent()) {
             Attendance existing = existingOpt.get();
             if (existing.getCheckIn() != null && existing.getCheckOut() == null) {
-                if (isAdmin) {
-                    throw new BusinessException("ATTENDANCE_007", "Employee " + employeeId + " is already clocked in today");
-                }
-                existing.setCheckIn(LocalDateTime.now());
-                attendance = attendanceRepository.save(existing);
-                log.info("Employee {} re-clocked in at {}", employeeId, attendance.getCheckIn());
-            } else if (existing.getCheckOut() != null) {
-                existing.setCheckIn(LocalDateTime.now());
-                existing.setCheckOut(null);
-                existing.setStatus(Attendance.AttendanceStatus.PRESENT);
-                attendance = attendanceRepository.save(existing);
-                log.info("Employee {} clocked in again at {}", employeeId, attendance.getCheckIn());
-            } else {
                 throw new BusinessException("ATTENDANCE_007", "Employee " + employeeId + " is already clocked in today");
             }
+            existing.setCheckIn(LocalDateTime.now());
+            existing.setCheckOut(null);
+            existing.setStatus(Attendance.AttendanceStatus.PRESENT);
+            attendance = attendanceRepository.save(existing);
+            log.info("Employee {} clocked in at {}", employeeId, attendance.getCheckIn());
         } else {
             attendance = Attendance.builder()
                     .employee(employee)
@@ -118,6 +110,10 @@ public class AttendanceService {
 
         Attendance attendance = attendanceRepository.findByEmployeeIdAndDate(employeeId, today)
                 .orElseThrow(() -> new BusinessException("ATTENDANCE_002", "Not clocked in today"));
+
+        if (attendance.getCheckOut() != null) {
+            throw new BusinessException("ATTENDANCE_009", "Employee " + employeeId + " is already clocked out today");
+        }
 
         attendance.setCheckOut(LocalDateTime.now());
         attendance = attendanceRepository.save(attendance);
