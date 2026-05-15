@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/crm")
+@RequestMapping("/api/v1/crm/pipeline")
 @RequiredArgsConstructor
 public class CrmController {
 
@@ -56,7 +56,7 @@ public class CrmController {
 
     // ---- Leads / Opportunities ----
 
-    @GetMapping("/leads")
+    @GetMapping("/opportunities")
     public ResponseEntity<ApiResponse<List<CrmLeadDto>>> searchLeads(
             @RequestParam(required = false) String type,
             @RequestParam(required = false) String stage,
@@ -77,43 +77,43 @@ public class CrmController {
         return ResponseEntity.ok(ApiResponse.success(crmService.searchLeads(params)));
     }
 
-    @GetMapping("/leads/{id}")
+    @GetMapping("/opportunities/{id}")
     public ResponseEntity<ApiResponse<CrmLeadDto>> getLead(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(crmService.getLeadById(id)));
     }
 
-    @PostMapping("/leads")
+    @PostMapping("/opportunities")
     public ResponseEntity<ApiResponse<CrmLeadDto>> createLead(
             @Valid @RequestBody CreateCrmLeadRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(crmService.createLead(request), "Lead created"));
     }
 
-    @PutMapping("/leads/{id}")
+    @PutMapping("/opportunities/{id}")
     public ResponseEntity<ApiResponse<CrmLeadDto>> updateLead(
             @PathVariable Long id,
             @Valid @RequestBody CreateCrmLeadRequest request) {
         return ResponseEntity.ok(ApiResponse.success(crmService.updateLead(id, request), "Lead updated"));
     }
 
-    @PostMapping("/leads/{id}/won")
+    @PostMapping("/opportunities/{id}/won")
     public ResponseEntity<ApiResponse<CrmLeadDto>> markAsWon(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(crmService.markLeadAsWon(id), "Lead marked as won"));
     }
 
-    @PostMapping("/leads/{id}/lost")
+    @PostMapping("/opportunities/{id}/lost")
     public ResponseEntity<ApiResponse<CrmLeadDto>> markAsLost(
             @PathVariable Long id,
             @RequestParam(required = false) String reason) {
         return ResponseEntity.ok(ApiResponse.success(crmService.markLeadAsLost(id, reason), "Lead marked as lost"));
     }
 
-    @PostMapping("/leads/{id}/convert")
+    @PostMapping("/opportunities/{id}/convert")
     public ResponseEntity<ApiResponse<CrmLeadDto>> convertToOpportunity(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(crmService.convertLeadToOpportunity(id), "Lead converted to opportunity"));
     }
 
-    @DeleteMapping("/leads/{id}")
+    @DeleteMapping("/opportunities/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteLead(@PathVariable Long id) {
         crmService.deleteLead(id);
         return ResponseEntity.noContent().build();

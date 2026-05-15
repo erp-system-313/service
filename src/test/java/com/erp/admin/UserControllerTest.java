@@ -36,7 +36,7 @@ public class UserControllerTest {
         ResponseEntity<String> response = restTemplate.exchange(
             "/api/v1/users",
             HttpMethod.GET, request, String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test

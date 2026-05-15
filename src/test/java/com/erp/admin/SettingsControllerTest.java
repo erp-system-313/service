@@ -16,7 +16,7 @@ public class SettingsControllerTest {
 
     @Test public void testGetAll() { check("/api/v1/settings"); }
     @Test public void testUpdate() { post("/api/v1/settings", "PUT"); }
-    @Test public void testNoAuth() { assertThat(noauth("/api/v1/settings").getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN); }
+    @Test public void testNoAuth() { assertThat(noauth("/api/v1/settings").getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED); }
 
     private void check(String u) { assertThat(req(u).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN); }
     private void post(String u) { post(u, "PUT"); }

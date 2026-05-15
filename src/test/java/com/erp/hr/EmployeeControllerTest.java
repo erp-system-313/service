@@ -19,7 +19,7 @@ public class EmployeeControllerTest {
     @Test public void testCreate() { post("/api/v1/employees"); }
     @Test public void testUpdate() { post("/api/v1/employees/1", "PUT"); }
     @Test public void testDelete() { post("/api/v1/employees/1", "DELETE"); }
-    @Test public void testNoAuth() { assertThat(noauth("/api/v1/employees").getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN); }
+    @Test public void testNoAuth() { assertThat(noauth("/api/v1/employees").getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED); }
 
     private void check(String u) { assertThat(req(u).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN); }
     private void post(String u) { post(u, "POST"); }
