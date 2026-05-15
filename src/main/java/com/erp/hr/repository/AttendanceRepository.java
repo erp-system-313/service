@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -46,4 +47,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
             @Param("endDate") LocalDate endDate,
             Pageable pageable
     );
+
+    @Query("SELECT a FROM Attendance a WHERE a.date = :date AND a.checkIn IS NOT NULL AND a.checkOut IS NULL")
+    List<Attendance> findClockedInByDate(@Param("date") LocalDate date);
 }
