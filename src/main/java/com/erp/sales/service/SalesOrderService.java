@@ -11,7 +11,11 @@ import com.erp.sales.dto.CreateSalesOrderRequest;
 import com.erp.sales.dto.SalesOrderDto;
 import com.erp.sales.dto.UpdateSalesOrderRequest;
 import com.erp.sales.entity.Customer;
+<<<<<<< HEAD
+import com.erp.finance.entity.Incoterm;
+=======
 import com.erp.sales.entity.Incoterm;
+>>>>>>> origin/main
 import com.erp.sales.entity.OrderStatus;
 import com.erp.sales.entity.Partner;
 import com.erp.sales.entity.PriceList;
@@ -19,7 +23,11 @@ import com.erp.sales.entity.SalesOrder;
 import com.erp.sales.entity.SalesOrderLine;
 import com.erp.sales.entity.SalesTeam;
 import com.erp.sales.repository.CustomerRepository;
+<<<<<<< HEAD
+import com.erp.finance.repository.IncotermRepository;
+=======
 import com.erp.sales.repository.IncotermRepository;
+>>>>>>> origin/main
 import com.erp.sales.repository.PartnerRepository;
 import com.erp.sales.repository.PriceListRepository;
 import com.erp.sales.repository.SalesOrderLineRepository;
