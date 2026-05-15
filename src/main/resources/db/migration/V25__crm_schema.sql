@@ -1,13 +1,13 @@
--- V26: CRM Schema (leads, opportunities, pipeline_stages)
+-- V25: CRM Schema (leads, opportunities, pipeline_stages)
 
-CREATE TABLE pipeline_stages (
+CREATE TABLE IF NOT EXISTS pipeline_stages (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     sequence INT NOT NULL DEFAULT 0,
     is_default BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE leads (
+CREATE TABLE IF NOT EXISTS leads (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255),
@@ -21,7 +21,7 @@ CREATE TABLE leads (
     updated_at TIMESTAMP
 );
 
-CREATE TABLE opportunities (
+CREATE TABLE IF NOT EXISTS opportunities (
     id BIGSERIAL PRIMARY KEY,
     customer_id BIGINT,
     lead_id BIGINT,
@@ -34,16 +34,19 @@ CREATE TABLE opportunities (
     updated_at TIMESTAMP
 );
 
-CREATE INDEX idx_leads_status ON leads(status);
-CREATE INDEX idx_leads_email ON leads(email);
-CREATE INDEX idx_opportunities_customer_id ON opportunities(customer_id);
-CREATE INDEX idx_opportunities_lead_id ON opportunities(lead_id);
-CREATE INDEX idx_opportunities_stage_id ON opportunities(stage_id);
+CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);
+CREATE INDEX IF NOT EXISTS idx_leads_email ON leads(email);
+CREATE INDEX IF NOT EXISTS idx_opportunities_customer_id ON opportunities(customer_id);
+CREATE INDEX IF NOT EXISTS idx_opportunities_lead_id ON opportunities(lead_id);
+CREATE INDEX IF NOT EXISTS idx_opportunities_stage_id ON opportunities(stage_id);
 
--- Seed default pipeline stages
-INSERT INTO pipeline_stages (name, sequence, is_default) VALUES
+-- Seed default pipeline stages (only if table is empty)
+INSERT INTO pipeline_stages (name, sequence, is_default)
+SELECT * FROM (VALUES
     ('Qualification', 1, TRUE),
     ('Proposal', 2, FALSE),
     ('Negotiation', 3, FALSE),
     ('Closed Won', 4, FALSE),
-    ('Closed Lost', 5, FALSE);
+    ('Closed Lost', 5, FALSE)
+) AS v(name, sequence, is_default)
+WHERE NOT EXISTS (SELECT 1 FROM pipeline_stages);
