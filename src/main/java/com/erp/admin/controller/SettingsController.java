@@ -1,6 +1,8 @@
 package com.erp.admin.controller;
 
 import com.erp.admin.dto.CompanySettingsDto;
+import com.erp.admin.dto.HrSettingsDto;
+import com.erp.admin.dto.NotificationSettingsDto;
 import com.erp.admin.dto.SettingsDto;
 import com.erp.admin.dto.UpdateSettingsRequest;
 import com.erp.admin.service.SettingsService;
@@ -40,6 +42,32 @@ public class SettingsController {
             @Valid @RequestBody CompanySettingsDto request) {
         CompanySettingsDto settings = settingsService.updateCompanySettings(request);
         return ResponseEntity.ok(ApiResponse.success(settings, "Company settings updated successfully"));
+    }
+
+    @GetMapping("/notifications")
+    public ResponseEntity<ApiResponse<NotificationSettingsDto>> getNotificationSettings() {
+        NotificationSettingsDto settings = settingsService.getNotificationSettings();
+        return ResponseEntity.ok(ApiResponse.success(settings));
+    }
+
+    @PutMapping("/notifications")
+    public ResponseEntity<ApiResponse<NotificationSettingsDto>> updateNotificationSettings(
+            @Valid @RequestBody NotificationSettingsDto request) {
+        NotificationSettingsDto settings = settingsService.updateNotificationSettings(request);
+        return ResponseEntity.ok(ApiResponse.success(settings, "Notification settings updated successfully"));
+    }
+
+    @GetMapping("/hr")
+    public ResponseEntity<ApiResponse<HrSettingsDto>> getHrSettings() {
+        HrSettingsDto settings = settingsService.getHrSettings();
+        return ResponseEntity.ok(ApiResponse.success(settings));
+    }
+
+    @PutMapping("/hr")
+    public ResponseEntity<ApiResponse<HrSettingsDto>> updateHrSettings(
+            @Valid @RequestBody HrSettingsDto request) {
+        HrSettingsDto settings = settingsService.updateHrSettings(request);
+        return ResponseEntity.ok(ApiResponse.success(settings, "HR settings updated successfully"));
     }
 
     @GetMapping("/{key}")

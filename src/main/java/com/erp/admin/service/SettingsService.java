@@ -1,6 +1,8 @@
 package com.erp.admin.service;
 
 import com.erp.admin.dto.CompanySettingsDto;
+import com.erp.admin.dto.HrSettingsDto;
+import com.erp.admin.dto.NotificationSettingsDto;
 import com.erp.admin.dto.SettingsDto;
 import com.erp.admin.dto.UpdateSettingsRequest;
 import com.erp.admin.entity.Settings;
@@ -100,6 +102,52 @@ public class SettingsService {
                     .build();
             settingsRepository.save(settings);
         }
+    }
+
+    public NotificationSettingsDto getNotificationSettings() {
+        return NotificationSettingsDto.builder()
+                .emailEnabled(parseBoolean(getValue("notifications.email_enabled", "true")))
+                .leaveRequestSubmitted(parseBoolean(getValue("notifications.leave_request_submitted", "true")))
+                .leaveRequestApproved(parseBoolean(getValue("notifications.leave_request_approved", "true")))
+                .leaveRequestRejected(parseBoolean(getValue("notifications.leave_request_rejected", "true")))
+                .attendanceReminder(parseBoolean(getValue("notifications.attendance_reminder", "false")))
+                .applicantReceived(parseBoolean(getValue("notifications.applicant_received", "false")))
+                .build();
+    }
+
+    @Transactional
+    public NotificationSettingsDto updateNotificationSettings(NotificationSettingsDto request) {
+        upsertSetting("notifications.email_enabled", String.valueOf(request.isEmailEnabled()));
+        upsertSetting("notifications.leave_request_submitted", String.valueOf(request.isLeaveRequestSubmitted()));
+        upsertSetting("notifications.leave_request_approved", String.valueOf(request.isLeaveRequestApproved()));
+        upsertSetting("notifications.leave_request_rejected", String.valueOf(request.isLeaveRequestRejected()));
+        upsertSetting("notifications.attendance_reminder", String.valueOf(request.isAttendanceReminder()));
+        upsertSetting("notifications.applicant_received", String.valueOf(request.isApplicantReceived()));
+        log.info("Updated notification settings");
+        return getNotificationSettings();
+    }
+
+    public HrSettingsDto getHrSettings() {
+        return HrSettingsDto.builder()
+                .defaultAnnualLeave(parseInt(getValue("hr.default_annual_leave", "20"), 20))
+                .defaultSickLeave(parseInt(getValue("hr.default_sick_leave", "10"), 10))
+                .attendanceGraceMinutes(parseInt(getValue("hr.attendance_grace_minutes", "15"), 15))
+                .workDaysPerWeek(parseInt(getValue("hr.work_days_per_week", "5"), 5))
+                .build();
+    }
+
+    @Transactional
+    public HrSettingsDto updateHrSettings(HrSettingsDto request) {
+        upsertSetting("hr.default_annual_leave", String.valueOf(request.getDefaultAnnualLeave()));
+        upsertSetting("hr.default_sick_leave", String.valueOf(request.getDefaultSickLeave()));
+        upsertSetting("hr.attendance_grace_minutes", String.valueOf(request.getAttendanceGraceMinutes()));
+        upsertSetting("hr.work_days_per_week", String.valueOf(request.getWorkDaysPerWeek()));
+        log.info("Updated HR settings");
+        return getHrSettings();
+    }
+
+    private boolean parseBoolean(String value) {
+        return "true".equalsIgnoreCase(value);
     }
 
     private int parseInt(String value, int defaultValue) {
