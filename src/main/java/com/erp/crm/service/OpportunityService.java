@@ -2,6 +2,7 @@ package com.erp.crm.service;
 
 import com.erp.admin.service.AuditLogService;
 import com.erp.auth.security.CurrentUserUtil;
+import com.erp.common.dto.PageResponse;
 import com.erp.common.exception.ResourceNotFoundException;
 import com.erp.crm.dto.CreateOpportunityRequest;
 import com.erp.crm.dto.OpportunityDto;
@@ -11,6 +12,10 @@ import com.erp.crm.repository.OpportunityRepository;
 import com.erp.crm.repository.PipelineStageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +31,12 @@ public class OpportunityService {
     private final AuditLogService auditLogService;
     private final CurrentUserUtil currentUserUtil;
 
+    public PageResponse<OpportunityDto> findAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Opportunity> opportunities = opportunityRepository.findAllByOrderByCreatedAtDesc(pageable);
+        return PageResponse.from(opportunities.map(this::toDto));
+    }
+
     @Transactional
     public OpportunityDto create(CreateOpportunityRequest request, Long currentUserId, String ipAddress) {
         PipelineStage stage = pipelineStageRepository.findById(request.getStageId())
@@ -35,7 +46,7 @@ public class OpportunityService {
                 .customerId(request.getCustomerId())
                 .stage(stage)
                 .revenue(request.getRevenue() != null ? request.getRevenue() : BigDecimal.ZERO)
-                .closeDate(request.getCloseDate())
+                .expectedCloseDate(request.getCloseDate())
                 .probability(request.getProbability() != null ? request.getProbability() : 0)
                 .build();
 
@@ -68,10 +79,12 @@ public class OpportunityService {
         return OpportunityDto.builder()
                 .id(opportunity.getId())
                 .customerId(opportunity.getCustomerId())
+                .leadId(opportunity.getLeadId())
                 .stageId(opportunity.getStage() != null ? opportunity.getStage().getId() : null)
                 .stageName(opportunity.getStage() != null ? opportunity.getStage().getName() : null)
+                .company(opportunity.getCompany())
                 .revenue(opportunity.getRevenue())
-                .closeDate(opportunity.getCloseDate())
+                .expectedCloseDate(opportunity.getExpectedCloseDate())
                 .probability(opportunity.getProbability())
                 .createdAt(opportunity.getCreatedAt())
                 .updatedAt(opportunity.getUpdatedAt())

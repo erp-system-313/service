@@ -16,10 +16,12 @@ import java.time.LocalDateTime;
 public class OpportunityDto {
     private Long id;
     private Long customerId;
+    private Long leadId;
     private Long stageId;
     private String stageName;
+    private String company;
     private BigDecimal revenue;
-    private LocalDate closeDate;
+    private LocalDate expectedCloseDate;
     private Integer probability;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

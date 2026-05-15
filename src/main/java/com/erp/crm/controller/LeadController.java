@@ -69,11 +69,10 @@ public class LeadController {
     @PostMapping("/leads/{id}/convert")
     public ResponseEntity<ApiResponse<OpportunityDto>> convert(
             @PathVariable Long id,
-            @Valid @RequestBody ConvertLeadRequest request,
             HttpServletRequest httpRequest) {
         Long currentUserId = currentUserUtil.getCurrentUserId();
         String ipAddress = httpRequest.getRemoteAddr();
-        OpportunityDto opportunity = leadService.convert(id, request, currentUserId, ipAddress);
+        OpportunityDto opportunity = leadService.convert(id, currentUserId, ipAddress);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(opportunity, "Lead converted successfully"));
     }
 }

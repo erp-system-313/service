@@ -40,6 +40,12 @@ public class Lead {
     @Column(length = 100)
     private String source;
 
+    @Column(name = "assigned_to", length = 255)
+    private String assignedTo;
+
+    @Column(columnDefinition = "TEXT")
+    private String notes;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

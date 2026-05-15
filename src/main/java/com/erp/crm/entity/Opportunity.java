@@ -25,16 +25,22 @@ public class Opportunity {
     @Column(name = "customer_id")
     private Long customerId;
 
+    @Column(name = "lead_id")
+    private Long leadId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stage_id")
     private PipelineStage stage;
+
+    @Column(length = 255)
+    private String company;
 
     @Column(precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal revenue = BigDecimal.ZERO;
 
-    @Column(name = "close_date")
-    private LocalDate closeDate;
+    @Column(name = "expected_close_date")
+    private LocalDate expectedCloseDate;
 
     @Column
     @Builder.Default

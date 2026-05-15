@@ -28,4 +28,10 @@ public class CreateLeadRequest {
 
     @Size(max = 100)
     private String source;
+
+    @Size(max = 255)
+    private String assignedTo;
+
+    @Size(max = 2000)
+    private String notes;
 }

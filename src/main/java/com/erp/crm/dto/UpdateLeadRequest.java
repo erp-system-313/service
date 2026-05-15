@@ -1,5 +1,6 @@
 package com.erp.crm.dto;
 
+import com.erp.crm.entity.LeadStatus;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,4 +27,12 @@ public class UpdateLeadRequest {
 
     @Size(max = 100)
     private String source;
+
+    @Size(max = 255)
+    private String assignedTo;
+
+    @Size(max = 2000)
+    private String notes;
+
+    private LeadStatus status;
 }

@@ -20,6 +20,8 @@ public class LeadDto {
     private String company;
     private LeadStatus status;
     private String source;
+    private String assignedTo;
+    private String notes;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

@@ -9,6 +9,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Repository
 public interface LeadRepository extends JpaRepository<Lead, Long> {
 
@@ -20,4 +23,8 @@ public interface LeadRepository extends JpaRepository<Lead, Long> {
     Page<Lead> search(@Param("search") String search, Pageable pageable);
 
     long countByStatus(LeadStatus status);
+
+    long countByCreatedAtAfter(LocalDateTime since);
+
+    List<Lead> findTop5ByOrderByCreatedAtDesc();
 }
