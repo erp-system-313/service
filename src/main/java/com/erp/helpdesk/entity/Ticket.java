@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Entity representing a helpdesk ticket
+ * Entity representing a helpdesk ticket (enhanced with Odoo-inspired fields).
  */
 @Entity
 @Table(name = "helpdesk_tickets")
@@ -42,6 +42,8 @@ public class Ticket {
     @Column(nullable = false, length = 20)
     private TicketPriority priority;
 
+    /** @deprecated Replaced by {@link #stageId} — kept for backward compatibility */
+    @Deprecated
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private TicketStatus status;
@@ -49,6 +51,50 @@ public class Ticket {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_to")
     private Employee assignedTo;
+
+    // ---- New Odoo-inspired fields ----
+
+    @Column(name = "stage_id")
+    private Long stageId;
+
+    @Column(name = "team_id")
+    private Long teamId;
+
+    @Column(name = "category_id")
+    private Long categoryId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private User createdBy;
+
+    @Column(length = 20)
+    @Builder.Default
+    private String channel = "web";
+
+    @Column(name = "sla_deadline")
+    private LocalDateTime slaDeadline;
+
+    @Column(name = "sla_status", length = 20)
+    @Builder.Default
+    private String slaStatus = "PENDING";
+
+    @Column(name = "closed_at")
+    private LocalDateTime closedAt;
+
+    @Column(name = "is_archived")
+    @Builder.Default
+    private Boolean isArchived = false;
+
+    // ---- Tags M2M ----
+
+    @ManyToMany
+    @JoinTable(
+            name = "helpdesk_ticket_tags",
+            joinColumns = @JoinColumn(name = "ticket_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    @Builder.Default
+    private Set<HelpdeskTag> tags = new HashSet<>();
 
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -66,6 +112,8 @@ public class Ticket {
         LOW, MEDIUM, HIGH, URGENT
     }
 
+    /** @deprecated Use configurable stages via {@link #stageId} instead */
+    @Deprecated
     public enum TicketStatus {
         OPEN, IN_PROGRESS, RESOLVED, CLOSED
     }

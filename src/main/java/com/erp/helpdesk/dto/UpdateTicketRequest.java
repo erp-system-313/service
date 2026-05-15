@@ -6,8 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Set;
+
 /**
- * DTO for updating an existing ticket
+ * DTO for updating an existing ticket (enhanced with Odoo-inspired fields).
  */
 @Data
 @NoArgsConstructor
@@ -19,5 +21,12 @@ public class UpdateTicketRequest {
     private String description;
     private Ticket.TicketPriority priority;
     private Ticket.TicketStatus status;
-    private Long assignedTo; // Optional assignment change
+    private Long assignedTo;
+
+    // ---- New fields ----
+    private Long stageId;
+    private Long teamId;
+    private Long categoryId;
+    private String channel;
+    private Set<Long> tagIds;
 }

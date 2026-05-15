@@ -8,10 +8,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
+import java.util.Set;
 
 /**
- * DTO for creating a new ticket
+ * DTO for creating a new ticket (enhanced with Odoo-inspired fields).
  */
 @Data
 @NoArgsConstructor
@@ -30,5 +30,12 @@ public class CreateTicketRequest {
     @NotNull(message = "Priority is required")
     private Ticket.TicketPriority priority;
 
-    private Long assignedTo; // Optional assignment to employee
+    private Long assignedTo;
+
+    // ---- New fields ----
+    private Long stageId;
+    private Long teamId;
+    private Long categoryId;
+    private String channel;
+    private Set<Long> tagIds;
 }

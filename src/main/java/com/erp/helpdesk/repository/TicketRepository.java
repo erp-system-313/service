@@ -25,7 +25,31 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     Page<Ticket> findByAssignedToId(Long assignedToId, Pageable pageable);
     
     long countByStatus(Ticket.TicketStatus status);
-    
+
+    /**
+     * Enhanced filtering with new Odoo-inspired fields.
+     * Excludes archived tickets by default unless includeArchived=true.
+     */
+    @Query("SELECT t FROM Ticket t WHERE " +
+           "(:status IS NULL OR t.status = :status) AND " +
+           "(:priority IS NULL OR t.priority = :priority) AND " +
+           "(:customerId IS NULL OR t.customer.id = :customerId) AND " +
+           "(:assignedToId IS NULL OR t.assignedTo.id = :assignedToId) AND " +
+           "(:stageId IS NULL OR t.stageId = :stageId) AND " +
+           "(:teamId IS NULL OR t.teamId = :teamId) AND " +
+           "(:categoryId IS NULL OR t.categoryId = :categoryId) AND " +
+           "(:includeArchived = true OR t.isArchived = false)")
+    Page<Ticket> findEnhanced(
+            @Param("status") Ticket.TicketStatus status,
+            @Param("priority") Ticket.TicketPriority priority,
+            @Param("customerId") Long customerId,
+            @Param("assignedToId") Long assignedToId,
+            @Param("stageId") Long stageId,
+            @Param("teamId") Long teamId,
+            @Param("categoryId") Long categoryId,
+            @Param("includeArchived") boolean includeArchived,
+            Pageable pageable);
+
     @Query("SELECT t FROM Ticket t WHERE " +
            "(:status IS NULL OR t.status = :status) AND " +
            "(:priority IS NULL OR t.priority = :priority) AND " +
@@ -37,4 +61,10 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             @Param("customerId") Long customerId,
             @Param("assignedToId") Long assignedToId,
             Pageable pageable);
+
+    long countByStageId(Long stageId);
+
+    long countByTeamId(Long teamId);
+
+    long countBySlaStatus(String slaStatus);
 }
