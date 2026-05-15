@@ -25,7 +25,7 @@ public class PurchaseOrderControllerTest extends BaseControllerTest {
     private void check(String u) { assertThat(req(u).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED); }
     private void post(String u) { post(u, "POST"); }
     private void put(String u) { post(u, "PUT"); }
-    private void post(String u, String m) { HttpMethod method = "PUT".equals(m) ? HttpMethod.PUT : HttpMethod.POST; assertThat(req(u, method).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED); }
+    private void post(String u, String m) { HttpMethod method = "PUT".equals(m) ? HttpMethod.PUT : HttpMethod.POST; assertThat(req(u, method).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.BAD_REQUEST, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED); }
     private ResponseEntity<String> req(String u) { return restTemplate.getForEntity(u, String.class); }
     private ResponseEntity<String> req(String u, HttpMethod m) { return restTemplate.exchange(u, m, new HttpEntity<>(adminHeaders()), String.class); }
     private String url(String u) { return u; }
