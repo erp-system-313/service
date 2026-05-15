@@ -1,4 +1,4 @@
-CREATE TABLE departments (
+CREATE TABLE IF NOT EXISTS departments (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
     parent_id BIGINT REFERENCES departments(id),
@@ -8,7 +8,7 @@ CREATE TABLE departments (
     updated_at TIMESTAMP
 );
 
-CREATE TABLE job_positions (
+CREATE TABLE IF NOT EXISTS job_positions (
     id BIGSERIAL PRIMARY KEY,
     title VARCHAR(100) NOT NULL UNIQUE,
     department_id BIGINT REFERENCES departments(id),
@@ -18,10 +18,10 @@ CREATE TABLE job_positions (
     updated_at TIMESTAMP
 );
 
-ALTER TABLE employees ADD COLUMN department_id BIGINT REFERENCES departments(id);
-ALTER TABLE employees ADD COLUMN position_id BIGINT REFERENCES job_positions(id);
+ALTER TABLE employees ADD COLUMN IF NOT EXISTS department_id BIGINT REFERENCES departments(id);
+ALTER TABLE employees ADD COLUMN IF NOT EXISTS position_id BIGINT REFERENCES job_positions(id);
 
-CREATE TABLE job_openings (
+CREATE TABLE IF NOT EXISTS job_openings (
     id BIGSERIAL PRIMARY KEY,
     title VARCHAR(200) NOT NULL,
     department_id BIGINT REFERENCES departments(id),
@@ -33,20 +33,20 @@ CREATE TABLE job_openings (
     updated_at TIMESTAMP
 );
 
-CREATE TABLE recruitment_stages (
+CREATE TABLE IF NOT EXISTS recruitment_stages (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
     sequence INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE recruitment_sources (
+CREATE TABLE IF NOT EXISTS recruitment_sources (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE applicants (
+CREATE TABLE IF NOT EXISTS applicants (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(200) NOT NULL,
     email VARCHAR(255) NOT NULL,
@@ -61,16 +61,16 @@ CREATE TABLE applicants (
     updated_at TIMESTAMP
 );
 
-INSERT INTO recruitment_stages (name, sequence) VALUES ('New', 1);
-INSERT INTO recruitment_stages (name, sequence) VALUES ('Contacted', 2);
-INSERT INTO recruitment_stages (name, sequence) VALUES ('Interview', 3);
-INSERT INTO recruitment_stages (name, sequence) VALUES ('Offer', 4);
-INSERT INTO recruitment_stages (name, sequence) VALUES ('Hired', 5);
-INSERT INTO recruitment_stages (name, sequence) VALUES ('Archived', 6);
+INSERT INTO recruitment_stages (name, sequence) VALUES ('New', 1) ON CONFLICT (name) DO NOTHING;
+INSERT INTO recruitment_stages (name, sequence) VALUES ('Contacted', 2) ON CONFLICT (name) DO NOTHING;
+INSERT INTO recruitment_stages (name, sequence) VALUES ('Interview', 3) ON CONFLICT (name) DO NOTHING;
+INSERT INTO recruitment_stages (name, sequence) VALUES ('Offer', 4) ON CONFLICT (name) DO NOTHING;
+INSERT INTO recruitment_stages (name, sequence) VALUES ('Hired', 5) ON CONFLICT (name) DO NOTHING;
+INSERT INTO recruitment_stages (name, sequence) VALUES ('Archived', 6) ON CONFLICT (name) DO NOTHING;
 
-INSERT INTO recruitment_sources (name) VALUES ('LinkedIn');
-INSERT INTO recruitment_sources (name) VALUES ('Indeed');
-INSERT INTO recruitment_sources (name) VALUES ('Referral');
-INSERT INTO recruitment_sources (name) VALUES ('Website');
-INSERT INTO recruitment_sources (name) VALUES ('Agency');
-INSERT INTO recruitment_sources (name) VALUES ('Other');
+INSERT INTO recruitment_sources (name) VALUES ('LinkedIn') ON CONFLICT (name) DO NOTHING;
+INSERT INTO recruitment_sources (name) VALUES ('Indeed') ON CONFLICT (name) DO NOTHING;
+INSERT INTO recruitment_sources (name) VALUES ('Referral') ON CONFLICT (name) DO NOTHING;
+INSERT INTO recruitment_sources (name) VALUES ('Website') ON CONFLICT (name) DO NOTHING;
+INSERT INTO recruitment_sources (name) VALUES ('Agency') ON CONFLICT (name) DO NOTHING;
+INSERT INTO recruitment_sources (name) VALUES ('Other') ON CONFLICT (name) DO NOTHING;
