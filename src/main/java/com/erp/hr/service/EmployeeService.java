@@ -184,6 +184,11 @@ public class EmployeeService {
 
         employee.setStatus(Employee.EmployeeStatus.TERMINATED);
         employee.setTerminationDate(LocalDate.now());
+
+        if (employee.getUser() != null) {
+            employee.getUser().setIsActive(false);
+        }
+
         employeeRepository.save(employee);
         log.info("Terminated employee with id: {}", id);
 
