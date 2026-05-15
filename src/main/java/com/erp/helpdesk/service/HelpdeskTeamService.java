@@ -55,6 +55,15 @@ public class HelpdeskTeamService {
                 .name(request.getName())
                 .description(request.getDescription())
                 .members(members)
+                .aliasName(request.getAliasName())
+                .aliasDomain(request.getAliasDomain())
+                .useAlias(request.getUseAlias() != null ? request.getUseAlias() : false)
+                .defaultStage(request.getDefaultStage())
+                .teamLeadId(request.getTeamLeadId())
+                .teamLeadName(request.getTeamLeadName())
+                .defaultPriority(request.getDefaultPriority())
+                .autoAssign(request.getAutoAssign() != null ? request.getAutoAssign() : false)
+                .isActive(request.getIsActive() != null ? request.getIsActive() : true)
                 .build();
 
         team = helpdeskTeamRepository.save(team);
@@ -69,6 +78,16 @@ public class HelpdeskTeamService {
 
         team.setName(request.getName());
         team.setDescription(request.getDescription());
+
+        if (request.getAliasName() != null) team.setAliasName(request.getAliasName());
+        if (request.getAliasDomain() != null) team.setAliasDomain(request.getAliasDomain());
+        if (request.getUseAlias() != null) team.setUseAlias(request.getUseAlias());
+        if (request.getDefaultStage() != null) team.setDefaultStage(request.getDefaultStage());
+        if (request.getTeamLeadId() != null) team.setTeamLeadId(request.getTeamLeadId());
+        if (request.getTeamLeadName() != null) team.setTeamLeadName(request.getTeamLeadName());
+        if (request.getDefaultPriority() != null) team.setDefaultPriority(request.getDefaultPriority());
+        if (request.getAutoAssign() != null) team.setAutoAssign(request.getAutoAssign());
+        if (request.getIsActive() != null) team.setIsActive(request.getIsActive());
 
         if (request.getMemberIds() != null) {
             Set<User> members = request.getMemberIds().stream()
