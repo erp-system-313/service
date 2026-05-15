@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import com.erp.inventory.entity.Product;
 
 @Data
 @NoArgsConstructor
@@ -25,12 +24,12 @@ public class ProductDto {
     private String supplierName;
     private BigDecimal unitPrice;
     private BigDecimal costPrice;
-    private Integer reorderPoint;
+    private Integer reorderLevel;
     private Integer reorderQuantity;
     private String unitOfMeasure;
-    private Integer stockQuantity;
+    private Integer currentStock;
     private String imageUrl;
-    private Product.Status status;
+    private Boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

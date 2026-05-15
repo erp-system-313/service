@@ -84,6 +84,6 @@ public class Employee {
     }
 
     public enum EmployeeStatus {
-        ACTIVE, INACTIVE, ON_LEAVE, TERMINATED
+        ACTIVE, INACTIVE, TERMINATED
     }
 }

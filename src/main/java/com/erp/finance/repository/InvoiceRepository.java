@@ -17,11 +17,20 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     @Query("SELECT i FROM Invoice i WHERE " +
            "(:status IS NULL OR i.status = :status) AND " +
-           "(:customerId IS NULL OR i.customer.id = :customerId)")
+           "(:customerId IS NULL OR i.customer.id = :customerId) AND " +
+           "(:dateFrom IS NULL OR i.invoiceDate >= :dateFrom) AND " +
+           "(:dateTo IS NULL OR i.invoiceDate <= :dateTo)")
     Page<Invoice> findWithFilters(
             @Param("status") InvoiceStatus status,
             @Param("customerId") Long customerId,
+            @Param("dateFrom") LocalDateTime dateFrom,
+            @Param("dateTo") LocalDateTime dateTo,
             Pageable pageable);
+
+    @Query("SELECT i FROM Invoice i WHERE " +
+           "LOWER(i.invoiceNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(i.customer.name) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<Invoice> search(@Param("search") String search, Pageable pageable);
 
     @Query("SELECT i FROM Invoice i LEFT JOIN FETCH i.payments WHERE i.id = :id")
     Optional<Invoice> findByIdWithPayments(@Param("id") Long id);

@@ -2,38 +2,50 @@ package com.erp.sales.service;
 
 import com.erp.common.exception.ResourceNotFoundException;
 import com.erp.inventory.entity.Product;
+import com.erp.inventory.repository.ProductRepository;
 import com.erp.sales.entity.SalesOrder;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-
 @Component
+@RequiredArgsConstructor
 @Slf4j
 public class ProductClientStub implements ProductClient {
 
+    private final ProductRepository productRepository;
+
     @Override
     public Product getProductById(Long id) {
-        log.warn("ProductClientStub: getProductById called with id={} - returning stub", id);
-        
-        Product product = Product.builder()
-                .id(id)
-                .sku("SKU-" + id)
-                .name("Product " + id)
-                .unitPrice(BigDecimal.valueOf(99.99))
-                .status(Product.Status.ACTIVE)
-                .build();
-        
-        return product;
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", id));
     }
 
     @Override
     public void validateStock(SalesOrder order) {
-        log.warn("ProductClientStub: validateStock called - skipping validation in stub mode");
+        if (order.getLines() != null) {
+            for (var line : order.getLines()) {
+                Product product = line.getProduct();
+                if (product != null && product.getCurrentStock() < line.getQuantity()) {
+                    throw new com.erp.common.exception.BusinessException("STOCK_001",
+                            "Insufficient stock for product: " + product.getName());
+                }
+            }
+        }
     }
 
     @Override
     public void reduceStock(SalesOrder order) {
-        log.warn("ProductClientStub: reduceStock called - skipping stock reduction in stub mode");
+        if (order.getLines() != null) {
+            for (var line : order.getLines()) {
+                Product product = line.getProduct();
+                if (product != null) {
+                    product.setCurrentStock(product.getCurrentStock() - line.getQuantity());
+                    productRepository.save(product);
+                    log.debug("Reduced stock for product {}: {} remaining",
+                            product.getId(), product.getCurrentStock());
+                }
+            }
+        }
     }
 }

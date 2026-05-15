@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -20,7 +20,7 @@ public class CreatePaymentRequest {
     private BigDecimal amount;
 
     @NotNull(message = "Payment date is required")
-    private LocalDate paymentDate;
+    private LocalDateTime paymentDate;
 
     @NotNull(message = "Payment method is required")
     private PaymentMethod method;

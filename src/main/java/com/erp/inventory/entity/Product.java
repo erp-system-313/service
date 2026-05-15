@@ -46,7 +46,7 @@ public class Product {
     private BigDecimal costPrice;
 
     @Column(name = "reorder_point")
-    private Integer reorderPoint;
+    private Integer reorderLevel;
     
     @Column(name = "reorder_quantity")
     private Integer reorderQuantity;
@@ -56,15 +56,14 @@ public class Product {
     
     @Column(name = "stock_quantity")
     @Builder.Default
-    private Integer stockQuantity = 0;
+    private Integer currentStock = 0;
 
     @Column(name = "image_url")
     private String imageUrl;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
+    @Column(name = "is_active")
     @Builder.Default
-    private Status status = Status.ACTIVE;
+    private Boolean isActive = true;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -73,8 +72,4 @@ public class Product {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    public enum Status {
-        ACTIVE, INACTIVE, DISCONTINUED
-    }
 }

@@ -30,4 +30,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Page<User> findByRoleName(@Param("roleName") String roleName, Pageable pageable);
 
     Optional<User> findByResetToken(String resetToken);
+
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.role WHERE LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(u.firstName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<User> search(@Param("search") String search, Pageable pageable);
 }
