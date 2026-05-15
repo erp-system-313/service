@@ -2,6 +2,7 @@ package com.erp.crm.controller;
 
 import com.erp.auth.security.CurrentUserUtil;
 import com.erp.common.dto.ApiResponse;
+import com.erp.common.dto.PageResponse;
 import com.erp.crm.dto.OpportunityDto;
 import com.erp.crm.dto.PipelineStageDto;
 import com.erp.crm.dto.UpdateStageRequest;
@@ -43,8 +44,10 @@ public class OpportunityController {
     }
 
     @GetMapping("/opportunities")
-    public ResponseEntity<ApiResponse<List<OpportunityDto>>> getAll() {
-        List<OpportunityDto> opportunities = opportunityService.findAll();
+    public ResponseEntity<ApiResponse<PageResponse<OpportunityDto>>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        PageResponse<OpportunityDto> opportunities = opportunityService.findAll(page, size);
         return ResponseEntity.ok(ApiResponse.success(opportunities));
     }
 

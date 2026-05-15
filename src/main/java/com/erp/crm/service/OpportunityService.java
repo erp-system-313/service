@@ -2,6 +2,7 @@ package com.erp.crm.service;
 
 import com.erp.admin.service.AuditLogService;
 import com.erp.auth.security.CurrentUserUtil;
+import com.erp.common.dto.PageResponse;
 import com.erp.common.exception.ResourceNotFoundException;
 import com.erp.crm.dto.CreateOpportunityRequest;
 import com.erp.crm.dto.OpportunityDto;
@@ -11,6 +12,9 @@ import com.erp.crm.repository.OpportunityRepository;
 import com.erp.crm.repository.PipelineStageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,10 +33,10 @@ public class OpportunityService {
     private final AuditLogService auditLogService;
     private final CurrentUserUtil currentUserUtil;
 
-    public List<OpportunityDto> findAll() {
-        return opportunityRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt")).stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
+    public PageResponse<OpportunityDto> findAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Opportunity> opportunities = opportunityRepository.findAllByOrderByCreatedAtDesc(pageable);
+        return PageResponse.from(opportunities.map(this::toDto));
     }
 
     @Transactional
