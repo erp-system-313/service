@@ -2,49 +2,29 @@ package com.erp.sales.repository;
 
 import com.erp.sales.entity.OrderStatus;
 import com.erp.sales.entity.SalesOrder;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
+public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long>,
+                                              JpaSpecificationExecutor<SalesOrder> {
 
     Page<SalesOrder> findByStatus(OrderStatus status, Pageable pageable);
 
     Page<SalesOrder> findByCustomerId(Long customerId, Pageable pageable);
-
-    @Query("SELECT so FROM SalesOrder so " +
-           "LEFT JOIN FETCH so.customer " +
-           "LEFT JOIN FETCH so.createdBy " +
-           "LEFT JOIN FETCH so.incoterm " +
-           "LEFT JOIN FETCH so.team " +
-           "LEFT JOIN FETCH so.paymentTerm " +
-           "WHERE (so.status = :status OR :status IS NULL) AND " +
-           "(so.customer.id = :customerId OR :customerId IS NULL) AND " +
-           "(so.orderDate >= :dateFrom OR :dateFrom IS NULL) AND " +
-           "(so.orderDate <= :dateTo OR :dateTo IS NULL)")
-    Page<SalesOrder> findWithFilters(
-            @Param("status") OrderStatus status,
-            @Param("customerId") Long customerId,
-            @Param("dateFrom") LocalDateTime dateFrom,
-            @Param("dateTo") LocalDateTime dateTo,
-            Pageable pageable);
-
-    @Query("SELECT so FROM SalesOrder so " +
-           "LEFT JOIN FETCH so.customer " +
-           "LEFT JOIN FETCH so.createdBy " +
-           "LEFT JOIN FETCH so.incoterm " +
-           "LEFT JOIN FETCH so.team " +
-           "LEFT JOIN FETCH so.paymentTerm " +
-           "WHERE so.id = :id")
-    Optional<SalesOrder> findByIdWithJoins(@Param("id") Long id);
 
     Optional<SalesOrder> findByOrderNumber(String orderNumber);
 
@@ -72,4 +52,25 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
            "GROUP BY sol.product.id, sol.product.name " +
            "ORDER BY totalQty DESC")
     List<Object[]> findTopSellingProducts(@Param("status") OrderStatus status, @Param("startDate") LocalDateTime startDate, Pageable pageable);
+
+    static Specification<SalesOrder> withFilters(OrderStatus status, Long customerId,
+                                                  LocalDateTime dateFrom, LocalDateTime dateTo) {
+        return (root, query, cb) -> {
+            if (Long.class != query.getResultType()) {
+                root.fetch("customer", JoinType.LEFT);
+                root.fetch("createdBy", JoinType.LEFT);
+                root.fetch("incoterm", JoinType.LEFT);
+                root.fetch("team", JoinType.LEFT);
+                root.fetch("paymentTerm", JoinType.LEFT);
+            }
+
+            var predicates = new ArrayList<Predicate>();
+            if (status != null) predicates.add(cb.equal(root.get("status"), status));
+            if (customerId != null) predicates.add(cb.equal(root.get("customer").get("id"), customerId));
+            if (dateFrom != null) predicates.add(cb.greaterThanOrEqualTo(root.get("orderDate"), dateFrom));
+            if (dateTo != null) predicates.add(cb.lessThanOrEqualTo(root.get("orderDate"), dateTo));
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+    }
 }

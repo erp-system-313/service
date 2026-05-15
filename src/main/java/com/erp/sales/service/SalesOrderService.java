@@ -67,15 +67,15 @@ public class SalesOrderService {
                                                 LocalDateTime dateTo) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        Page<SalesOrder> orders = salesOrderRepository.findWithFilters(
-                status, customerId, dateFrom, dateTo, pageable);
+        var spec = SalesOrderRepository.withFilters(status, customerId, dateFrom, dateTo);
+        Page<SalesOrder> orders = salesOrderRepository.findAll(spec, pageable);
 
         return PageResponse.from(orders.map(SalesOrderDto::fromEntity));
     }
 
     @Transactional(readOnly = true)
     public SalesOrderDto findById(Long id) {
-        SalesOrder order = salesOrderRepository.findByIdWithJoins(id)
+        SalesOrder order = salesOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("SalesOrder", id));
         return SalesOrderDto.fromEntity(order);
     }
