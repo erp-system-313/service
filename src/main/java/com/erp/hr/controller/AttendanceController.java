@@ -3,11 +3,13 @@ package com.erp.hr.controller;
 import com.erp.auth.security.CurrentUserUtil;
 import com.erp.hr.dto.AttendanceDto;
 import com.erp.hr.dto.ClockedInEmployeeDto;
+import com.erp.hr.dto.UpdateAttendanceRequest;
 import com.erp.hr.service.AttendanceService;
 import com.erp.common.dto.ApiResponse;
 import com.erp.common.dto.PageResponse;
 import com.erp.common.exception.BusinessException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -31,9 +33,10 @@ public class AttendanceController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) Long employeeId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
-        PageResponse<AttendanceDto> attendances = attendanceService.findAll(page, size, employeeId, date);
+        PageResponse<AttendanceDto> attendances = attendanceService.findAll(page, size, employeeId, startDate, endDate);
         return ResponseEntity.ok(ApiResponse.success(attendances));
     }
 
@@ -79,6 +82,15 @@ public class AttendanceController {
         return ResponseEntity.ok(ApiResponse.success(attendance, "Clocked out successfully"));
     }
     
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<AttendanceDto>> update(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateAttendanceRequest request) {
+        AttendanceDto attendance = attendanceService.update(id, request);
+        return ResponseEntity.ok(ApiResponse.success(attendance, "Attendance record updated"));
+    }
+
     private Long resolveTargetEmployeeId(Long requestedEmployeeId, Long currentUserId, boolean isAdmin) {
         Long ownEmployeeId = attendanceService.getEmployeeIdByUserId(currentUserId);
         

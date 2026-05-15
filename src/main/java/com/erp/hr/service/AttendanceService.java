@@ -2,6 +2,7 @@ package com.erp.hr.service;
 
 import com.erp.auth.security.CurrentUserUtil;
 import com.erp.hr.dto.AttendanceDto;
+import com.erp.hr.dto.UpdateAttendanceRequest;
 import com.erp.hr.entity.Attendance;
 import com.erp.hr.entity.Employee;
 import com.erp.hr.repository.AttendanceRepository;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,28 +31,42 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AttendanceService {
 
+    private static final LocalTime LATE_THRESHOLD = LocalTime.of(9, 0);
+    private static final LocalTime HALF_DAY_THRESHOLD = LocalTime.of(12, 0);
+
     private final AttendanceRepository attendanceRepository;
     private final EmployeeRepository employeeRepository;
     private final AuditLogService auditLogService;
     private final CurrentUserUtil currentUserUtil;
 
-    public PageResponse<AttendanceDto> findAll(int page, int size, Long employeeId, LocalDate date) {
+    @Transactional(readOnly = true)
+    public PageResponse<AttendanceDto> findAll(int page, int size, Long employeeId,
+                                                LocalDate startDate, LocalDate endDate) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
 
         Page<Attendance> attendances;
-        if (employeeId != null && date != null) {
-            attendances = attendanceRepository.findByEmployeeIdAndDateRange(employeeId, date, date, pageable);
-        } else if (employeeId != null) {
-            attendances = attendanceRepository.findByEmployeeId(employeeId, pageable);
-        } else if (date != null) {
-            attendances = attendanceRepository.findByDate(date, pageable);
+        if (employeeId != null) {
+            if (startDate != null && endDate != null) {
+                attendances = attendanceRepository.findByEmployeeIdAndDateRange(employeeId, startDate, endDate, pageable);
+            } else if (startDate != null) {
+                attendances = attendanceRepository.findByEmployeeIdAndDateRange(employeeId, startDate, startDate, pageable);
+            } else {
+                attendances = attendanceRepository.findByEmployeeId(employeeId, pageable);
+            }
         } else {
-            attendances = attendanceRepository.findAll(pageable);
+            if (startDate != null && endDate != null) {
+                attendances = attendanceRepository.findByDateBetween(startDate, endDate, pageable);
+            } else if (startDate != null) {
+                attendances = attendanceRepository.findByDate(startDate, pageable);
+            } else {
+                attendances = attendanceRepository.findAll(pageable);
+            }
         }
 
         return PageResponse.from(attendances.map(this::toDto));
     }
 
+    @Transactional(readOnly = true)
     public AttendanceDto findById(Long id) {
         Attendance attendance = attendanceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Attendance", id));
@@ -67,6 +83,7 @@ public class AttendanceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Employee", employeeId));
 
         LocalDate today = LocalDate.now();
+        LocalDateTime now = LocalDateTime.now();
 
         var existingOpt = attendanceRepository.findByEmployeeIdAndDate(employeeId, today);
         Attendance attendance;
@@ -76,20 +93,20 @@ public class AttendanceService {
             if (existing.getCheckIn() != null && existing.getCheckOut() == null) {
                 throw new BusinessException("ATTENDANCE_007", "Employee " + employeeId + " is already clocked in today");
             }
-            existing.setCheckIn(LocalDateTime.now());
+            existing.setCheckIn(now);
             existing.setCheckOut(null);
-            existing.setStatus(Attendance.AttendanceStatus.PRESENT);
+            existing.setStatus(detectStatus(now.toLocalTime()));
             attendance = attendanceRepository.save(existing);
-            log.info("Employee {} clocked in at {}", employeeId, attendance.getCheckIn());
+            log.info("Employee {} clocked in at {} with status {}", employeeId, attendance.getCheckIn(), attendance.getStatus());
         } else {
             attendance = Attendance.builder()
                     .employee(employee)
                     .date(today)
-                    .checkIn(LocalDateTime.now())
-                    .status(Attendance.AttendanceStatus.PRESENT)
+                    .checkIn(now)
+                    .status(detectStatus(now.toLocalTime()))
                     .build();
             attendance = attendanceRepository.save(attendance);
-            log.info("Employee {} clocked in at {}", employeeId, attendance.getCheckIn());
+            log.info("Employee {} clocked in at {} with status {}", employeeId, attendance.getCheckIn(), attendance.getStatus());
         }
 
         auditLogService.log(currentUserUtil.getCurrentUserId(), "CLOCK_IN", "Attendance", attendance.getId(), null, ipAddress, "Employee clocked in");
@@ -124,13 +141,49 @@ public class AttendanceService {
         return toDto(attendance);
     }
 
+    @Transactional
+    public AttendanceDto update(Long id, UpdateAttendanceRequest request) {
+        Attendance attendance = attendanceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Attendance", id));
+
+        if (request.getCheckIn() != null) {
+            attendance.setCheckIn(request.getCheckIn());
+        }
+        if (request.getCheckOut() != null) {
+            attendance.setCheckOut(request.getCheckOut());
+        }
+        if (request.getStatus() != null) {
+            attendance.setStatus(request.getStatus());
+        }
+        if (request.getNotes() != null) {
+            attendance.setNotes(request.getNotes());
+        }
+
+        attendance = attendanceRepository.save(attendance);
+        log.info("Updated attendance record id: {} by user: {}", id, currentUserUtil.getCurrentUserId());
+
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "UPDATE", "Attendance", id, null, null, "Attendance record updated");
+
+        return toDto(attendance);
+    }
+
+    private Attendance.AttendanceStatus detectStatus(LocalTime checkInTime) {
+        if (checkInTime.isAfter(HALF_DAY_THRESHOLD) || checkInTime.equals(HALF_DAY_THRESHOLD)) {
+            return Attendance.AttendanceStatus.HALF_DAY;
+        }
+        if (checkInTime.isAfter(LATE_THRESHOLD)) {
+            return Attendance.AttendanceStatus.LATE;
+        }
+        return Attendance.AttendanceStatus.PRESENT;
+    }
+
     public Long getEmployeeIdByUserId(Long userId) {
         var employee = employeeRepository.findByUserId(userId);
         if (employee.isPresent()) {
             return employee.get().getId();
         }
         
-        throw new com.erp.common.exception.BusinessException("ATTENDANCE_005", 
+        throw new BusinessException("ATTENDANCE_005", 
             "No employee linked to your account. Contact admin.");
     }
     
