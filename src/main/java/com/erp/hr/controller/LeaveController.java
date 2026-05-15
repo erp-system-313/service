@@ -1,11 +1,9 @@
 package com.erp.hr.controller;
 
 import com.erp.auth.security.CurrentUserUtil;
-import com.erp.auth.security.UserPrincipal;
 import com.erp.hr.dto.CreateLeaveRequest;
 import com.erp.hr.dto.LeaveBalanceDto;
 import com.erp.hr.dto.LeaveRequestDto;
-import com.erp.hr.entity.LeaveRequest;
 import com.erp.hr.service.LeaveService;
 import com.erp.common.dto.ApiResponse;
 import com.erp.common.dto.PageResponse;
@@ -13,15 +11,15 @@ import com.erp.common.exception.BusinessException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/leave-requests")
 @RequiredArgsConstructor

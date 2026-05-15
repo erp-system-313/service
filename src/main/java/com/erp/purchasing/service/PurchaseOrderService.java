@@ -1,5 +1,7 @@
 package com.erp.purchasing.service;
 
+import com.erp.admin.entity.User;
+import com.erp.admin.repository.UserRepository;
 import com.erp.admin.service.AuditLogService;
 import com.erp.auth.security.CurrentUserUtil;
 import com.erp.common.dto.PageResponse;
@@ -10,6 +12,7 @@ import com.erp.inventory.repository.ProductRepository;
 import com.erp.purchasing.dto.*;
 import com.erp.purchasing.entity.PurchaseOrder;
 import com.erp.purchasing.entity.PurchaseOrderLine;
+import com.erp.purchasing.entity.StockMovement;
 import com.erp.purchasing.entity.Supplier;
 import com.erp.purchasing.repository.PurchaseOrderLineRepository;
 import com.erp.purchasing.repository.PurchaseOrderRepository;
@@ -24,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,21 +40,21 @@ public class PurchaseOrderService {
     private final PurchaseOrderLineRepository purchaseOrderLineRepository;
     private final SupplierRepository supplierRepository;
     private final ProductRepository productRepository;
+    private final StockMovementService stockMovementService;
+    private final UserRepository userRepository;
     private final AuditLogService auditLogService;
     private final CurrentUserUtil currentUserUtil;
 
-    public PageResponse<PurchaseOrderDto> findAll(int page, int size, Long supplierId, String status) {
+    public PageResponse<PurchaseOrderDto> findAll(int page, int size, String search, Long supplierId, String status) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
         Page<PurchaseOrder> orders;
-        if (supplierId != null && status != null) {
-            PurchaseOrder.Status orderStatus = PurchaseOrder.Status.valueOf(status.toUpperCase());
-            orders = purchaseOrderRepository.findByStatus(orderStatus, pageable);
+        if (search != null && !search.isEmpty()) {
+            orders = purchaseOrderRepository.search(search, pageable);
         } else if (supplierId != null) {
             orders = purchaseOrderRepository.findBySupplierId(supplierId, pageable);
         } else if (status != null) {
-            PurchaseOrder.Status orderStatus = PurchaseOrder.Status.valueOf(status.toUpperCase());
-            orders = purchaseOrderRepository.findByStatus(orderStatus, pageable);
+            orders = purchaseOrderRepository.findByStatus(PurchaseOrder.Status.valueOf(status.toUpperCase()), pageable);
         } else {
             orders = purchaseOrderRepository.findAll(pageable);
         }
@@ -75,9 +79,9 @@ public class PurchaseOrderService {
                 .poNumber(poNumber)
                 .supplier(supplier)
                 .orderDate(request.getOrderDate())
-                .deliveryDate(request.getDeliveryDate())
+                .expectedDate(request.getExpectedDate())
                 .notes(request.getNotes())
-                .status(PurchaseOrder.Status.PENDING)
+                .status(PurchaseOrder.Status.DRAFT)
                 .build();
 
         BigDecimal subtotal = BigDecimal.ZERO;
@@ -106,6 +110,9 @@ public class PurchaseOrderService {
         order.setSubtotal(subtotal);
         order.setTaxAmount(BigDecimal.ZERO);
         order.setTotalAmount(subtotal);
+        if (currentUserId != null) {
+            order.setCreatedBy(userRepository.findById(currentUserId).orElse(null));
+        }
         order = purchaseOrderRepository.save(order);
         log.info("Created purchase order with id: {} and poNumber: {}", order.getId(), poNumber);
 
@@ -126,7 +133,7 @@ public class PurchaseOrderService {
         }
 
         if (request.getOrderDate() != null) order.setOrderDate(request.getOrderDate());
-        if (request.getDeliveryDate() != null) order.setDeliveryDate(request.getDeliveryDate());
+        if (request.getExpectedDate() != null) order.setExpectedDate(request.getExpectedDate());
         if (request.getReceivedDate() != null) order.setReceivedDate(request.getReceivedDate());
         if (request.getNotes() != null) order.setNotes(request.getNotes());
         if (request.getStatus() != null) order.setStatus(request.getStatus());
@@ -178,6 +185,58 @@ public class PurchaseOrderService {
     }
 
     @Transactional
+    public PurchaseOrderDto receive(Long id, ReceivePurchaseOrderRequest request, Long currentUserId, String ipAddress) {
+        PurchaseOrder order = purchaseOrderRepository.findByIdWithDetails(id)
+                .orElseThrow(() -> new ResourceNotFoundException("PurchaseOrder", id));
+
+        if (order.getStatus() == PurchaseOrder.Status.CANCELLED) {
+            throw new BusinessException("PO_002", "Cannot receive a cancelled purchase order");
+        }
+        if (order.getStatus() == PurchaseOrder.Status.RECEIVED) {
+            throw new BusinessException("PO_003", "Purchase order has already been received");
+        }
+
+        if (request.getLines() != null) {
+            for (ReceivePurchaseOrderRequest.ReceiveLineRequest lineRequest : request.getLines()) {
+                PurchaseOrderLine line = order.getLines().stream()
+                        .filter(l -> l.getId().equals(lineRequest.getLineId()))
+                        .findFirst()
+                        .orElseThrow(() -> new ResourceNotFoundException("PurchaseOrderLine", lineRequest.getLineId()));
+
+                int receivedQty = lineRequest.getReceivedQty();
+                line.setReceivedQty(line.getReceivedQty() + receivedQty);
+
+                Product product = line.getProduct();
+                int previousStock = product.getCurrentStock() != null ? product.getCurrentStock() : 0;
+                product.setCurrentStock(previousStock + receivedQty);
+                productRepository.save(product);
+
+                CreateStockMovementRequest movementReq = CreateStockMovementRequest.builder()
+                        .productId(product.getId())
+                        .type(StockMovement.MovementType.IN)
+                        .quantity(receivedQty)
+                        .previousStock(previousStock)
+                        .newStock(previousStock + receivedQty)
+                        .referenceType("PURCHASE_ORDER")
+                        .referenceId(order.getId())
+                        .date(LocalDate.now())
+                        .notes("Goods received from purchase order: " + order.getPoNumber())
+                        .build();
+                stockMovementService.create(movementReq, currentUserId, ipAddress);
+            }
+        }
+
+        order.setStatus(PurchaseOrder.Status.RECEIVED);
+        order.setReceivedDate(LocalDate.now());
+        order = purchaseOrderRepository.save(order);
+        log.info("Received purchase order with id: {}", order.getId());
+
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "RECEIVE", "PurchaseOrder", order.getId(), null, ipAddress, "Purchase order received");
+
+        return toDto(order);
+    }
+
+    @Transactional
     public PurchaseOrderDto cancel(Long id) {
         PurchaseOrder order = purchaseOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("PurchaseOrder", id));
@@ -194,7 +253,7 @@ public class PurchaseOrderService {
     }
 
     public long countActive() {
-        return purchaseOrderRepository.countByStatus(PurchaseOrder.Status.PENDING);
+        return purchaseOrderRepository.countByStatus(PurchaseOrder.Status.DRAFT);
     }
 
     private String generatePoNumber() {
@@ -217,7 +276,7 @@ public class PurchaseOrderService {
                 .taxAmount(order.getTaxAmount())
                 .totalAmount(order.getTotalAmount())
                 .shippingCost(order.getShippingCost())
-                .deliveryDate(order.getDeliveryDate())
+                .expectedDate(order.getExpectedDate())
                 .receivedDate(order.getReceivedDate())
                 .notes(order.getNotes())
                 .lines(order.getLines() != null ? order.getLines().stream()
@@ -234,6 +293,7 @@ public class PurchaseOrderService {
                                 .notes(line.getNotes())
                                 .build())
                         .collect(Collectors.toList()) : null)
+                .createdById(order.getCreatedBy() != null ? order.getCreatedBy().getId() : null)
                 .createdAt(order.getCreatedAt())
                 .updatedAt(order.getUpdatedAt())
                 .build();

@@ -37,11 +37,16 @@ public class JournalEntryService {
     private final JournalEntryLineRepository journalEntryLineRepository;
     private final AccountRepository accountRepository;
 
-    public PageResponse<JournalEntryDto> findAll(int page, int size, JournalEntryStatus status, 
+    public PageResponse<JournalEntryDto> findAll(int page, int size, String search, JournalEntryStatus status, 
                                                    LocalDate dateFrom, LocalDate dateTo) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        Page<JournalEntry> entries = journalEntryRepository.findWithFilters(status, dateFrom, dateTo, pageable);
+        Page<JournalEntry> entries;
+        if (search != null && !search.isEmpty()) {
+            entries = journalEntryRepository.search(search, pageable);
+        } else {
+            entries = journalEntryRepository.findWithFilters(status, dateFrom, dateTo, pageable);
+        }
 
         return PageResponse.from(entries.map(this::toDto));
     }
@@ -65,6 +70,7 @@ public class JournalEntryService {
                 .date(request.getDate())
                 .description(request.getDescription())
                 .reference(request.getReference())
+                .journalType(request.getJournalType() != null ? request.getJournalType() : "MISC")
                 .status(JournalEntryStatus.DRAFT)
                 .lines(new ArrayList<>())
                 .build();
@@ -99,6 +105,63 @@ public class JournalEntryService {
         entry = journalEntryRepository.save(entry);
         log.info("Created journal entry with id: {} and number: {}", entry.getId(), entry.getEntryNumber());
 
+        return toDto(entry);
+    }
+
+    @Transactional
+    public JournalEntryDto update(Long id, CreateJournalEntryRequest request) {
+        JournalEntry entry = journalEntryRepository.findByIdWithLines(id)
+                .orElseThrow(() -> new ResourceNotFoundException("JournalEntry", id));
+
+        if (entry.getStatus() != JournalEntryStatus.DRAFT) {
+            throw new BusinessException("JOURNAL_005", "Only DRAFT journal entries can be updated");
+        }
+
+        if (request.getDate() != null) {
+            entry.setDate(request.getDate());
+        }
+        if (request.getDescription() != null) {
+            entry.setDescription(request.getDescription());
+        }
+        if (request.getReference() != null) {
+            entry.setReference(request.getReference());
+        }
+        if (request.getJournalType() != null) {
+            entry.setJournalType(request.getJournalType());
+        }
+
+        if (request.getLines() != null && !request.getLines().isEmpty()) {
+            entry.clearLines();
+            java.math.BigDecimal totalDebit = java.math.BigDecimal.ZERO;
+            java.math.BigDecimal totalCredit = java.math.BigDecimal.ZERO;
+
+            for (var lineRequest : request.getLines()) {
+                Account account = accountRepository.findById(lineRequest.getAccountId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Account", lineRequest.getAccountId()));
+
+                java.math.BigDecimal debit = lineRequest.getDebit() != null ? lineRequest.getDebit() : java.math.BigDecimal.ZERO;
+                java.math.BigDecimal credit = lineRequest.getCredit() != null ? lineRequest.getCredit() : java.math.BigDecimal.ZERO;
+
+                JournalEntryLine line = JournalEntryLine.builder()
+                        .entry(entry)
+                        .account(account)
+                        .debit(debit)
+                        .credit(credit)
+                        .description(lineRequest.getDescription())
+                        .build();
+
+                entry.addLine(line);
+                totalDebit = totalDebit.add(debit);
+                totalCredit = totalCredit.add(credit);
+            }
+
+            if (totalDebit.compareTo(totalCredit) != 0) {
+                throw new BusinessException("JOURNAL_001", "Debits must equal credits");
+            }
+        }
+
+        entry = journalEntryRepository.save(entry);
+        log.info("Updated journal entry with id: {}", id);
         return toDto(entry);
     }
 

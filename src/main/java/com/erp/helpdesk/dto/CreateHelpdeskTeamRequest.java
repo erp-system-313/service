@@ -1,6 +1,7 @@
 package com.erp.helpdesk.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,20 +14,12 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 public class CreateHelpdeskTeamRequest {
+
     @NotBlank(message = "Team name is required")
+    @Size(max = 255)
     private String name;
 
     private String description;
-    private Set<Long> memberIds;
 
-    // Email gateway fields
-    private String aliasName;
-    private String aliasDomain;
-    private Boolean useAlias;
-    private String defaultStage;
-    private Long teamLeadId;
-    private String teamLeadName;
-    private String defaultPriority;
-    private Boolean autoAssign;
-    private Boolean isActive;
+    private Set<Long> memberIds;
 }

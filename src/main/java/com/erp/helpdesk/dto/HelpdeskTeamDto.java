@@ -20,14 +20,6 @@ public class HelpdeskTeamDto {
     private String description;
     private Set<Long> memberIds;
     private Boolean isActive;
-    private String aliasName;
-    private String aliasDomain;
-    private Boolean useAlias;
-    private String defaultStage;
-    private Long teamLeadId;
-    private String teamLeadName;
-    private String defaultPriority;
-    private Boolean autoAssign;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -40,14 +32,6 @@ public class HelpdeskTeamDto {
                         ? team.getMembers().stream().map(u -> u.getId()).collect(Collectors.toSet())
                         : null)
                 .isActive(team.getIsActive())
-                .aliasName(team.getAliasName())
-                .aliasDomain(team.getAliasDomain())
-                .useAlias(team.getUseAlias())
-                .defaultStage(team.getDefaultStage())
-                .teamLeadId(team.getTeamLeadId())
-                .teamLeadName(team.getTeamLeadName())
-                .defaultPriority(team.getDefaultPriority())
-                .autoAssign(team.getAutoAssign())
                 .createdAt(team.getCreatedAt())
                 .updatedAt(team.getUpdatedAt())
                 .build();
