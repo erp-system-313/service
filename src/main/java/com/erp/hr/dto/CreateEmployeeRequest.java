@@ -35,13 +35,9 @@ public class CreateEmployeeRequest {
     @Size(max = 20)
     private String phone;
 
-    @NotBlank(message = "Department is required")
-    @Size(max = 100)
-    private String department;
+    private Long departmentId;
 
-    @NotBlank(message = "Position is required")
-    @Size(max = 100)
-    private String position;
+    private Long positionId;
 
     private LocalDate hireDate;
 
