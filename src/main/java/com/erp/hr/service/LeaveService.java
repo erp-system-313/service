@@ -58,11 +58,7 @@ public class LeaveService {
             leaveRequests = leaveRequestRepository.findByType(leaveType, pageable);
         } else if (!isAdmin) {
             Long empId = getEmployeeIdByUserId(currentUserUtil.getCurrentUserId());
-            if (empId != null) {
-                leaveRequests = leaveRequestRepository.findByEmployeeId(empId, pageable);
-            } else {
-                leaveRequests = leaveRequestRepository.findAll(pageable);
-            }
+            leaveRequests = leaveRequestRepository.findByEmployeeId(empId, pageable);
         } else {
             leaveRequests = leaveRequestRepository.findAll(pageable);
         }
@@ -73,6 +69,16 @@ public class LeaveService {
     public LeaveRequestDto findById(Long id) {
         LeaveRequest leaveRequest = leaveRequestRepository.findByIdWithEmployee(id)
                 .orElseThrow(() -> new ResourceNotFoundException("LeaveRequest", id));
+
+        Long currentUserId = currentUserUtil.getCurrentUserId();
+        boolean isAdmin = currentUserUtil.isCurrentUserAdmin();
+        if (!isAdmin) {
+            Long ownEmployeeId = getEmployeeIdByUserId(currentUserId);
+            if (!leaveRequest.getEmployee().getId().equals(ownEmployeeId)) {
+                throw new BusinessException("LEAVE_004", "You cannot view this leave request");
+            }
+        }
+
         return toDto(leaveRequest);
     }
 
@@ -203,11 +209,7 @@ public class LeaveService {
         if (employee.isPresent()) {
             return employee.get().getId();
         }
-        var anyActive = employeeRepository.findByStatus(Employee.EmployeeStatus.ACTIVE, PageRequest.of(0, 1));
-        if (!anyActive.isEmpty()) {
-            return anyActive.getContent().get(0).getId();
-        }
-        return null;
+        throw new BusinessException("LEAVE_002", "No employee linked to your account. Contact admin.");
     }
 
     private LeaveRequestDto toDto(LeaveRequest leaveRequest) {
