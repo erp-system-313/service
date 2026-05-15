@@ -40,10 +40,10 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
     @Query("SELECT so FROM SalesOrder so WHERE so.status = :status ORDER BY so.createdAt DESC")
     Page<SalesOrder> findByStatusOrderByCreatedAtDesc(@Param("status") OrderStatus status, Pageable pageable);
 
-    @Query("SELECT FUNCTION('DATE', so.orderDate) as orderDate, SUM(so.totalAmount) as total " +
+    @Query("SELECT CAST(so.orderDate AS date) as orderDate, SUM(so.totalAmount) as total " +
            "FROM SalesOrder so " +
            "WHERE so.status = :status AND so.orderDate >= :startDate " +
-           "GROUP BY FUNCTION('DATE', so.orderDate) " +
+           "GROUP BY CAST(so.orderDate AS date) " +
            "ORDER BY orderDate")
     List<Object[]> findDailySalesTrend(@Param("status") OrderStatus status, @Param("startDate") LocalDateTime startDate);
 
