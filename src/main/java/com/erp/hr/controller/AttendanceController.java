@@ -26,7 +26,7 @@ public class AttendanceController {
     private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','USER')")
     public ResponseEntity<ApiResponse<PageResponse<AttendanceDto>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -45,7 +45,7 @@ public class AttendanceController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','USER')")
     public ResponseEntity<ApiResponse<AttendanceDto>> getById(@PathVariable Long id) {
         AttendanceDto attendance = attendanceService.findById(id);
         return ResponseEntity.ok(ApiResponse.success(attendance));

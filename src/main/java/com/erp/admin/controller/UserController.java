@@ -18,13 +18,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class UserController {
 
     private final UserService userService;
     private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<PageResponse<UserDto>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -36,18 +36,21 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<UserDto>> getById(@PathVariable Long id) {
         UserDto user = userService.findById(id);
         return ResponseEntity.ok(ApiResponse.success(user));
     }
 
     @GetMapping("/email/{email}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<UserDto>> getByEmail(@PathVariable String email) {
         UserDto user = userService.findByEmail(email);
         return ResponseEntity.ok(ApiResponse.success(user));
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<UserDto>> create(
             @Valid @RequestBody CreateUserRequest request,
             HttpServletRequest httpRequest) {
@@ -58,6 +61,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<UserDto>> update(
             @PathVariable Long id,
             @Valid @RequestBody UpdateUserRequest request,
@@ -69,6 +73,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
