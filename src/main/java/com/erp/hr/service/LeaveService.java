@@ -208,12 +208,13 @@ public class LeaveService {
         return toBalanceDto(balance);
     }
 
+    @Transactional(readOnly = true)
     public List<LeaveBalanceDto> getBalances(Long employeeId, int year) {
-        List<LeaveBalance> balances = leaveBalanceRepository.findAll();
+        List<LeaveBalance> balances = employeeId != null
+                ? leaveBalanceRepository.findByEmployeeIdAndYear(employeeId, year)
+                : leaveBalanceRepository.findByYear(year);
 
         return balances.stream()
-                .filter(b -> employeeId == null || b.getEmployee().getId().equals(employeeId))
-                .filter(b -> b.getYear() == year)
                 .map(this::toBalanceDto)
                 .toList();
     }
