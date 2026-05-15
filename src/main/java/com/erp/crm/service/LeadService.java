@@ -83,7 +83,7 @@ public class LeadService {
         lead = leadRepository.save(lead);
         log.info("Created lead with id: {}", lead.getId());
 
-        auditLogService.log(currentUserUtil.getCurrentUserId(), "CREATE", "Lead", lead.getId(), null, ipAddress, "Lead created");
+        auditLogService.log(currentUserId, "CREATE", "Lead", lead.getId(), null, ipAddress, "Lead created");
 
         return toDto(lead);
     }
@@ -105,7 +105,7 @@ public class LeadService {
         lead = leadRepository.save(lead);
         log.info("Updated lead with id: {}", lead.getId());
 
-        auditLogService.log(currentUserUtil.getCurrentUserId(), "UPDATE", "Lead", lead.getId(), null, ipAddress, "Lead updated");
+        auditLogService.log(currentUserId, "UPDATE", "Lead", lead.getId(), null, ipAddress, "Lead updated");
 
         return toDto(lead);
     }
@@ -143,7 +143,7 @@ public class LeadService {
         opportunity = opportunityRepository.save(opportunity);
         log.info("Converted lead id: {} to opportunity id: {}", id, opportunity.getId());
 
-        auditLogService.log(currentUserUtil.getCurrentUserId(), "CONVERT", "Lead", lead.getId(), null, ipAddress, "Lead converted to opportunity");
+        auditLogService.log(currentUserId, "CONVERT", "Lead", lead.getId(), null, ipAddress, "Lead converted to opportunity");
 
         return toOpportunityDto(opportunity);
     }
