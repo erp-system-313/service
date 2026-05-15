@@ -46,6 +46,6 @@ public class Attendance {
     private LocalDateTime createdAt;
 
     public enum AttendanceStatus {
-        PRESENT, ABSENT, LATE, LEAVE
+        PRESENT, ABSENT, LATE, HALF_DAY, LEAVE
     }
 }
