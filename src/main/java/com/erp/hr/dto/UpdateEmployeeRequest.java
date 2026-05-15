@@ -29,11 +29,9 @@ public class UpdateEmployeeRequest {
     @Size(max = 20)
     private String phone;
 
-    @Size(max = 100)
-    private String department;
+    private Long departmentId;
 
-    @Size(max = 100)
-    private String position;
+    private Long positionId;
 
     private LocalDate hireDate;
 
