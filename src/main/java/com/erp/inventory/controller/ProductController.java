@@ -16,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/products")
@@ -65,10 +67,8 @@ public class ProductController {
     }
 
     @GetMapping("/low-stock")
-    public ResponseEntity<ApiResponse<PageResponse<ProductDto>>> getLowStock(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        PageResponse<ProductDto> products = productService.findLowStock(page, size);
+    public ResponseEntity<ApiResponse<List<ProductDto>>> getLowStock() {
+        List<ProductDto> products = productService.findLowStock();
         return ResponseEntity.ok(ApiResponse.success(products));
     }
 

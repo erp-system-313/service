@@ -163,10 +163,10 @@ public class ProductService {
         return productRepository.countByIsActive(true);
     }
 
-    public PageResponse<ProductDto> findLowStock(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("currentStock").ascending());
+    public List<ProductDto> findLowStock() {
+        Pageable pageable = PageRequest.of(0, 50, Sort.by("currentStock").ascending());
         Page<Product> products = productRepository.findLowStock(true, pageable);
-        return PageResponse.from(products.map(this::toDto));
+        return products.map(this::toDto).getContent();
     }
 
     private List<Long> getAllDescendantCategoryIds(Long categoryId) {
