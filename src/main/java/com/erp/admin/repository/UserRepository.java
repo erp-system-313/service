@@ -17,10 +17,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByEmail(String email);
 
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.role WHERE u.id = :id")
+    boolean existsByRoleIdAndIsActiveTrue(Long roleId);
+
+    @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.role r LEFT JOIN FETCH r.rolePermissions WHERE u.id = :id")
     Optional<User> findByIdWithRole(@Param("id") Long id);
 
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.role WHERE u.email = :email")
+    @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.role r LEFT JOIN FETCH r.rolePermissions WHERE u.email = :email")
     Optional<User> findByEmailWithRole(@Param("email") String email);
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.role WHERE u.isActive = true")

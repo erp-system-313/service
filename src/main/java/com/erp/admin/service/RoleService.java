@@ -7,15 +7,15 @@ import com.erp.admin.entity.Permission;
 import com.erp.admin.entity.Role;
 import com.erp.admin.repository.PermissionRepository;
 import com.erp.admin.repository.RoleRepository;
+import com.erp.admin.repository.UserRepository;
 import com.erp.common.exception.BusinessException;
 import com.erp.common.exception.ResourceNotFoundException;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,13 +27,11 @@ public class RoleService {
 
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
-
-    @PersistenceContext
-    private EntityManager entityManager;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public List<RoleDto> findAll() {
-        return roleRepository.findAll().stream()
+        return roleRepository.findByIsActiveTrueOrderByNameAsc().stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
@@ -47,17 +45,19 @@ public class RoleService {
 
     @Transactional
     public RoleDto create(CreateRoleRequest request) {
-        if (roleRepository.existsByName(request.getName())) {
-            throw new BusinessException("ROLE_001", "Role name already exists: " + request.getName());
+        String roleName = request.getName().trim().toUpperCase();
+
+        if (roleRepository.existsByNameIgnoreCase(roleName)) {
+            throw new BusinessException("ROLE_001", "Role name already exists: " + roleName);
         }
 
-            Role role = Role.builder()
-                    .name(request.getName().toUpperCase())
-                    .description(request.getDescription())
-                    .isActive(true)
-                    .isSystem(false)
-                    .rolePermissions(new java.util.HashSet<>())
-                    .build();
+        Role role = Role.builder()
+                .name(roleName)
+                .description(request.getDescription())
+                .isActive(true)
+                .isSystem(false)
+                .rolePermissions(new HashSet<>())
+                .build();
 
         role = roleRepository.save(role);
         log.info("Created role with id: {}", role.getId());
@@ -74,8 +74,8 @@ public class RoleService {
         }
 
         if (request.getName() != null) {
-            String newName = request.getName().toUpperCase();
-            if (!newName.equals(role.getName()) && roleRepository.existsByName(newName)) {
+            String newName = request.getName().trim().toUpperCase();
+            if (!newName.equals(role.getName()) && roleRepository.existsByNameIgnoreCase(newName)) {
                 throw new BusinessException("ROLE_001", "Role name already exists: " + newName);
             }
             role.setName(newName);
@@ -99,8 +99,14 @@ public class RoleService {
             throw new BusinessException("ROLE_002", "System roles cannot be deleted");
         }
 
-        roleRepository.delete(role);
-        log.info("Deleted role with id: {}", id);
+        if (userRepository.existsByRoleIdAndIsActiveTrue(id)) {
+            throw new BusinessException("ROLE_003",
+                    "Cannot delete a role assigned to active users");
+        }
+
+        role.setActive(false);
+        roleRepository.save(role);
+        log.info("Deactivated role with id: {}", id);
     }
 
     @Transactional(readOnly = true)
@@ -114,25 +120,22 @@ public class RoleService {
 
     @Transactional
     public void assignPermissions(Long roleId, List<Long> permissionIds) {
-        roleRepository.findById(roleId)
+        Role role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Role", roleId));
+
+        if (Boolean.TRUE.equals(role.getIsSystem())) {
+            throw new BusinessException("ROLE_004",
+                    "System role permissions cannot be modified");
+        }
 
         Set<Permission> permissions = permissionIds.stream()
                 .map(pid -> permissionRepository.findById(pid)
                         .orElseThrow(() -> new ResourceNotFoundException("Permission", pid)))
                 .collect(Collectors.toSet());
 
-        entityManager.createNativeQuery("DELETE FROM role_permissions WHERE role_id = :roleId")
-                .setParameter("roleId", roleId)
-                .executeUpdate();
-
-        for (Permission p : permissions) {
-            entityManager.createNativeQuery(
-                    "INSERT INTO role_permissions (role_id, permission_id) VALUES (:roleId, :permId)")
-                    .setParameter("roleId", roleId)
-                    .setParameter("permId", p.getId())
-                    .executeUpdate();
-        }
+        role.getRolePermissions().clear();
+        role.getRolePermissions().addAll(permissions);
+        roleRepository.save(role);
 
         log.info("Assigned {} permissions to role id: {}", permissionIds.size(), roleId);
     }
