@@ -1,5 +1,6 @@
 package com.erp.admin.service;
 
+import com.erp.admin.dto.CompanySettingsDto;
 import com.erp.admin.dto.SettingsDto;
 import com.erp.admin.dto.UpdateSettingsRequest;
 import com.erp.admin.entity.Settings;
@@ -22,6 +23,18 @@ public class SettingsService {
 
     private final SettingsRepository settingsRepository;
 
+    private static final Map<String, String> KEY_TO_DTO_FIELD = Map.of(
+        "company.name", "companyName",
+        "company.email", "companyEmail",
+        "company.phone", "companyPhone",
+        "company.address", "companyAddress",
+        "company.tax_number", "taxNumber",
+        "company.currency", "currency",
+        "company.fiscal_year_start", "fiscalYearStart",
+        "company.timezone", "timezone",
+        "company.date_format", "dateFormat"
+    );
+
     public Map<String, String> getAllSettings() {
         List<Settings> settings = settingsRepository.findAll();
         Map<String, String> result = new HashMap<>();
@@ -29,6 +42,72 @@ public class SettingsService {
             result.put(setting.getSettingKey(), setting.getSettingValue());
         }
         return result;
+    }
+
+    public CompanySettingsDto getCompanySettings() {
+        String name = getValue("company.name", "");
+        String email = getValue("company.email", "");
+        String phone = getValue("company.phone", "");
+        String address = getValue("company.address", "");
+        String taxNumber = getValue("company.tax_number", "");
+        String currency = getValue("company.currency", "USD");
+        String fiscalYearStartStr = getValue("company.fiscal_year_start", "1");
+        String timezone = getValue("company.timezone", "UTC");
+        String dateFormat = getValue("company.date_format", "YYYY-MM-DD");
+
+        return CompanySettingsDto.builder()
+                .companyName(name)
+                .companyEmail(email)
+                .companyPhone(phone)
+                .companyAddress(address)
+                .taxNumber(taxNumber)
+                .currency(currency)
+                .fiscalYearStart(parseInt(fiscalYearStartStr, 1))
+                .timezone(timezone)
+                .dateFormat(dateFormat)
+                .build();
+    }
+
+    @Transactional
+    public CompanySettingsDto updateCompanySettings(CompanySettingsDto request) {
+        upsertSetting("company.name", request.getCompanyName());
+        upsertSetting("company.email", request.getCompanyEmail());
+        upsertSetting("company.phone", request.getCompanyPhone());
+        upsertSetting("company.address", request.getCompanyAddress());
+        upsertSetting("company.tax_number", request.getTaxNumber());
+        upsertSetting("company.currency", request.getCurrency());
+        if (request.getFiscalYearStart() != null) {
+            upsertSetting("company.fiscal_year_start", String.valueOf(request.getFiscalYearStart()));
+        }
+        upsertSetting("company.timezone", request.getTimezone());
+        upsertSetting("company.date_format", request.getDateFormat());
+
+        log.info("Updated company settings");
+        return getCompanySettings();
+    }
+
+    private void upsertSetting(String key, String value) {
+        if (value == null) return;
+        if (settingsRepository.existsBySettingKey(key)) {
+            Settings settings = settingsRepository.findBySettingKey(key).orElseThrow();
+            settings.setSettingValue(value);
+            settingsRepository.save(settings);
+        } else {
+            Settings settings = Settings.builder()
+                    .settingKey(key)
+                    .settingValue(value)
+                    .settingType("STRING")
+                    .build();
+            settingsRepository.save(settings);
+        }
+    }
+
+    private int parseInt(String value, int defaultValue) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
     }
 
     public SettingsDto getByKey(String key) {
