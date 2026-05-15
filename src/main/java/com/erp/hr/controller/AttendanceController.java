@@ -38,7 +38,7 @@ public class AttendanceController {
     }
 
     @GetMapping("/clocked-in")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') or hasAuthority('HR_READ')")
     public ResponseEntity<ApiResponse<List<ClockedInEmployeeDto>>> getClockedIn() {
         List<ClockedInEmployeeDto> employees = attendanceService.findClockedIn();
         return ResponseEntity.ok(ApiResponse.success(employees));
@@ -99,7 +99,7 @@ public class AttendanceController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HR_DELETE')")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {

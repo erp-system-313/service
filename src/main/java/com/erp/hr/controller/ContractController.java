@@ -16,12 +16,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/contracts")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
 public class ContractController {
 
     private final ContractService contractService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') or hasAuthority('HR_READ')")
     public ResponseEntity<ApiResponse<PageResponse<ContractDto>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -32,24 +32,28 @@ public class ContractController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') or hasAuthority('HR_READ')")
     public ResponseEntity<ApiResponse<ContractDto>> getById(@PathVariable Long id) {
         ContractDto contract = contractService.findById(id);
         return ResponseEntity.ok(ApiResponse.success(contract));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HR_WRITE')")
     public ResponseEntity<ApiResponse<ContractDto>> create(@Valid @RequestBody CreateContractRequest request) {
         ContractDto contract = contractService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(contract, "Contract created successfully"));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HR_WRITE')")
     public ResponseEntity<ApiResponse<ContractDto>> update(@PathVariable Long id, @Valid @RequestBody UpdateContractRequest request) {
         ContractDto contract = contractService.update(id, request);
         return ResponseEntity.ok(ApiResponse.success(contract, "Contract updated successfully"));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HR_DELETE')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         contractService.delete(id);
         return ResponseEntity.noContent().build();

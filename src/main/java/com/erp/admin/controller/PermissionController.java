@@ -17,12 +17,12 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1/permissions")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class PermissionController {
 
     private final PermissionRepository permissionRepository;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('ADMIN_READ')")
     public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getAll() {
         List<Map<String, Object>> permissions = permissionRepository.findAllByOrderByModuleAscActionAsc()
                 .stream()

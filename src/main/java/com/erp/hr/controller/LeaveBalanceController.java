@@ -16,12 +16,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/leave-balances")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
 public class LeaveBalanceController {
 
     private final LeaveService leaveService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') or hasAuthority('HR_READ')")
     public ResponseEntity<ApiResponse<List<LeaveBalanceDto>>> getBalances(
             @RequestParam(required = false) Long employeeId,
             @RequestParam(required = false) Integer year) {
@@ -31,6 +31,7 @@ public class LeaveBalanceController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HR_WRITE')")
     public ResponseEntity<ApiResponse<LeaveBalanceDto>> createBalance(
             @Valid @RequestBody CreateLeaveBalanceRequest request) {
         LeaveBalanceDto balance = leaveService.createBalance(request);

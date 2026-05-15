@@ -18,13 +18,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/job-positions")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class JobPositionController {
 
     private final JobPositionService jobPositionService;
     private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') or hasAuthority('HR_READ')")
     public ResponseEntity<ApiResponse<PageResponse<JobPositionDto>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -33,12 +33,14 @@ public class JobPositionController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') or hasAuthority('HR_READ')")
     public ResponseEntity<ApiResponse<JobPositionDto>> getById(@PathVariable Long id) {
         JobPositionDto position = jobPositionService.findById(id);
         return ResponseEntity.ok(ApiResponse.success(position));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HR_WRITE')")
     public ResponseEntity<ApiResponse<JobPositionDto>> create(
             @Valid @RequestBody CreateJobPositionRequest request,
             HttpServletRequest httpRequest) {
@@ -49,6 +51,7 @@ public class JobPositionController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HR_WRITE')")
     public ResponseEntity<ApiResponse<JobPositionDto>> update(
             @PathVariable Long id,
             @Valid @RequestBody UpdateJobPositionRequest request,
@@ -60,6 +63,7 @@ public class JobPositionController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HR_DELETE')")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {

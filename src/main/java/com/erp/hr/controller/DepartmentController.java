@@ -18,13 +18,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/departments")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class DepartmentController {
 
     private final DepartmentService departmentService;
     private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') or hasAuthority('HR_READ')")
     public ResponseEntity<ApiResponse<PageResponse<DepartmentDto>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -33,12 +33,14 @@ public class DepartmentController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') or hasAuthority('HR_READ')")
     public ResponseEntity<ApiResponse<DepartmentDto>> getById(@PathVariable Long id) {
         DepartmentDto department = departmentService.findById(id);
         return ResponseEntity.ok(ApiResponse.success(department));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HR_WRITE')")
     public ResponseEntity<ApiResponse<DepartmentDto>> create(
             @Valid @RequestBody CreateDepartmentRequest request,
             HttpServletRequest httpRequest) {
@@ -49,6 +51,7 @@ public class DepartmentController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HR_WRITE')")
     public ResponseEntity<ApiResponse<DepartmentDto>> update(
             @PathVariable Long id,
             @Valid @RequestBody UpdateDepartmentRequest request,
@@ -60,6 +63,7 @@ public class DepartmentController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HR_DELETE')")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {

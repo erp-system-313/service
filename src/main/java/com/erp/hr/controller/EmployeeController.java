@@ -30,7 +30,7 @@ public class EmployeeController {
     private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') or hasAuthority('HR_READ')")
     public ResponseEntity<ApiResponse<PageResponse<EmployeeDto>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -42,21 +42,21 @@ public class EmployeeController {
     }
 
     @GetMapping("/active")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') or hasAuthority('HR_READ')")
     public ResponseEntity<ApiResponse<List<ActiveEmployeeDto>>> getActiveEmployees() {
         List<ActiveEmployeeDto> employees = employeeService.findAllActive();
         return ResponseEntity.ok(ApiResponse.success(employees));
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') or hasAuthority('HR_READ')")
     public ResponseEntity<ApiResponse<EmployeeDto>> getById(@PathVariable Long id) {
         EmployeeDto employee = employeeService.findById(id);
         return ResponseEntity.ok(ApiResponse.success(employee));
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HR_WRITE')")
     public ResponseEntity<ApiResponse<EmployeeDto>> create(
             @Valid @RequestBody CreateEmployeeRequest request,
             HttpServletRequest httpRequest) {
@@ -67,7 +67,7 @@ public class EmployeeController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HR_WRITE')")
     public ResponseEntity<ApiResponse<EmployeeDto>> update(
             @PathVariable Long id,
             @Valid @RequestBody UpdateEmployeeRequest request,
@@ -79,7 +79,7 @@ public class EmployeeController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('HR_DELETE')")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
@@ -90,7 +90,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/{id}/attendance")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') or hasAuthority('HR_READ')")
     public ResponseEntity<ApiResponse<PageResponse<AttendanceDto>>> getAttendance(
             @PathVariable Long id,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,

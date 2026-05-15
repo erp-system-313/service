@@ -28,7 +28,7 @@ public class LeaveController {
     private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') or hasAuthority('HR_READ')")
     public ResponseEntity<ApiResponse<PageResponse<LeaveRequestDto>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -42,7 +42,7 @@ public class LeaveController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') or hasAuthority('HR_READ')")
     public ResponseEntity<ApiResponse<LeaveRequestDto>> getById(@PathVariable Long id) {
         LeaveRequestDto request = leaveService.findById(id);
         return ResponseEntity.ok(ApiResponse.success(request));
@@ -60,7 +60,7 @@ public class LeaveController {
     }
 
     @PutMapping("/{id}/approve")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') or hasAuthority('HR_APPROVE')")
     public ResponseEntity<ApiResponse<LeaveRequestDto>> approve(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
@@ -71,7 +71,7 @@ public class LeaveController {
     }
 
     @PutMapping("/{id}/reject")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') or hasAuthority('HR_APPROVE')")
     public ResponseEntity<ApiResponse<LeaveRequestDto>> reject(
             @PathVariable Long id,
             @RequestBody(required = false) Map<String, String> body,
@@ -87,7 +87,7 @@ public class LeaveController {
     }
 
     @GetMapping("/balances")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') or hasAuthority('HR_READ')")
     public ResponseEntity<ApiResponse<List<LeaveBalanceDto>>> getBalances(
             @RequestParam(required = false) Long employeeId,
             @RequestParam(required = false) Integer year) {
