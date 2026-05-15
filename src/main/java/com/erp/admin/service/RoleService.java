@@ -9,6 +9,8 @@ import com.erp.admin.repository.PermissionRepository;
 import com.erp.admin.repository.RoleRepository;
 import com.erp.common.exception.BusinessException;
 import com.erp.common.exception.ResourceNotFoundException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,9 @@ public class RoleService {
 
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Transactional(readOnly = true)
     public List<RoleDto> findAll() {
@@ -109,7 +114,7 @@ public class RoleService {
 
     @Transactional
     public void assignPermissions(Long roleId, List<Long> permissionIds) {
-        Role role = roleRepository.findById(roleId)
+        roleRepository.findById(roleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Role", roleId));
 
         Set<Permission> permissions = permissionIds.stream()
@@ -117,9 +122,18 @@ public class RoleService {
                         .orElseThrow(() -> new ResourceNotFoundException("Permission", pid)))
                 .collect(Collectors.toSet());
 
-        role.getRolePermissions().clear();
-        role.getRolePermissions().addAll(permissions);
-        roleRepository.save(role);
+        entityManager.createNativeQuery("DELETE FROM role_permissions WHERE role_id = :roleId")
+                .setParameter("roleId", roleId)
+                .executeUpdate();
+
+        for (Permission p : permissions) {
+            entityManager.createNativeQuery(
+                    "INSERT INTO role_permissions (role_id, permission_id) VALUES (:roleId, :permId)")
+                    .setParameter("roleId", roleId)
+                    .setParameter("permId", p.getId())
+                    .executeUpdate();
+        }
+
         log.info("Assigned {} permissions to role id: {}", permissionIds.size(), roleId);
     }
 
