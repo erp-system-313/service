@@ -1,5 +1,7 @@
 package com.erp.auth.controller;
 
+import com.erp.admin.dto.UserDto;
+import com.erp.admin.service.UserService;
 import com.erp.auth.dto.*;
 import com.erp.auth.security.CurrentUserUtil;
 import com.erp.auth.security.UserPrincipal;
@@ -20,6 +22,7 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserService userService;
     private final CurrentUserUtil currentUserUtil;
 
     @PostMapping("/login")
@@ -71,5 +74,19 @@ public class AuthController {
             return ResponseEntity.ok(ApiResponse.success(userInfo));
         }
         return ResponseEntity.status(401).body(ApiResponse.error("AUTH_007", "Not authenticated"));
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<ApiResponse<UserDto>> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
+        Long currentUserId = currentUserUtil.getCurrentUserId();
+        UserDto updated = userService.updateProfile(currentUserId, request);
+        return ResponseEntity.ok(ApiResponse.success(updated, "Profile updated successfully"));
+    }
+
+    @PutMapping("/me/password")
+    public ResponseEntity<ApiResponse<Void>> changeMyPassword(@Valid @RequestBody ChangePasswordRequest request) {
+        Long currentUserId = currentUserUtil.getCurrentUserId();
+        authService.changePassword(currentUserId, request);
+        return ResponseEntity.ok(ApiResponse.success(null, "Password changed successfully"));
     }
 }

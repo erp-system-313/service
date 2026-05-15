@@ -3,6 +3,7 @@ package com.erp.admin.service;
 import com.erp.admin.dto.CreateUserRequest;
 import com.erp.admin.dto.UpdateUserRequest;
 import com.erp.admin.dto.UserDto;
+import com.erp.auth.dto.UpdateProfileRequest;
 import com.erp.admin.entity.Role;
 import com.erp.admin.entity.User;
 import com.erp.admin.repository.RoleRepository;
@@ -139,6 +140,20 @@ user = userRepository.save(user);
         log.info("Soft deleted user with id: {}", id);
 
         auditLogService.log(currentUserUtil.getCurrentUserId(), "DELETE", "User", id, null, ipAddress, "User deactivated");
+    }
+
+    @Transactional
+    public UserDto updateProfile(Long userId, UpdateProfileRequest request) {
+        User user = userRepository.findByIdWithRole(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+
+        if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
+        if (request.getLastName() != null) user.setLastName(request.getLastName());
+
+        user = userRepository.save(user);
+        log.info("Profile updated for user: {}", user.getEmail());
+
+        return toDto(user);
     }
 
     private UserDto toDto(User user) {
