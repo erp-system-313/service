@@ -24,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -147,14 +149,17 @@ public class AttendanceService {
         Employee employee = employeeRepository.findById(request.getEmployeeId())
                 .orElseThrow(() -> new ResourceNotFoundException("Employee", request.getEmployeeId()));
 
+        LocalDateTime parsedCheckIn = parseDateTime(request.getCheckIn());
+        LocalDateTime parsedCheckOut = parseDateTime(request.getCheckOut());
+
         if (request.getStatus() == Attendance.AttendanceStatus.PRESENT
-                && request.getCheckIn() == null && request.getCheckOut() == null) {
+                && parsedCheckIn == null && parsedCheckOut == null) {
             throw new BusinessException("ATTENDANCE_010",
                     "PRESENT status requires at least a check-in or check-out time");
         }
 
-        if (request.getCheckIn() != null && request.getCheckOut() != null
-                && request.getCheckOut().isBefore(request.getCheckIn())) {
+        if (parsedCheckIn != null && parsedCheckOut != null
+                && parsedCheckOut.isBefore(parsedCheckIn)) {
             throw new BusinessException("ATTENDANCE_011",
                     "Check-out must be after check-in");
         }
@@ -164,8 +169,8 @@ public class AttendanceService {
 
         Attendance attendance;
         if (existing != null) {
-            if (request.getCheckIn() != null) existing.setCheckIn(request.getCheckIn());
-            if (request.getCheckOut() != null) existing.setCheckOut(request.getCheckOut());
+            if (parsedCheckIn != null) existing.setCheckIn(parsedCheckIn);
+            if (parsedCheckOut != null) existing.setCheckOut(parsedCheckOut);
             existing.setStatus(request.getStatus());
             if (request.getNotes() != null) existing.setNotes(request.getNotes());
             attendance = attendanceRepository.save(existing);
@@ -175,8 +180,8 @@ public class AttendanceService {
             attendance = Attendance.builder()
                     .employee(employee)
                     .date(request.getDate())
-                    .checkIn(request.getCheckIn())
-                    .checkOut(request.getCheckOut())
+                    .checkIn(parsedCheckIn)
+                    .checkOut(parsedCheckOut)
                     .status(request.getStatus())
                     .notes(request.getNotes())
                     .build();
@@ -193,16 +198,33 @@ public class AttendanceService {
         return toDto(attendance);
     }
 
+    private LocalDateTime parseDateTime(String value) {
+        if (value == null || value.isBlank()) return null;
+        try {
+            return LocalDateTime.parse(value, DateTimeFormatter.ISO_DATE_TIME);
+        } catch (DateTimeParseException e) {
+            try {
+                return LocalDateTime.parse(value);
+            } catch (DateTimeParseException e2) {
+                throw new BusinessException("ATTENDANCE_012",
+                        "Invalid date-time format: " + value);
+            }
+        }
+    }
+
     @Transactional
     public AttendanceDto update(Long id, UpdateAttendanceRequest request) {
         Attendance attendance = attendanceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Attendance", id));
 
-        if (request.getCheckIn() != null) {
-            attendance.setCheckIn(request.getCheckIn());
+        LocalDateTime parsedCheckIn = parseDateTime(request.getCheckIn());
+        LocalDateTime parsedCheckOut = parseDateTime(request.getCheckOut());
+
+        if (parsedCheckIn != null) {
+            attendance.setCheckIn(parsedCheckIn);
         }
-        if (request.getCheckOut() != null) {
-            attendance.setCheckOut(request.getCheckOut());
+        if (parsedCheckOut != null) {
+            attendance.setCheckOut(parsedCheckOut);
         }
         if (request.getStatus() != null) {
             attendance.setStatus(request.getStatus());

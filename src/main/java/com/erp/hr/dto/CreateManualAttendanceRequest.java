@@ -8,7 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -25,9 +24,9 @@ public class CreateManualAttendanceRequest {
     @NotNull
     private Attendance.AttendanceStatus status;
 
-    private LocalDateTime checkIn;
+    private String checkIn;
 
-    private LocalDateTime checkOut;
+    private String checkOut;
 
     private String notes;
 }
