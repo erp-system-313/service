@@ -26,12 +26,14 @@ public class RoleService {
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
 
+    @Transactional(readOnly = true)
     public List<RoleDto> findAll() {
         return roleRepository.findAll().stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public RoleDto findById(Long id) {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role", id));
@@ -96,6 +98,7 @@ public class RoleService {
         log.info("Deleted role with id: {}", id);
     }
 
+    @Transactional(readOnly = true)
     public List<Long> getPermissionIds(Long roleId) {
         Role role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Role", roleId));
@@ -114,7 +117,8 @@ public class RoleService {
                         .orElseThrow(() -> new ResourceNotFoundException("Permission", pid)))
                 .collect(Collectors.toSet());
 
-        role.setRolePermissions(permissions);
+        role.getRolePermissions().clear();
+        role.getRolePermissions().addAll(permissions);
         roleRepository.save(role);
         log.info("Assigned {} permissions to role id: {}", permissionIds.size(), roleId);
     }
