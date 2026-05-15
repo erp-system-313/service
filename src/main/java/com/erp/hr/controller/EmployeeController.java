@@ -1,6 +1,7 @@
 package com.erp.hr.controller;
 
 import com.erp.auth.security.CurrentUserUtil;
+import com.erp.hr.dto.ActiveEmployeeDto;
 import com.erp.hr.dto.AttendanceDto;
 import com.erp.hr.dto.CreateEmployeeRequest;
 import com.erp.hr.dto.EmployeeDto;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/employees")
@@ -30,10 +32,16 @@ public class EmployeeController {
     public ResponseEntity<ApiResponse<PageResponse<EmployeeDto>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) String department,
+            @RequestParam(required = false) Long departmentId,
             @RequestParam(required = false) String status) {
 
-        PageResponse<EmployeeDto> employees = employeeService.findAll(page, size, department, status);
+        PageResponse<EmployeeDto> employees = employeeService.findAll(page, size, departmentId, status);
+        return ResponseEntity.ok(ApiResponse.success(employees));
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<ApiResponse<List<ActiveEmployeeDto>>> getActiveEmployees() {
+        List<ActiveEmployeeDto> employees = employeeService.findAllActive();
         return ResponseEntity.ok(ApiResponse.success(employees));
     }
 
