@@ -1,9 +1,9 @@
-package com.erp.sales.service;
+package com.erp.finance.service;
 
 import com.erp.common.exception.ResourceNotFoundException;
-import com.erp.sales.dto.IncotermDto;
-import com.erp.sales.entity.Incoterm;
-import com.erp.sales.repository.IncotermRepository;
+import com.erp.finance.dto.IncotermDto;
+import com.erp.finance.entity.Incoterm;
+import com.erp.finance.repository.IncotermRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

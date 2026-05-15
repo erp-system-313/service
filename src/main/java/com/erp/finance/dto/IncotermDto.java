@@ -1,6 +1,6 @@
-package com.erp.sales.dto;
+package com.erp.finance.dto;
 
-import com.erp.sales.entity.Incoterm;
+import com.erp.finance.entity.Incoterm;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

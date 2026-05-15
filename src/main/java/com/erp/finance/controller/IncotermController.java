@@ -1,8 +1,8 @@
-package com.erp.sales.controller;
+package com.erp.finance.controller;
 
 import com.erp.common.dto.ApiResponse;
-import com.erp.sales.dto.IncotermDto;
-import com.erp.sales.service.IncotermService;
+import com.erp.finance.dto.IncotermDto;
+import com.erp.finance.service.IncotermService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/incoterms")
+@RequestMapping("/api/v1/finance/incoterms")
 @RequiredArgsConstructor
 public class IncotermController {
 

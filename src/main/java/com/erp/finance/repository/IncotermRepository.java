@@ -1,6 +1,6 @@
-package com.erp.sales.repository;
+package com.erp.finance.repository;
 
-import com.erp.sales.entity.Incoterm;
+import com.erp.finance.entity.Incoterm;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

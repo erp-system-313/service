@@ -1,8 +1,12 @@
-package com.erp.sales.entity;
+package com.erp.finance.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * Incoterm — International Commercial Terms for trade contracts.
+ * Moved to Finance module (Odoo: account.incoterms).
+ */
 @Entity
 @Table(name = "incoterms")
 @Getter

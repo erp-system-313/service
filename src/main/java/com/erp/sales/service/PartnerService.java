@@ -135,4 +135,46 @@ public class PartnerService {
         partnerRepository.save(partner);
         log.info("Soft-deleted partner with id: {}", id);
     }
+
+    // ---- Customer / Vendor (Odoo: customer_rank, supplier_rank) ----
+
+    @Transactional
+    public PartnerDto createCustomer(CreatePartnerRequest request) {
+        PartnerDto dto = create(request);
+        Partner partner = partnerRepository.findById(dto.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Partner", dto.getId()));
+        partner.setCustomerRank(1);
+        partnerRepository.save(partner);
+        log.info("Created customer: {}", partner.getName());
+        return PartnerDto.fromEntity(partner);
+    }
+
+    @Transactional
+    public PartnerDto createVendor(CreatePartnerRequest request) {
+        PartnerDto dto = create(request);
+        Partner partner = partnerRepository.findById(dto.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Partner", dto.getId()));
+        partner.setSupplierRank(1);
+        partnerRepository.save(partner);
+        log.info("Created vendor: {}", partner.getName());
+        return PartnerDto.fromEntity(partner);
+    }
+
+    public List<PartnerDto> getCustomers() {
+        return partnerRepository.findByCustomerRankGreaterThan(0).stream()
+                .map(PartnerDto::fromEntity).toList();
+    }
+
+    public List<PartnerDto> getVendors() {
+        return partnerRepository.findBySupplierRankGreaterThan(0).stream()
+                .map(PartnerDto::fromEntity).toList();
+    }
+
+    public long getCustomerCount() {
+        return partnerRepository.countByCustomerRankGreaterThan(0);
+    }
+
+    public long getVendorCount() {
+        return partnerRepository.countBySupplierRankGreaterThan(0);
+    }
 }
