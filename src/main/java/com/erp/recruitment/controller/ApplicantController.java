@@ -19,13 +19,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/applicants")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class ApplicantController {
 
     private final ApplicantService applicantService;
     private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<PageResponse<ApplicantDto>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -36,12 +36,14 @@ public class ApplicantController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<ApplicantDto>> getById(@PathVariable Long id) {
         ApplicantDto applicant = applicantService.findById(id);
         return ResponseEntity.ok(ApiResponse.success(applicant));
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<ApplicantDto>> create(
             @Valid @RequestBody CreateApplicantRequest request,
             HttpServletRequest httpRequest) {
@@ -52,6 +54,7 @@ public class ApplicantController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<ApplicantDto>> update(
             @PathVariable Long id,
             @Valid @RequestBody UpdateApplicantRequest request,
@@ -63,6 +66,7 @@ public class ApplicantController {
     }
 
     @PutMapping("/{id}/stage")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<ApplicantDto>> updateStage(
             @PathVariable Long id,
             @Valid @RequestBody UpdateApplicantStageRequest request,
@@ -74,6 +78,7 @@ public class ApplicantController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {

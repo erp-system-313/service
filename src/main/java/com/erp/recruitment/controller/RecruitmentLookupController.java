@@ -20,13 +20,13 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class RecruitmentLookupController {
 
     private final RecruitmentStageRepository stageRepository;
     private final RecruitmentSourceRepository sourceRepository;
 
     @GetMapping("/recruitment-stages")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<List<RecruitmentStageDto>>> getStages() {
         List<RecruitmentStageDto> stages = stageRepository.findAllByOrderBySequence().stream()
                 .map(s -> RecruitmentStageDto.builder()
@@ -39,6 +39,7 @@ public class RecruitmentLookupController {
     }
 
     @GetMapping("/recruitment-sources")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<List<RecruitmentSourceDto>>> getSources() {
         List<RecruitmentSourceDto> sources = sourceRepository.findAll().stream()
                 .map(s -> RecruitmentSourceDto.builder()

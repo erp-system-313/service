@@ -18,13 +18,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/job-openings")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class JobOpeningController {
 
     private final JobOpeningService jobOpeningService;
     private final CurrentUserUtil currentUserUtil;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<PageResponse<JobOpeningDto>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -33,12 +33,14 @@ public class JobOpeningController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<JobOpeningDto>> getById(@PathVariable Long id) {
         JobOpeningDto opening = jobOpeningService.findById(id);
         return ResponseEntity.ok(ApiResponse.success(opening));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<JobOpeningDto>> create(
             @Valid @RequestBody CreateJobOpeningRequest request,
             HttpServletRequest httpRequest) {
@@ -49,6 +51,7 @@ public class JobOpeningController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<JobOpeningDto>> update(
             @PathVariable Long id,
             @Valid @RequestBody UpdateJobOpeningRequest request,
@@ -60,6 +63,7 @@ public class JobOpeningController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
