@@ -26,10 +26,10 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
            "LEFT JOIN FETCH so.incoterm " +
            "LEFT JOIN FETCH so.team " +
            "LEFT JOIN FETCH so.paymentTerm " +
-           "WHERE (:status IS NULL OR so.status = :status) AND " +
-           "(:customerId IS NULL OR so.customer.id = :customerId) AND " +
-           "(:dateFrom IS NULL OR so.orderDate >= :dateFrom) AND " +
-           "(:dateTo IS NULL OR so.orderDate <= :dateTo)")
+           "WHERE (so.status = :status OR :status IS NULL) AND " +
+           "(so.customer.id = :customerId OR :customerId IS NULL) AND " +
+           "(so.orderDate >= :dateFrom OR :dateFrom IS NULL) AND " +
+           "(so.orderDate <= :dateTo OR :dateTo IS NULL)")
     Page<SalesOrder> findWithFilters(
             @Param("status") OrderStatus status,
             @Param("customerId") Long customerId,
