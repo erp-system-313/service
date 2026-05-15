@@ -11,7 +11,7 @@ import com.erp.sales.dto.CreateSalesOrderRequest;
 import com.erp.sales.dto.SalesOrderDto;
 import com.erp.sales.dto.UpdateSalesOrderRequest;
 import com.erp.sales.entity.Customer;
-import com.erp.finance.entity.Incoterm;
+import com.erp.sales.entity.Incoterm;
 import com.erp.sales.entity.OrderStatus;
 import com.erp.sales.entity.Partner;
 import com.erp.sales.entity.PriceList;
@@ -19,7 +19,7 @@ import com.erp.sales.entity.SalesOrder;
 import com.erp.sales.entity.SalesOrderLine;
 import com.erp.sales.entity.SalesTeam;
 import com.erp.sales.repository.CustomerRepository;
-import com.erp.finance.repository.IncotermRepository;
+import com.erp.sales.repository.IncotermRepository;
 import com.erp.sales.repository.PartnerRepository;
 import com.erp.sales.repository.PriceListRepository;
 import com.erp.sales.repository.SalesOrderLineRepository;
@@ -62,7 +62,7 @@ public class SalesOrderService {
     // ---- Queries ----
 
     @Transactional(readOnly = true)
-    public PageResponse<SalesOrderDto> findAll(int page, int size, OrderStatus status, 
+    public PageResponse<SalesOrderDto> findAll(int page, int size, String search, OrderStatus status, 
                                                 Long customerId, LocalDateTime dateFrom, 
                                                 LocalDateTime dateTo) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -351,7 +351,7 @@ public class SalesOrderService {
             moveLine.setName(line.getProduct() != null ? line.getProduct().getName() : "Order Line");
             moveLine.setDebit(line.getLineTotal());
             moveLine.setCredit(BigDecimal.ZERO);
-            moveLine.setQuantity(line.getQuantity());
+            moveLine.setQuantity(BigDecimal.valueOf(line.getQuantity()));
             moveLines.add(moveLine);
         }
         move.setLines(moveLines);
@@ -370,7 +370,7 @@ public class SalesOrderService {
             seq++;
             Product product = productClient.getProductById(lineRequest.getProductId());
 
-            BigDecimal lineTotal = lineRequest.getUnitPrice().multiply(lineRequest.getQuantity());
+            BigDecimal lineTotal = lineRequest.getUnitPrice().multiply(BigDecimal.valueOf(lineRequest.getQuantity()));
             BigDecimal discount = lineRequest.getDiscount() != null ? lineRequest.getDiscount() : BigDecimal.ZERO;
 
             // Apply discount to line total
@@ -412,7 +412,7 @@ public class SalesOrderService {
             seq++;
             Product product = productClient.getProductById(lineRequest.getProductId());
 
-            BigDecimal lineTotal = lineRequest.getUnitPrice().multiply(lineRequest.getQuantity());
+            BigDecimal lineTotal = lineRequest.getUnitPrice().multiply(BigDecimal.valueOf(lineRequest.getQuantity()));
             BigDecimal discount = lineRequest.getDiscount() != null ? lineRequest.getDiscount() : BigDecimal.ZERO;
 
             BigDecimal discountedTotal = lineTotal;

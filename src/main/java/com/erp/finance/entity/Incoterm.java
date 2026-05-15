@@ -7,7 +7,7 @@ import lombok.*;
  * Incoterm — International Commercial Terms for trade contracts.
  * Moved to Finance module (Odoo: account.incoterms).
  */
-@Entity
+@Entity(name = "FinanceIncoterm")
 @Table(name = "incoterms")
 @Getter
 @Setter

@@ -89,7 +89,7 @@ public class InvoiceService {
                 .status(InvoiceStatus.DRAFT)
                 .subtotal(BigDecimal.ZERO)
                 .taxAmount(BigDecimal.ZERO)
-                .total(BigDecimal.ZERO)
+                .totalAmount(BigDecimal.ZERO)
                 .paidAmount(BigDecimal.ZERO)
                 .payments(new ArrayList<>())
                 .build();
@@ -287,7 +287,7 @@ public class InvoiceService {
         // Using the old payment creation for backward compatibility
         com.erp.finance.entity.Payment payment = com.erp.finance.entity.Payment.builder()
                 .amount(request.getAmount())
-                .date(request.getPaymentDate())
+                .date(request.getPaymentDate().toLocalDate())
                 .paymentReference(request.getReference())
                 .paymentType(PaymentDirection.INBOUND)
                 .partnerType(PaymentPartnerType.CUSTOMER)
