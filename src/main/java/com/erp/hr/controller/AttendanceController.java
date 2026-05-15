@@ -3,6 +3,7 @@ package com.erp.hr.controller;
 import com.erp.auth.security.CurrentUserUtil;
 import com.erp.auth.security.UserPrincipal;
 import com.erp.hr.dto.AttendanceDto;
+import com.erp.hr.dto.ClockedInEmployeeDto;
 import com.erp.hr.service.AttendanceService;
 import com.erp.common.dto.ApiResponse;
 import com.erp.common.dto.PageResponse;
@@ -11,11 +12,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/attendance")
@@ -42,6 +42,12 @@ public class AttendanceController {
         return ResponseEntity.ok(ApiResponse.success(attendance));
     }
 
+    @GetMapping("/clocked-in")
+    public ResponseEntity<ApiResponse<List<ClockedInEmployeeDto>>> getClockedIn() {
+        List<ClockedInEmployeeDto> employees = attendanceService.findClockedIn();
+        return ResponseEntity.ok(ApiResponse.success(employees));
+    }
+
     @PostMapping("/clock-in")
     public ResponseEntity<ApiResponse<AttendanceDto>> clockIn(
             @RequestParam(required = false) Long employeeId,
@@ -51,14 +57,6 @@ public class AttendanceController {
         
         boolean isAdmin = currentUserUtil.isCurrentUserAdmin();
         Long targetEmployeeId = resolveTargetEmployeeId(employeeId, currentUserId, isAdmin);
-        
-        if (targetEmployeeId == null) {
-            if (isAdmin) {
-                throw new BusinessException("ATTENDANCE_004", "Please provide employee ID to clock in");
-            } else {
-                throw new BusinessException("ATTENDANCE_005", "No employee linked to your account. Contact admin.");
-            }
-        }
         
         AttendanceDto attendance = attendanceService.clockIn(targetEmployeeId, currentUserId, ipAddress, isAdmin);
         return ResponseEntity.ok(ApiResponse.success(attendance, "Clocked in successfully"));
@@ -74,14 +72,6 @@ public class AttendanceController {
         boolean isAdmin = currentUserUtil.isCurrentUserAdmin();
         Long targetEmployeeId = resolveTargetEmployeeId(employeeId, currentUserId, isAdmin);
         
-        if (targetEmployeeId == null) {
-            if (isAdmin) {
-                throw new BusinessException("ATTENDANCE_004", "Please provide employee ID to clock out");
-            } else {
-                throw new BusinessException("ATTENDANCE_005", "No employee linked to your account. Contact admin.");
-            }
-        }
-        
         AttendanceDto attendance = attendanceService.clockOut(targetEmployeeId, currentUserId, ipAddress);
         return ResponseEntity.ok(ApiResponse.success(attendance, "Clocked out successfully"));
     }
@@ -92,7 +82,8 @@ public class AttendanceController {
         }
         
         if (isAdmin) {
-            return attendanceService.getFirstActiveEmployeeId();
+            throw new BusinessException("ATTENDANCE_004",
+                "Admin users must provide employeeId when clocking in or out for an employee");
         }
         
         Long employeeId = attendanceService.getEmployeeIdByUserId(currentUserId);
@@ -100,7 +91,7 @@ public class AttendanceController {
             return employeeId;
         }
         
-        throw new com.erp.common.exception.BusinessException("ATTENDANCE_005", 
+        throw new BusinessException("ATTENDANCE_005", 
             "No employee linked to your account. Contact admin.");
     }
 
