@@ -1,27 +1,12 @@
 package com.erp.sales.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-
-@Entity
-@Table(name = "incoterms")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+/**
+ * Compatibility placeholder.
+ *
+ * The canonical Incoterm entity now lives in com.erp.finance.entity.Incoterm.
+ * This class is intentionally NOT a JPA entity to avoid mapping the incoterms
+ * table twice. New code should import com.erp.finance.entity.Incoterm directly.
+ */
+@Deprecated(forRemoval = true)
 public class Incoterm {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false, unique = true, length = 10)
-    private String code;
-
-    @Column(nullable = false, length = 255)
-    private String name;
-
-    @Column(columnDefinition = "TEXT")
-    private String description;
 }

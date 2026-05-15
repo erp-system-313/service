@@ -15,9 +15,18 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Builder
 public class HelpdeskTeamDto {
+
     private Long id;
     private String name;
     private String description;
+    private String aliasName;
+    private String aliasDomain;
+    private Boolean useAlias;
+    private String defaultStage;
+    private Long teamLeadId;
+    private String teamLeadName;
+    private String defaultPriority;
+    private Boolean autoAssign;
     private Set<Long> memberIds;
     private Boolean isActive;
     private LocalDateTime createdAt;
@@ -25,15 +34,23 @@ public class HelpdeskTeamDto {
 
     public static HelpdeskTeamDto fromEntity(HelpdeskTeam team) {
         return HelpdeskTeamDto.builder()
-                .id(team.getId())
-                .name(team.getName())
-                .description(team.getDescription())
-                .memberIds(team.getMembers() != null
-                        ? team.getMembers().stream().map(u -> u.getId()).collect(Collectors.toSet())
-                        : null)
-                .isActive(team.getIsActive())
-                .createdAt(team.getCreatedAt())
-                .updatedAt(team.getUpdatedAt())
-                .build();
+            .id(team.getId())
+            .name(team.getName())
+            .description(team.getDescription())
+            .aliasName(team.getAliasName())
+            .aliasDomain(team.getAliasDomain())
+            .useAlias(team.getUseAlias())
+            .defaultStage(team.getDefaultStage())
+            .teamLeadId(team.getTeamLeadId())
+            .teamLeadName(team.getTeamLeadName())
+            .defaultPriority(team.getDefaultPriority())
+            .autoAssign(team.getAutoAssign())
+            .memberIds(team.getMembers() != null
+                ? team.getMembers().stream().map(u -> u.getId()).collect(Collectors.toSet())
+                : null)
+            .isActive(team.getIsActive())
+            .createdAt(team.getCreatedAt())
+            .updatedAt(team.getUpdatedAt())
+            .build();
     }
 }

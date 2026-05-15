@@ -1,14 +1,18 @@
 package com.erp.finance.service;
 
+import com.erp.common.dto.PageResponse;
+import com.erp.common.exception.BusinessException;
+import com.erp.common.exception.ResourceNotFoundException;
 import com.erp.finance.dto.CreateInvoiceRequest;
 import com.erp.finance.dto.CreatePaymentRequest;
 import com.erp.finance.dto.InvoiceDto;
-import com.erp.finance.dto.InvoiceLineDto;
 import com.erp.finance.dto.PaymentDto;
 import com.erp.finance.entity.Invoice;
 import com.erp.finance.entity.InvoiceLine;
 import com.erp.finance.entity.InvoiceStatus;
 import com.erp.finance.entity.Payment;
+import com.erp.finance.entity.PaymentDirection;
+import com.erp.finance.entity.PaymentPartnerType;
 import com.erp.finance.repository.InvoiceRepository;
 import com.erp.finance.repository.PaymentRepository;
 import com.erp.inventory.entity.Product;
@@ -17,9 +21,6 @@ import com.erp.sales.entity.Customer;
 import com.erp.sales.entity.OrderStatus;
 import com.erp.sales.entity.SalesOrder;
 import com.erp.sales.repository.SalesOrderRepository;
-import com.erp.common.dto.PageResponse;
-import com.erp.common.exception.BusinessException;
-import com.erp.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -29,9 +30,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.erp.finance.entity.PaymentDirection;
-import com.erp.finance.entity.PaymentPartnerType;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.ArrayList;
@@ -49,13 +49,19 @@ public class InvoiceService {
     private final com.erp.sales.repository.CustomerRepository customerRepository;
     private final ProductRepository productRepository;
 
-    public PageResponse<InvoiceDto> findAll(int page, int size, String search, InvoiceStatus status, 
-                                            Long customerId, LocalDateTime dateFrom, 
-                                            LocalDateTime dateTo) {
+    public PageResponse<InvoiceDto> findAll(
+        int page,
+        int size,
+        String search,
+        InvoiceStatus status,
+        Long customerId,
+        LocalDateTime dateFrom,
+        LocalDateTime dateTo
+    ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-
         Page<Invoice> invoices;
-        if (search != null && !search.isEmpty()) {
+
+        if (search != null && !search.isBlank()) {
             invoices = invoiceRepository.search(search, pageable);
         } else {
             invoices = invoiceRepository.findWithFilters(status, customerId, dateFrom, dateTo, pageable);
@@ -66,96 +72,60 @@ public class InvoiceService {
 
     public InvoiceDto findById(Long id) {
         Invoice invoice = invoiceRepository.findByIdWithPayments(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Invoice", id));
-        
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", id));
+
         InvoiceDto dto = toDto(invoice);
         dto.setPayments(invoice.getPayments().stream()
-                .map(p -> PaymentDto.fromEntity(p))
-                .collect(java.util.stream.Collectors.toList()));
-        
+            .map(PaymentDto::fromEntity)
+            .collect(Collectors.toList()));
+
         return dto;
     }
 
     @Transactional
     public InvoiceDto create(CreateInvoiceRequest request) {
         Customer customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Customer", request.getCustomerId()));
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.getCustomerId()));
 
         Invoice invoice = Invoice.builder()
-                .invoiceNumber(generateInvoiceNumber())
-                .customer(customer)
-                .invoiceDate(request.getInvoiceDate())
-                .dueDate(request.getDueDate())
-                .status(InvoiceStatus.DRAFT)
-                .subtotal(BigDecimal.ZERO)
-                .taxAmount(BigDecimal.ZERO)
-                .total(BigDecimal.ZERO)
-                .paidAmount(BigDecimal.ZERO)
-                .payments(new ArrayList<>())
-                .build();
+            .invoiceNumber(generateInvoiceNumber())
+            .customer(customer)
+            .invoiceDate(request.getInvoiceDate())
+            .dueDate(request.getDueDate())
+            .status(InvoiceStatus.DRAFT)
+            .subtotal(BigDecimal.ZERO)
+            .taxAmount(BigDecimal.ZERO)
+            .totalAmount(BigDecimal.ZERO)
+            .paidAmount(BigDecimal.ZERO)
+            .payments(new ArrayList<>())
+            .lines(new ArrayList<>())
+            .build();
 
         if (request.getSalesOrderId() != null) {
             SalesOrder salesOrder = salesOrderRepository.findById(request.getSalesOrderId())
-                    .orElseThrow(() -> new ResourceNotFoundException("SalesOrder", request.getSalesOrderId()));
-            
+                .orElseThrow(() -> new ResourceNotFoundException("SalesOrder", request.getSalesOrderId()));
+
             if (salesOrder.getStatus() != OrderStatus.SHIPPED) {
                 throw new BusinessException("INVOICE_001", "Sales order must be SHIPPED to create invoice");
             }
-            
+
             invoice.setSalesOrder(salesOrder);
             invoice.setSubtotal(salesOrder.getSubtotal());
             invoice.setTaxAmount(salesOrder.getTaxAmount() != null ? salesOrder.getTaxAmount() : BigDecimal.ZERO);
             invoice.setTotal(salesOrder.getTotalAmount());
         }
 
-        if (request.getLines() != null && !request.getLines().isEmpty()) {
-            BigDecimal subtotal = BigDecimal.ZERO;
-            BigDecimal totalTax = BigDecimal.ZERO;
-
-            for (var lineRequest : request.getLines()) {
-                Product product = lineRequest.getProductId() != null
-                        ? productRepository.findById(lineRequest.getProductId()).orElse(null)
-                        : null;
-
-                BigDecimal unitPrice = lineRequest.getUnitPrice();
-                BigDecimal lineTotal = unitPrice.multiply(BigDecimal.valueOf(lineRequest.getQuantity()));
-
-                BigDecimal taxAmount = lineRequest.getTaxRate() != null
-                        ? lineTotal.multiply(lineRequest.getTaxRate()).divide(BigDecimal.valueOf(100))
-                        : BigDecimal.ZERO;
-
-                InvoiceLine line = InvoiceLine.builder()
-                        .invoice(invoice)
-                        .product(product)
-                        .description(lineRequest.getDescription())
-                        .quantity(lineRequest.getQuantity())
-                        .unitPrice(unitPrice)
-                        .lineTotal(lineTotal)
-                        .glAccountId(lineRequest.getGlAccountId())
-                        .taxCode(lineRequest.getTaxCode())
-                        .taxRate(lineRequest.getTaxRate())
-                        .build();
-
-                invoice.addLine(line);
-                subtotal = subtotal.add(lineTotal);
-                totalTax = totalTax.add(taxAmount);
-            }
-
-            invoice.setSubtotal(subtotal);
-            invoice.setTaxAmount(totalTax);
-            invoice.setTotal(subtotal.add(totalTax));
-        }
+        applyLines(invoice, request.getLines());
 
         invoice = invoiceRepository.save(invoice);
         log.info("Created invoice with id: {} and number: {}", invoice.getId(), invoice.getInvoiceNumber());
-
         return toDto(invoice);
     }
 
     @Transactional
     public InvoiceDto update(Long id, CreateInvoiceRequest request) {
         Invoice invoice = invoiceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Invoice", id));
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", id));
 
         if (invoice.getStatus() != InvoiceStatus.DRAFT) {
             throw new BusinessException("INVOICE_005", "Only DRAFT invoices can be updated");
@@ -163,58 +133,27 @@ public class InvoiceService {
 
         if (request.getCustomerId() != null) {
             Customer customer = customerRepository.findById(request.getCustomerId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Customer", request.getCustomerId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Customer", request.getCustomerId()));
             invoice.setCustomer(customer);
         }
+
         if (request.getInvoiceDate() != null) {
             invoice.setInvoiceDate(request.getInvoiceDate());
         }
+
         if (request.getDueDate() != null) {
             invoice.setDueDate(request.getDueDate());
         }
+
         if (request.getSalesOrderId() != null) {
             SalesOrder salesOrder = salesOrderRepository.findById(request.getSalesOrderId())
-                    .orElseThrow(() -> new ResourceNotFoundException("SalesOrder", request.getSalesOrderId()));
+                .orElseThrow(() -> new ResourceNotFoundException("SalesOrder", request.getSalesOrderId()));
             invoice.setSalesOrder(salesOrder);
         }
 
         if (request.getLines() != null && !request.getLines().isEmpty()) {
             invoice.getLines().clear();
-            BigDecimal subtotal = BigDecimal.ZERO;
-            BigDecimal totalTax = BigDecimal.ZERO;
-
-            for (var lineRequest : request.getLines()) {
-                Product product = lineRequest.getProductId() != null
-                        ? productRepository.findById(lineRequest.getProductId()).orElse(null)
-                        : null;
-
-                BigDecimal unitPrice = lineRequest.getUnitPrice();
-                BigDecimal lineTotal = unitPrice.multiply(BigDecimal.valueOf(lineRequest.getQuantity()));
-
-                BigDecimal taxAmount = lineRequest.getTaxRate() != null
-                        ? lineTotal.multiply(lineRequest.getTaxRate()).divide(BigDecimal.valueOf(100))
-                        : BigDecimal.ZERO;
-
-                InvoiceLine line = InvoiceLine.builder()
-                        .invoice(invoice)
-                        .product(product)
-                        .description(lineRequest.getDescription())
-                        .quantity(lineRequest.getQuantity())
-                        .unitPrice(unitPrice)
-                        .lineTotal(lineTotal)
-                        .glAccountId(lineRequest.getGlAccountId())
-                        .taxCode(lineRequest.getTaxCode())
-                        .taxRate(lineRequest.getTaxRate())
-                        .build();
-
-                invoice.addLine(line);
-                subtotal = subtotal.add(lineTotal);
-                totalTax = totalTax.add(taxAmount);
-            }
-
-            invoice.setSubtotal(subtotal);
-            invoice.setTaxAmount(totalTax);
-            invoice.setTotal(subtotal.add(totalTax));
+            applyLines(invoice, request.getLines());
         }
 
         invoice = invoiceRepository.save(invoice);
@@ -225,7 +164,7 @@ public class InvoiceService {
     @Transactional
     public void delete(Long id) {
         Invoice invoice = invoiceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Invoice", id));
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", id));
 
         if (invoice.getStatus() != InvoiceStatus.DRAFT) {
             throw new BusinessException("INVOICE_006", "Only DRAFT invoices can be deleted");
@@ -238,7 +177,7 @@ public class InvoiceService {
     @Transactional
     public InvoiceDto send(Long id) {
         Invoice invoice = invoiceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Invoice", id));
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", id));
 
         if (invoice.getStatus() != InvoiceStatus.DRAFT) {
             throw new BusinessException("INVOICE_002", "Only DRAFT invoices can be sent");
@@ -246,7 +185,6 @@ public class InvoiceService {
 
         invoice.setStatus(InvoiceStatus.SENT);
         invoice = invoiceRepository.save(invoice);
-        
         log.info("Sent invoice with id: {}", id);
         return toDto(invoice);
     }
@@ -254,7 +192,7 @@ public class InvoiceService {
     @Transactional
     public InvoiceDto cancel(Long id) {
         Invoice invoice = invoiceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Invoice", id));
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", id));
 
         if (invoice.getStatus() == InvoiceStatus.PAID) {
             throw new BusinessException("INVOICE_003", "Cannot cancel paid invoices");
@@ -262,54 +200,95 @@ public class InvoiceService {
 
         invoice.setStatus(InvoiceStatus.CANCELLED);
         invoice = invoiceRepository.save(invoice);
-        
         log.info("Cancelled invoice with id: {}", id);
         return toDto(invoice);
     }
 
     public List<PaymentDto> getPayments(Long invoiceId) {
         Invoice invoice = invoiceRepository.findByIdWithPayments(invoiceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+
         return invoice.getPayments().stream()
-                .map(PaymentDto::fromEntity)
-                .collect(Collectors.toList());
+            .map(PaymentDto::fromEntity)
+            .collect(Collectors.toList());
     }
 
     @Transactional
     public PaymentDto addPayment(Long invoiceId, CreatePaymentRequest request) {
         Invoice invoice = invoiceRepository.findById(invoiceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
 
         if (invoice.getStatus() == InvoiceStatus.CANCELLED) {
             throw new BusinessException("INVOICE_004", "Cannot add payment to cancelled invoice");
         }
 
-        // Using the old payment creation for backward compatibility
-        com.erp.finance.entity.Payment payment = com.erp.finance.entity.Payment.builder()
-                .amount(request.getAmount())
-                .date(request.getPaymentDate())
-                .paymentReference(request.getReference())
-                .paymentType(PaymentDirection.INBOUND)
-                .partnerType(PaymentPartnerType.CUSTOMER)
-                .partnerId(invoice.getCustomer() != null ? invoice.getCustomer().getId() : null)
-                .partnerName(invoice.getCustomer() != null ? invoice.getCustomer().getName() : null)
-                .build();
+        LocalDate paymentDate = request.getPaymentDate() != null
+            ? request.getPaymentDate().toLocalDate()
+            : LocalDate.now();
+
+        Payment payment = Payment.builder()
+            .amount(request.getAmount())
+            .date(paymentDate)
+            .paymentReference(request.getReference())
+            .paymentType(PaymentDirection.INBOUND)
+            .partnerType(PaymentPartnerType.CUSTOMER)
+            .partnerId(invoice.getCustomer() != null ? invoice.getCustomer().getId() : null)
+            .partnerName(invoice.getCustomer() != null ? invoice.getCustomer().getName() : null)
+            .build();
 
         payment = paymentRepository.save(payment);
 
-        // Update invoice paid amount directly
-        invoice.setPaidAmount(invoice.getPaidAmount() != null ?
-                invoice.getPaidAmount().add(request.getAmount()) : request.getAmount());
-        invoice.calculatePaidAmount();
-        
+        BigDecimal currentPaid = invoice.getPaidAmount() != null ? invoice.getPaidAmount() : BigDecimal.ZERO;
+        invoice.setPaidAmount(currentPaid.add(request.getAmount()));
+
         if (invoice.getPaidAmount().compareTo(invoice.getTotal()) >= 0) {
             invoice.setStatus(InvoiceStatus.PAID);
         }
-        
+
         invoiceRepository.save(invoice);
-        
         log.info("Added payment to invoice id: {}", invoiceId);
         return PaymentDto.fromEntity(payment);
+    }
+
+    private void applyLines(Invoice invoice, List<CreateInvoiceRequest.InvoiceLineRequest> lineRequests) {
+        if (lineRequests == null || lineRequests.isEmpty()) {
+            return;
+        }
+
+        BigDecimal subtotal = BigDecimal.ZERO;
+        BigDecimal totalTax = BigDecimal.ZERO;
+
+        for (CreateInvoiceRequest.InvoiceLineRequest lineRequest : lineRequests) {
+            Product product = lineRequest.getProductId() != null
+                ? productRepository.findById(lineRequest.getProductId()).orElse(null)
+                : null;
+
+            BigDecimal unitPrice = lineRequest.getUnitPrice();
+            BigDecimal lineTotal = unitPrice.multiply(BigDecimal.valueOf(lineRequest.getQuantity()));
+            BigDecimal taxAmount = lineRequest.getTaxRate() != null
+                ? lineTotal.multiply(lineRequest.getTaxRate()).divide(BigDecimal.valueOf(100))
+                : BigDecimal.ZERO;
+
+            InvoiceLine line = InvoiceLine.builder()
+                .invoice(invoice)
+                .product(product)
+                .description(lineRequest.getDescription())
+                .quantity(lineRequest.getQuantity())
+                .unitPrice(unitPrice)
+                .lineTotal(lineTotal)
+                .glAccountId(lineRequest.getGlAccountId())
+                .taxCode(lineRequest.getTaxCode())
+                .taxRate(lineRequest.getTaxRate())
+                .build();
+
+            invoice.addLine(line);
+            subtotal = subtotal.add(lineTotal);
+            totalTax = totalTax.add(taxAmount);
+        }
+
+        invoice.setSubtotal(subtotal);
+        invoice.setTaxAmount(totalTax);
+        invoice.setTotal(subtotal.add(totalTax));
     }
 
     private String generateInvoiceNumber() {

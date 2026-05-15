@@ -29,11 +29,38 @@ public class HelpdeskTeam {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "alias_name", length = 100)
+    private String aliasName;
+
+    @Column(name = "alias_domain", length = 200)
+    private String aliasDomain;
+
+    @Column(name = "use_alias")
+    @Builder.Default
+    private Boolean useAlias = false;
+
+    @Column(name = "default_stage", length = 50)
+    private String defaultStage;
+
+    @Column(name = "team_lead_id")
+    private Long teamLeadId;
+
+    @Column(name = "team_lead_name", length = 255)
+    private String teamLeadName;
+
+    @Column(name = "default_priority", length = 1)
+    @Builder.Default
+    private String defaultPriority = "0";
+
+    @Column(name = "auto_assign")
+    @Builder.Default
+    private Boolean autoAssign = false;
+
     @ManyToMany
     @JoinTable(
-            name = "helpdesk_team_members",
-            joinColumns = @JoinColumn(name = "team_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
+        name = "helpdesk_team_members",
+        joinColumns = @JoinColumn(name = "team_id"),
+        inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     @Builder.Default
     private Set<User> members = new HashSet<>();

@@ -1,6 +1,7 @@
 package com.erp.sales.entity;
 
 import com.erp.admin.entity.User;
+import com.erp.finance.entity.Incoterm;
 import com.erp.finance.entity.PaymentTerm;
 import jakarta.persistence.*;
 import lombok.*;
@@ -58,8 +59,7 @@ public class SalesOrder {
     @JoinColumn(name = "created_by")
     private User createdBy;
 
-    // ---- New Odoo-inspired fields ----
-
+    // ---- Odoo-inspired fields ----
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_term_id")
     private PaymentTerm paymentTerm;
@@ -98,8 +98,6 @@ public class SalesOrder {
     @Builder.Default
     private BigDecimal amountDiscount = BigDecimal.ZERO;
 
-    // ---- End new fields ----
-
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<SalesOrderLine> lines = new ArrayList<>();
@@ -128,21 +126,22 @@ public class SalesOrder {
 
     public void calculateTotals() {
         this.subtotal = lines.stream()
-                .map(SalesOrderLine::getLineTotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            .map(SalesOrderLine::getLineTotal)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         this.amountUntaxed = this.subtotal;
 
         BigDecimal totalDiscount = lines.stream()
-                .map(l -> {
-                    if (l.getDiscount() != null && l.getDiscount().compareTo(BigDecimal.ZERO) > 0) {
-                        return l.getLineTotal().multiply(l.getDiscount().divide(BigDecimal.valueOf(100), 10, java.math.RoundingMode.HALF_UP));
-                    }
-                    return BigDecimal.ZERO;
-                })
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        this.amountDiscount = totalDiscount;
+            .map(line -> {
+                if (line.getDiscount() != null && line.getDiscount().compareTo(BigDecimal.ZERO) > 0) {
+                    return line.getLineTotal().multiply(
+                        line.getDiscount().divide(BigDecimal.valueOf(100), 10, java.math.RoundingMode.HALF_UP));
+                }
+                return BigDecimal.ZERO;
+            })
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        this.amountDiscount = totalDiscount;
         BigDecimal discountedSubtotal = subtotal.subtract(totalDiscount);
         this.totalAmount = discountedSubtotal.add(taxAmount != null ? taxAmount : BigDecimal.ZERO);
     }

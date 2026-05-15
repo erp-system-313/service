@@ -1,6 +1,6 @@
 package com.erp.sales.dto;
 
-import com.erp.sales.entity.Incoterm;
+import com.erp.finance.entity.Incoterm;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class IncotermDto {
+
     private Long id;
     private String code;
     private String name;
@@ -18,10 +19,10 @@ public class IncotermDto {
 
     public static IncotermDto fromEntity(Incoterm incoterm) {
         return IncotermDto.builder()
-                .id(incoterm.getId())
-                .code(incoterm.getCode())
-                .name(incoterm.getName())
-                .description(incoterm.getDescription())
-                .build();
+            .id(incoterm.getId())
+            .code(incoterm.getCode())
+            .name(incoterm.getName())
+            .description(incoterm.getDescription())
+            .build();
     }
 }

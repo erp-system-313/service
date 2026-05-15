@@ -21,5 +21,28 @@ public class CreateHelpdeskTeamRequest {
 
     private String description;
 
+    @Size(max = 100)
+    private String aliasName;
+
+    @Size(max = 200)
+    private String aliasDomain;
+
+    private Boolean useAlias;
+
+    @Size(max = 50)
+    private String defaultStage;
+
+    private Long teamLeadId;
+
+    @Size(max = 255)
+    private String teamLeadName;
+
+    @Size(max = 1)
+    private String defaultPriority;
+
+    private Boolean autoAssign;
+
+    private Boolean isActive;
+
     private Set<Long> memberIds;
 }
