@@ -8,7 +8,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,23 +51,17 @@ public class Invoice {
     private BigDecimal taxAmount = BigDecimal.ZERO;
     
     @Column(name = "total_amount", nullable = false, precision = 15, scale = 2)
-    private BigDecimal total;
+    private BigDecimal totalAmount;
 
     @Column(name = "paid_amount", precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal paidAmount = BigDecimal.ZERO;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sales_order_id")
-    private SalesOrder salesOrder;
-
-    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    // Payments are now handled via the new Move-based system.
+    // This field is kept for backward compatibility but not mapped via JPA.
+    @Transient
     @Builder.Default
     private List<Payment> payments = new ArrayList<>();
-
-    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<InvoiceLine> lines = new ArrayList<>();
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -86,12 +79,6 @@ public class Invoice {
 
     public void addPayment(Payment payment) {
         payments.add(payment);
-        payment.setInvoice(this);
-    }
-
-    public void addLine(InvoiceLine line) {
-        lines.add(line);
-        line.setInvoice(this);
     }
 
     public void calculatePaidAmount() {
@@ -101,6 +88,10 @@ public class Invoice {
     }
 
     public BigDecimal getBalance() {
-        return total.subtract(paidAmount);
+        return totalAmount.subtract(paidAmount);
+    }
+
+    public BigDecimal getTotal() {
+        return totalAmount;
     }
 }

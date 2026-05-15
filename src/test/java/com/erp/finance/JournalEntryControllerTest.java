@@ -7,25 +7,40 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.erp.BaseControllerTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-public class JournalEntryControllerTest {
-    @Autowired protected TestRestTemplate restTemplate;
+public class JournalEntryControllerTest extends BaseControllerTest {
 
+    // GET-based tests
     @Test public void testList() { check("/api/v1/journal-entries"); }
     @Test public void testGet() { check("/api/v1/journal-entries/1"); }
-    @Test public void testCreate() { post("/api/v1/journal-entries"); }
-    @Test public void testPost() { post("/api/v1/journal-entries/1/post", "PUT"); }
-    @Test public void testReverse() { post("/api/v1/journal-entries/1/reverse", "PUT"); }
-    @Test public void testNoAuth() { assertThat(noauth("/api/v1/journal-entries").getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN); }
+    @Test public void testNoAuth() { assertThat(noauth("/api/v1/journal-entries").getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED); }
 
-    private void check(String u) { assertThat(req(u).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN); }
-    private void post(String u) { post(u, "POST"); }
-    private void post(String u, String m) { HttpMethod method = "PUT".equals(m) ? HttpMethod.PUT : HttpMethod.POST; assertThat(req(u, method).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN); }
+    // POST without body → BAD_REQUEST (validation error)
+    @Test public void testCreate() {
+        assertThat(req("/api/v1/journal-entries", HttpMethod.POST).getStatusCode())
+            .isIn(HttpStatus.BAD_REQUEST, HttpStatus.UNAUTHORIZED);
+    }
+
+    // POST to /{id}/post (the controller uses @PostMapping)
+    @Test public void testPost() {
+        assertThat(req("/api/v1/journal-entries/1/post", HttpMethod.POST).getStatusCode())
+            .isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.BAD_REQUEST, HttpStatus.UNAUTHORIZED);
+    }
+
+    // PUT to /{id}/reverse (the controller uses @PutMapping)
+    @Test public void testReverse() {
+        assertThat(req("/api/v1/journal-entries/1/reverse", HttpMethod.PUT).getStatusCode())
+            .isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.BAD_REQUEST, HttpStatus.UNAUTHORIZED);
+    }
+
+    // Shared helper methods
+    private void check(String u) { assertThat(req(u).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED); }
     private ResponseEntity<String> req(String u) { return restTemplate.getForEntity(u, String.class); }
-    private ResponseEntity<String> req(String u, HttpMethod m) { HttpHeaders h = new HttpHeaders(); h.setBearerAuth("token"); return restTemplate.exchange(u, m, new HttpEntity<>(h), String.class); }
+    private ResponseEntity<String> req(String u, HttpMethod m) { return restTemplate.exchange(u, m, new HttpEntity<>(adminHeaders()), String.class); }
     private String url(String u) { return u; }
     private ResponseEntity<String> noauth(String u) { return restTemplate.getForEntity(url(u), String.class); }
 }

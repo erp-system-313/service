@@ -10,8 +10,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -25,6 +27,17 @@ public class CreateSalesOrderRequest {
     private LocalDateTime orderDate;
 
     private String notes;
+
+    // ---- New Odoo-inspired fields ----
+    private Long paymentTermId;
+    private Long pricelistId;
+    private Long currencyId;
+    private Long incotermId;
+    private Long teamId;
+    private Long salespersonId;
+    private Long partnerInvoiceId;
+    private Long partnerShippingId;
+    private LocalDate validityDate;
 
     @NotEmpty(message = "At least one order line is required")
     @Valid
@@ -44,6 +57,11 @@ public class CreateSalesOrderRequest {
         private Integer quantity;
 
         @NotNull(message = "Unit price is required")
-        private java.math.BigDecimal unitPrice;
+        private BigDecimal unitPrice;
+
+        // ---- New line-level fields ----
+        private BigDecimal discount;
+        private Set<Long> taxIds;
+        private String productUom;
     }
 }
