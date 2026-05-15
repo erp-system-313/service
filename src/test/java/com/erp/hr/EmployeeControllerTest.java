@@ -15,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class EmployeeControllerTest extends BaseControllerTest {
 
     @Test public void testList() { check("/api/v1/employees"); }
+    @Test public void testListActive() { check("/api/v1/employees/active"); }
     @Test public void testGet() { check("/api/v1/employees/1"); }
     @Test public void testCreate() { post("/api/v1/employees"); }
     @Test public void testUpdate() { post("/api/v1/employees/1", "PUT"); }
