@@ -2,6 +2,7 @@ package com.erp.hr.service;
 
 import com.erp.auth.security.CurrentUserUtil;
 import com.erp.hr.dto.AttendanceDto;
+import com.erp.hr.dto.CreateManualAttendanceRequest;
 import com.erp.hr.dto.UpdateAttendanceRequest;
 import com.erp.hr.entity.Attendance;
 import com.erp.hr.entity.Employee;
@@ -137,6 +138,57 @@ public class AttendanceService {
         log.info("Employee {} clocked out at {}", employeeId, attendance.getCheckOut());
 
         auditLogService.log(currentUserUtil.getCurrentUserId(), "CLOCK_OUT", "Attendance", attendance.getId(), null, ipAddress, "Employee clocked out");
+
+        return toDto(attendance);
+    }
+
+    @Transactional
+    public AttendanceDto createManual(CreateManualAttendanceRequest request) {
+        Employee employee = employeeRepository.findById(request.getEmployeeId())
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", request.getEmployeeId()));
+
+        if (request.getStatus() == Attendance.AttendanceStatus.PRESENT
+                && request.getCheckIn() == null && request.getCheckOut() == null) {
+            throw new BusinessException("ATTENDANCE_010",
+                    "PRESENT status requires at least a check-in or check-out time");
+        }
+
+        if (request.getCheckIn() != null && request.getCheckOut() != null
+                && request.getCheckOut().isBefore(request.getCheckIn())) {
+            throw new BusinessException("ATTENDANCE_011",
+                    "Check-out must be after check-in");
+        }
+
+        Attendance existing = attendanceRepository.findByEmployeeIdAndDate(
+                request.getEmployeeId(), request.getDate()).orElse(null);
+
+        Attendance attendance;
+        if (existing != null) {
+            if (request.getCheckIn() != null) existing.setCheckIn(request.getCheckIn());
+            if (request.getCheckOut() != null) existing.setCheckOut(request.getCheckOut());
+            existing.setStatus(request.getStatus());
+            if (request.getNotes() != null) existing.setNotes(request.getNotes());
+            attendance = attendanceRepository.save(existing);
+            log.info("Overwrote existing attendance record id: {} for employee {} on {}",
+                    attendance.getId(), request.getEmployeeId(), request.getDate());
+        } else {
+            attendance = Attendance.builder()
+                    .employee(employee)
+                    .date(request.getDate())
+                    .checkIn(request.getCheckIn())
+                    .checkOut(request.getCheckOut())
+                    .status(request.getStatus())
+                    .notes(request.getNotes())
+                    .build();
+            attendance = attendanceRepository.save(attendance);
+            log.info("Created manual attendance record id: {} for employee {} on {}",
+                    attendance.getId(), request.getEmployeeId(), request.getDate());
+        }
+
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "CREATE_MANUAL", "Attendance",
+                attendance.getId(), null, null,
+                "Manual attendance created for employee " + request.getEmployeeId()
+                        + " on " + request.getDate() + " with status " + request.getStatus());
 
         return toDto(attendance);
     }

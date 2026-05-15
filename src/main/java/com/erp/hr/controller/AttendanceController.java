@@ -3,6 +3,7 @@ package com.erp.hr.controller;
 import com.erp.auth.security.CurrentUserUtil;
 import com.erp.hr.dto.AttendanceDto;
 import com.erp.hr.dto.ClockedInEmployeeDto;
+import com.erp.hr.dto.CreateManualAttendanceRequest;
 import com.erp.hr.dto.UpdateAttendanceRequest;
 import com.erp.hr.service.AttendanceService;
 import com.erp.common.dto.ApiResponse;
@@ -82,6 +83,14 @@ public class AttendanceController {
         return ResponseEntity.ok(ApiResponse.success(attendance, "Clocked out successfully"));
     }
     
+    @PostMapping("/manual")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public ResponseEntity<ApiResponse<AttendanceDto>> createManual(
+            @Valid @RequestBody CreateManualAttendanceRequest request) {
+        AttendanceDto attendance = attendanceService.createManual(request);
+        return ResponseEntity.ok(ApiResponse.success(attendance, "Manual attendance record created"));
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<AttendanceDto>> update(
