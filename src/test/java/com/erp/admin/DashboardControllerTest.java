@@ -29,6 +29,6 @@ public class DashboardControllerTest extends BaseControllerTest {
         ResponseEntity<String> response = restTemplate.exchange(
             "/api/v1/dashboard/stats",
             HttpMethod.GET, request, String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 }

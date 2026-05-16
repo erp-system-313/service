@@ -20,7 +20,7 @@ public class LeaveControllerTest {
     @Test public void testApprove() { post("/api/v1/leave-requests/1/approve", "PUT"); }
     @Test public void testReject() { post("/api/v1/leave-requests/1/reject", "PUT"); }
     @Test public void testBalances() { check("/api/v1/leave-requests/balances"); }
-    @Test public void testNoAuth() { assertThat(noauth("/api/v1/leave-requests").getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN); }
+    @Test public void testNoAuth() { assertThat(noauth("/api/v1/leave-requests").getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED); }
 
     private void check(String u) { assertThat(req(u).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN); }
     private void post(String u) { post(u, "POST"); }

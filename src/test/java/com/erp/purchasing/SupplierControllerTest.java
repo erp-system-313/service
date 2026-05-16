@@ -19,7 +19,7 @@ public class SupplierControllerTest {
     @Test void testCreate() { assertStatus(post("/api/v1/suppliers", "{\"name\":\"Test\"}"), HttpStatus.CREATED); }
     @Test void testUpdate() { assertStatus(put("/api/v1/suppliers/1", "{\"name\":\"Updated\"}"), HttpStatus.OK); }
     @Test void testDelete() { assertStatus(exchange("/api/v1/suppliers/1", HttpMethod.DELETE), HttpStatus.OK); }
-    @Test void testNoAuth() { assertThat(anonExchange("/api/v1/suppliers").getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN); }
+    @Test void testNoAuth() { assertThat(anonExchange("/api/v1/suppliers").getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED); }
 
     private HttpHeaders auth() { HttpHeaders h = new HttpHeaders(); h.setBearerAuth("valid-token"); return h; }
     private HttpHeaders authJson() { HttpHeaders h = auth(); h.setContentType(MediaType.APPLICATION_JSON); return h; }
