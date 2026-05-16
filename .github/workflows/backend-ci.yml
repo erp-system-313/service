@@ -20,21 +20,6 @@ jobs:
     name: Run Tests
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: erp_test
-          POSTGRES_USER: erp_test
-          POSTGRES_PASSWORD: erp_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - uses: actions/checkout@v4
 
@@ -53,13 +38,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+      - name: Make mvnw executable
+        run: chmod +x ./mvnw
+
       - name: Run tests
         env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/erp_test
-          SPRING_DATASOURCE_USERNAME: erp_test
-          SPRING_DATASOURCE_PASSWORD: erp_test
           JWT_SECRET: test-secret-key-for-ci-pipeline-must-be-at-least-32-chars
-        run: ./mvnw clean test
+        run: ./mvnw clean test -B
 
       - name: Upload test results
         if: always()
@@ -85,8 +70,11 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Make mvnw executable
+        run: chmod +x ./mvnw
+
       - name: Build JAR
-        run: ./mvnw clean package -DskipTests
+        run: ./mvnw clean package -DskipTests -B
 
       - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
