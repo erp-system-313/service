@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Repository("salesIncotermRepository")
+@Repository
 public interface IncotermRepository extends JpaRepository<Incoterm, Long> {
 
     Optional<Incoterm> findByCode(String code);

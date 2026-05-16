@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController("salesIncotermController")
+@RestController
 @RequestMapping("/api/v1/incoterms")
 @RequiredArgsConstructor
 public class IncotermController {
