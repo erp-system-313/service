@@ -10,6 +10,7 @@ import com.erp.inventory.dto.CategoryDto;
 import com.erp.inventory.dto.CreateCategoryRequest;
 import com.erp.inventory.dto.UpdateCategoryRequest;
 import com.erp.inventory.repository.CategoryRepository;
+import com.erp.inventory.repository.ProductRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
     private final AuditLogService auditLogService;
     private final CurrentUserUtil currentUserUtil;
 
@@ -99,6 +101,11 @@ public class CategoryService {
     public void delete(Long id, Long currentUserId, String ipAddress) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category", id));
+
+        productRepository.findByCategoryId(id, Pageable.unpaged()).forEach(product -> {
+            product.setCategory(null);
+            productRepository.save(product);
+        });
 
         category.setIsActive(false);
         categoryRepository.save(category);

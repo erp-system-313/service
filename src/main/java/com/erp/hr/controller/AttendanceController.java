@@ -119,8 +119,6 @@ public class AttendanceController {
     }
 
     private Long resolveTargetEmployeeId(Long requestedEmployeeId, Long currentUserId, boolean isAdmin) {
-        Long ownEmployeeId = attendanceService.getEmployeeIdByUserId(currentUserId);
-
         if (isAdmin) {
             if (requestedEmployeeId == null) {
                 throw new BusinessException("ATTENDANCE_004",
@@ -128,6 +126,8 @@ public class AttendanceController {
             }
             return requestedEmployeeId;
         }
+
+        Long ownEmployeeId = attendanceService.getEmployeeIdByUserId(currentUserId);
 
         if (requestedEmployeeId != null && !requestedEmployeeId.equals(ownEmployeeId)) {
             throw new BusinessException("ATTENDANCE_008",

@@ -18,6 +18,7 @@ public class GanttTaskDto {
     private String name;
     private String stageName;
     private Long assignedTo;
+    private LocalDate startDate;
     private LocalDate dueDate;
     private BigDecimal estimatedHours;
     private BigDecimal actualHours;

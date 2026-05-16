@@ -18,6 +18,7 @@ public class UpdateTaskRequest {
     private String description;
     private Long assignedTo;
     private Long stageId;
+    private LocalDate startDate;
     private LocalDate dueDate;
     private BigDecimal estimatedHours;
     private BigDecimal actualHours;

@@ -37,6 +37,9 @@ public class Task {
     @Column(name = "stage_id")
     private Long stageId;
 
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
     @Column(name = "due_date")
     private LocalDate dueDate;
 

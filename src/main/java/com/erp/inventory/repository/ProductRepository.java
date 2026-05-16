@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import com.erp.inventory.entity.Product;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -22,6 +23,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<Product> findByIdWithCategory(@Param("id") Long id);
 
     Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
+
+    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.category WHERE p.category.id IN :categoryIds")
+    Page<Product> findByCategoryIdIn(@Param("categoryIds") List<Long> categoryIds, Pageable pageable);
 
     Page<Product> findByIsActive(Boolean isActive, Pageable pageable);
 

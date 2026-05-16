@@ -23,7 +23,7 @@ public class SupplierDto {
     private String taxId;
     private Integer paymentTerms;
     private BigDecimal totalPurchased;
-    private Boolean isActive;
+    private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

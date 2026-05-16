@@ -23,6 +23,7 @@ public class TaskDto {
     private Long assignedTo;
     private Long stageId;
     private String stageName;
+    private LocalDate startDate;
     private LocalDate dueDate;
     private BigDecimal estimatedHours;
     private BigDecimal actualHours;
@@ -37,6 +38,7 @@ public class TaskDto {
                 .description(task.getDescription())
                 .assignedTo(task.getAssignedTo())
                 .stageId(task.getStageId())
+                .startDate(task.getStartDate())
                 .dueDate(task.getDueDate())
                 .estimatedHours(task.getEstimatedHours())
                 .actualHours(task.getActualHours())
