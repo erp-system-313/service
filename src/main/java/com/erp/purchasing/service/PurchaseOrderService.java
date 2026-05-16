@@ -56,15 +56,17 @@ public class PurchaseOrderService {
         PurchaseOrder.Status statusEnum = hasStatus ? PurchaseOrder.Status.valueOf(status.toUpperCase()) : null;
 
         Page<PurchaseOrder> orders;
-        if (hasSearch || hasSupplier) {
+        if (hasSearch) {
             orders = purchaseOrderRepository.findByFilters(
-                hasSearch ? search : null,
+                search,
                 supplierId,
                 statusEnum,
                 pageable
             );
         } else if (hasStatus) {
             orders = purchaseOrderRepository.findByStatus(statusEnum, pageable);
+        } else if (hasSupplier) {
+            orders = purchaseOrderRepository.findBySupplierId(supplierId, pageable);
         } else {
             orders = purchaseOrderRepository.findAll(pageable);
         }
