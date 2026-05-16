@@ -33,11 +33,11 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Lo
 
     @Query("SELECT p FROM PurchaseOrder p WHERE " +
            "LOWER(p.poNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(p.supplier.name) LIKE LOWER(CONCAT('%', :search, '%'))")
+           "LOWER(CAST(p.supplier.name AS text)) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<PurchaseOrder> search(@Param("search") String search, Pageable pageable);
 
     @Query("SELECT p FROM PurchaseOrder p WHERE " +
-           "(:search IS NULL OR LOWER(p.poNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(p.supplier.name) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
+           "(:search IS NULL OR LOWER(p.poNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(CAST(p.supplier.name AS text)) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
            "(:supplierId IS NULL OR p.supplier.id = :supplierId) AND " +
            "(:status IS NULL OR p.status = :status)")
     Page<PurchaseOrder> findByFilters(@Param("search") String search, @Param("supplierId") Long supplierId, @Param("status") PurchaseOrder.Status status, Pageable pageable);
