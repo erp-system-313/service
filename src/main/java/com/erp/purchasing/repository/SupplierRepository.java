@@ -23,13 +23,18 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
 
     boolean existsByCode(String code);
 
-    Page<Supplier> findByIsActive(Boolean isActive, Pageable pageable);
+    Page<Supplier> findByStatus(Supplier.Status status, Pageable pageable);
 
-    long countByIsActive(Boolean isActive);
+    long countByStatus(Supplier.Status status);
 
     @Query("SELECT s FROM Supplier s WHERE " +
            "LOWER(s.code) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(s.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(s.contactPerson) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Supplier> search(@Param("search") String search, Pageable pageable);
+
+    @Query("SELECT s FROM Supplier s WHERE " +
+           "(:search IS NULL OR LOWER(s.code) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(s.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(s.contactPerson) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
+           "(:status IS NULL OR s.status = :status)")
+    Page<Supplier> findByFilters(@Param("search") String search, @Param("status") Supplier.Status status, Pageable pageable);
 }
