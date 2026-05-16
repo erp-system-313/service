@@ -25,6 +25,7 @@ public class ContractService {
     private final ContractRepository contractRepository;
     private final EmployeeRepository employeeRepository;
 
+    @Transactional(readOnly = true)
     public PageResponse<ContractDto> findAll(int page, int size, Long employeeId, String status) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
@@ -44,6 +45,7 @@ public class ContractService {
         return PageResponse.from(contracts.map(this::toDto));
     }
 
+    @Transactional(readOnly = true)
     public ContractDto findById(Long id) {
         Contract contract = contractRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Contract", id));

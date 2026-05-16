@@ -1,5 +1,6 @@
 package com.erp.finance.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.erp.sales.entity.Customer;
 import com.erp.sales.entity.SalesOrder;
 import jakarta.persistence.*;
@@ -30,6 +31,7 @@ public class Invoice {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
+    @JsonIgnoreProperties({"invoices", "salesOrders", "quotes"})
     private Customer customer;
 
     @Column(name = "issue_date", nullable = false)

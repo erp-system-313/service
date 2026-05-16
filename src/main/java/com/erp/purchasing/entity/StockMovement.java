@@ -28,7 +28,7 @@ public class StockMovement {
     private Product product;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(name = "movement_type", nullable = false, length = 20)
     private MovementType type;
 
     @Column(nullable = false)
@@ -46,7 +46,7 @@ public class StockMovement {
     @Column(name = "reference_id")
     private Long referenceId;
 
-    @Column(nullable = false)
+    @Column(name = "movement_date", nullable = false)
     private LocalDate date;
 
     @Column(columnDefinition = "TEXT")
