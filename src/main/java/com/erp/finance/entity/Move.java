@@ -1,5 +1,6 @@
 package com.erp.finance.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
@@ -142,6 +143,7 @@ public class Move {
 
     @OneToMany(mappedBy = "move", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
+    @JsonIgnore
     private List<MoveLine> lines = new ArrayList<>();
 
     @CreationTimestamp
