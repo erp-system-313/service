@@ -24,6 +24,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -38,19 +41,35 @@ public class ProductService {
     public PageResponse<ProductDto> findAll(int page, int size, String search, Long categoryId, String status) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
+        Boolean isActive = status != null ? "ACTIVE".equalsIgnoreCase(status) : null;
+
+        List<Long> categoryIds = null;
+        if (categoryId != null) {
+            categoryIds = new ArrayList<>();
+            categoryIds.add(categoryId);
+            collectChildCategoryIds(categoryId, categoryIds);
+        }
+
         Page<Product> products;
         if (search != null && !search.isEmpty()) {
             products = productRepository.search(search, pageable);
-        } else if (categoryId != null) {
-            products = productRepository.findByCategoryId(categoryId, pageable);
-        } else if (status != null) {
-            Boolean isActive = "ACTIVE".equalsIgnoreCase(status);
+        } else if (categoryIds != null) {
+            products = productRepository.findByCategoryIdIn(categoryIds, pageable);
+        } else if (isActive != null) {
             products = productRepository.findByIsActive(isActive, pageable);
         } else {
             products = productRepository.findAll(pageable);
         }
 
         return PageResponse.from(products.map(this::toDto));
+    }
+
+    private void collectChildCategoryIds(Long parentId, List<Long> ids) {
+        List<Category> children = categoryRepository.findByParentId(parentId, Pageable.unpaged()).getContent();
+        for (Category child : children) {
+            ids.add(child.getId());
+            collectChildCategoryIds(child.getId(), ids);
+        }
     }
 
     public ProductDto findById(Long id) {
@@ -131,6 +150,7 @@ public class ProductService {
         if (request.getReorderQuantity() != null) product.setReorderQuantity(request.getReorderQuantity());
         if (request.getUnitOfMeasure() != null) product.setUnitOfMeasure(request.getUnitOfMeasure());
         if (request.getImageUrl() != null) product.setImageUrl(request.getImageUrl());
+        if (request.getCurrentStock() != null) product.setCurrentStock(request.getCurrentStock());
 
         product = productRepository.save(product);
         log.info("Updated product with id: {}", product.getId());
