@@ -38,7 +38,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
             @Param("dateTo") LocalDateTime dateTo,
             Pageable pageable);
 
-    @EntityGraph(attributePaths = {"lines", "salesOrder", "customer"})
+    @EntityGraph(attributePaths = {"customer"})
     @Query("SELECT i FROM Invoice i WHERE i.id = :id")
     Optional<Invoice> findByIdWithPayments(@Param("id") Long id);
 

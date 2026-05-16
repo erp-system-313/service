@@ -28,7 +28,7 @@ public class StockMovement {
     private Product product;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(name = "movement_type", nullable = false, length = 20)
     private MovementType type;
 
     @Column(nullable = false)
