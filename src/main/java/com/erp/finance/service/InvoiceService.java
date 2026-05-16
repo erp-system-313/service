@@ -58,7 +58,13 @@ public class InvoiceService {
         if (search != null && !search.isEmpty()) {
             invoices = invoiceRepository.search(search, pageable);
         } else {
-            invoices = invoiceRepository.findWithFilters(status, customerId, dateFrom, dateTo, pageable);
+            invoices = invoiceRepository.findWithFilters(
+                status,
+                customerId,
+                dateFrom != null ? dateFrom : LocalDateTime.of(1970, 1, 1, 0, 0),
+                dateTo != null ? dateTo : LocalDateTime.of(2099, 12, 31, 23, 59),
+                pageable
+            );
         }
 
         return PageResponse.from(invoices.map(this::toDto));

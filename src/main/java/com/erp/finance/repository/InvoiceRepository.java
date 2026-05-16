@@ -27,8 +27,8 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
             SELECT i FROM Invoice i
             WHERE (:status IS NULL OR i.status = :status)
               AND (:customerId IS NULL OR i.customer.id = :customerId)
-              AND (:dateFrom IS NULL OR i.invoiceDate >= :dateFrom)
-              AND (:dateTo IS NULL OR i.invoiceDate <= :dateTo)
+              AND i.invoiceDate >= :dateFrom
+              AND i.invoiceDate <= :dateTo
             """)
     Page<Invoice> findWithFilters(
             @Param("status") InvoiceStatus status,
