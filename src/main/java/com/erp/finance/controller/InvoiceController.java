@@ -45,7 +45,7 @@ public class InvoiceController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFrom,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTo) {
 
-        PageResponse<InvoiceDto> invoices = invoiceService.findAll(page, size, status, customerId, dateFrom, dateTo);
+        PageResponse<InvoiceDto> invoices = invoiceService.findAll(page, size, status, customerId, dateFrom, dateTo, search);
         return ResponseEntity.ok(ApiResponse.success(invoices));
     }
 

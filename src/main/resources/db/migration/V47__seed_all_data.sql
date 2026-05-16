@@ -1,10 +1,10 @@
--- V44: Seed all ERP modules with realistic interconnected data
+-- V47: Seed all ERP modules with realistic interconnected data
 -- Depends on: V7 (roles, admin user, settings, chart of accounts),
 --   V14 (categories), V15 (customers), V25 (pipeline_stages),
 --   V26 (payment_methods), V27 (incoterms), V28 (helpdesk_stages, sla_policies),
 --   V32 (uoms), V37 (recruitment_stages, recruitment_sources),
 --   V38 (MANAGER role), V39 (permissions, contracts table),
---   V43 (6 suppliers, 13 products, 10 purchase orders with 26 lines)
+--   V46 (6 suppliers, 13 products, 10 purchase orders with 26 lines)
 
 -- Password hash for all new users (test123):
 -- $2b$10$HLP9D9x6TH68Qt/KYaUQ5.XD.vHmjMNK2URg5LApQRahKKeYdxqDC
