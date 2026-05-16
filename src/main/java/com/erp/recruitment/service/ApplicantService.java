@@ -39,6 +39,7 @@ public class ApplicantService {
     private final AuditLogService auditLogService;
     private final CurrentUserUtil currentUserUtil;
 
+    @Transactional(readOnly = true)
     public PageResponse<ApplicantDto> findAll(int page, int size, Long jobOpeningId, Long stageId) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
@@ -56,6 +57,7 @@ public class ApplicantService {
         return PageResponse.from(applicants.map(this::toDto));
     }
 
+    @Transactional(readOnly = true)
     public ApplicantDto findById(Long id) {
         Applicant applicant = applicantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Applicant", id));
