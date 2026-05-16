@@ -107,11 +107,15 @@ public class CategoryService {
             productRepository.save(product);
         });
 
-        category.setIsActive(false);
-        categoryRepository.save(category);
-        log.info("Deactivated category with id: {}", id);
+        categoryRepository.findByParentId(id, Pageable.unpaged()).forEach(child -> {
+            child.setParentId(null);
+            categoryRepository.save(child);
+        });
 
-        auditLogService.log(currentUserUtil.getCurrentUserId(), "DELETE", "Category", id, null, ipAddress, "Category deactivated");
+        categoryRepository.delete(category);
+        log.info("Deleted category with id: {}", id);
+
+        auditLogService.log(currentUserUtil.getCurrentUserId(), "DELETE", "Category", id, null, ipAddress, "Category deleted");
     }
 
     public long countActive() {
