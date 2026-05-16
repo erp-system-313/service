@@ -4,6 +4,7 @@ import com.erp.finance.dto.CreateInvoiceRequest;
 import com.erp.finance.dto.CreatePaymentRequest;
 import com.erp.finance.dto.InvoiceDto;
 import com.erp.finance.dto.PaymentDto;
+import com.erp.finance.dto.UpdateInvoiceRequest;
 import com.erp.finance.entity.Invoice;
 import com.erp.finance.entity.InvoiceStatus;
 import com.erp.finance.entity.Payment;
@@ -80,12 +81,14 @@ public class InvoiceService {
         Customer customer = customerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", request.getCustomerId()));
 
+        InvoiceStatus status = request.getStatus() != null ? request.getStatus() : InvoiceStatus.DRAFT;
+
         Invoice invoice = Invoice.builder()
                 .invoiceNumber(generateInvoiceNumber())
                 .customer(customer)
                 .invoiceDate(request.getInvoiceDate())
                 .dueDate(request.getDueDate())
-                .status(InvoiceStatus.DRAFT)
+                .status(status)
                 .subtotal(BigDecimal.ZERO)
                 .taxAmount(BigDecimal.ZERO)
                 .totalAmount(BigDecimal.ZERO)
@@ -145,7 +148,7 @@ public class InvoiceService {
     }
 
     @Transactional
-    public InvoiceDto update(Long id, CreateInvoiceRequest request) {
+    public InvoiceDto update(Long id, UpdateInvoiceRequest request) {
         Invoice invoice = invoiceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice", id));
 
@@ -163,6 +166,9 @@ public class InvoiceService {
         }
         if (request.getDueDate() != null) {
             invoice.setDueDate(request.getDueDate());
+        }
+        if (request.getStatus() != null) {
+            invoice.setStatus(request.getStatus());
         }
 
         invoice = invoiceRepository.save(invoice);
@@ -245,7 +251,7 @@ public class InvoiceService {
                 .status(invoice.getStatus())
                 .subtotal(invoice.getSubtotal())
                 .taxAmount(invoice.getTaxAmount())
-                .total(invoice.getTotalAmount())
+                .totalAmount(invoice.getTotalAmount())
                 .paidAmount(invoice.getPaidAmount())
                 .balance(invoice.getBalance())
                 .createdAt(invoice.getCreatedAt())

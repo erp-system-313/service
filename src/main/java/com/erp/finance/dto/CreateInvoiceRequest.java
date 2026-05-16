@@ -1,5 +1,6 @@
 package com.erp.finance.dto;
 
+import com.erp.finance.entity.InvoiceStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -27,6 +28,8 @@ public class CreateInvoiceRequest {
 
     @NotNull(message = "Due date is required")
     private LocalDateTime dueDate;
+
+    private InvoiceStatus status;
 
     private List<InvoiceLineRequest> lines;
 

@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class UpdateProfileRequest {
     private String firstName;
     private String lastName;
+    private String phone;
 }

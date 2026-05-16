@@ -4,6 +4,7 @@ import com.erp.finance.dto.CreateInvoiceRequest;
 import com.erp.finance.dto.CreatePaymentRequest;
 import com.erp.finance.dto.InvoiceDto;
 import com.erp.finance.dto.PaymentDto;
+import com.erp.finance.dto.UpdateInvoiceRequest;
 import com.erp.finance.entity.InvoiceStatus;
 import com.erp.finance.service.InvoiceService;
 import com.erp.finance.service.InvoicePdfService;
@@ -94,7 +95,7 @@ public class InvoiceController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<InvoiceDto>> update(
             @PathVariable Long id,
-            @Valid @RequestBody CreateInvoiceRequest request) {
+            @Valid @RequestBody UpdateInvoiceRequest request) {
         InvoiceDto invoice = invoiceService.update(id, request);
         return ResponseEntity.ok(ApiResponse.success(invoice, "Invoice updated successfully"));
     }
