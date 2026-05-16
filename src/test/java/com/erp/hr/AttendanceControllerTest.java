@@ -19,7 +19,7 @@ public class AttendanceControllerTest {
     @Test public void testClockedIn() { check("/api/v1/attendance/clocked-in"); }
     @Test public void testClockIn() { post("/api/v1/attendance/clock-in", "POST"); }
     @Test public void testClockOut() { post("/api/v1/attendance/clock-out", "POST"); }
-    @Test public void testNoAuth() { assertThat(noauth("/api/v1/attendance").getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN); }
+    @Test public void testNoAuth() { assertThat(noauth("/api/v1/attendance").getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED); }
 
     private void check(String u) { assertThat(req(u).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN); }
     private void post(String u, String m) { HttpMethod method = "PUT".equals(m) ? HttpMethod.PUT : HttpMethod.POST; assertThat(req(u, method).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN); }

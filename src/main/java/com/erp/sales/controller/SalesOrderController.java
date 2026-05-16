@@ -35,7 +35,7 @@ public class SalesOrderController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFrom,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTo) {
 
-        PageResponse<SalesOrderDto> orders = salesOrderService.findAll(page, size, search, status, customerId, dateFrom, dateTo);
+        PageResponse<SalesOrderDto> orders = salesOrderService.findAll(page, size, status, customerId, dateFrom, dateTo);
         return ResponseEntity.ok(ApiResponse.success(orders));
     }
 

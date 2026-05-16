@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service("salesIncotermService")
+@Service
 @RequiredArgsConstructor
 @Slf4j
 public class IncotermService {

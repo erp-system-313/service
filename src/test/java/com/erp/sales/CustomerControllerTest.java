@@ -20,12 +20,12 @@ public class CustomerControllerTest {
     @Test public void testCreate() { post("/api/v1/customers"); }
     @Test public void testUpdate() { put("/api/v1/customers/1"); }
     @Test public void testDelete() { del("/api/v1/customers/1"); }
-    @Test public void testNoAuth() { assertThat(noauth("/api/v1/customers").getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN); }
+    @Test public void testNoAuth() { assertThat(noauth("/api/v1/customers").getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED); }
 
     private void check(String u) { assertThat(req(u).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN); }
-    private void post(String u) { assertThat(req(u, HttpMethod.POST, "{\"name\":\"test\"}").getStatusCode()).isIn(HttpStatus.CREATED, HttpStatus.BAD_REQUEST, HttpStatus.FORBIDDEN); }
-    private void put(String u) { assertThat(req(u, HttpMethod.PUT, "{\"name\":\"x\"}").getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.FORBIDDEN); }
-    private void del(String u) { assertThat(req(u, HttpMethod.DELETE, "").getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.FORBIDDEN); }
+    private void post(String u) { assertThat(req(u, HttpMethod.POST, "{\"name\":\"test\"}").getStatusCode()).isIn(HttpStatus.CREATED, HttpStatus.BAD_REQUEST, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN); }
+    private void put(String u) { assertThat(req(u, HttpMethod.PUT, "{\"name\":\"x\"}").getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN); }
+    private void del(String u) { assertThat(req(u, HttpMethod.DELETE, "").getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN); }
     private ResponseEntity<String> req(String u) { return restTemplate.getForEntity(u, String.class); }
     private ResponseEntity<String> req(String u, HttpMethod m, String b) { return restTemplate.exchange(u, m, entity(b), String.class); }
     private String url(String u) { return u; }

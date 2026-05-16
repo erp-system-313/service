@@ -17,14 +17,6 @@ import java.util.stream.Collectors;
 public class HelpdeskTeamDto {
     private Long id;
     private String name;
-    private String aliasName;
-    private String aliasDomain;
-    private Boolean useAlias;
-    private String defaultStage;
-    private Long teamLeadId;
-    private String teamLeadName;
-    private String defaultPriority;
-    private Boolean autoAssign;
     private String description;
     private Set<Long> memberIds;
     private Boolean isActive;
@@ -35,14 +27,6 @@ public class HelpdeskTeamDto {
         return HelpdeskTeamDto.builder()
                 .id(team.getId())
                 .name(team.getName())
-                .aliasName(team.getAliasName())
-                .aliasDomain(team.getAliasDomain())
-                .useAlias(team.getUseAlias())
-                .defaultStage(team.getDefaultStage())
-                .teamLeadId(team.getTeamLeadId())
-                .teamLeadName(team.getTeamLeadName())
-                .defaultPriority(team.getDefaultPriority())
-                .autoAssign(team.getAutoAssign())
                 .description(team.getDescription())
                 .memberIds(team.getMembers() != null
                         ? team.getMembers().stream().map(u -> u.getId()).collect(Collectors.toSet())

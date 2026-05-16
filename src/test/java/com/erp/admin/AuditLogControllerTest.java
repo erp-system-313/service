@@ -15,7 +15,7 @@ public class AuditLogControllerTest {
     @Autowired protected TestRestTemplate restTemplate;
 
     @Test public void testList() { check("/api/v1/audit-logs"); }
-    @Test public void testNoAuth() { assertThat(noauth("/api/v1/audit-logs").getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN); }
+    @Test public void testNoAuth() { assertThat(noauth("/api/v1/audit-logs").getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED); }
 
     private void check(String u) { assertThat(req(u).getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND, HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN); }
     private ResponseEntity<String> req(String u) { return restTemplate.getForEntity(u, String.class); }

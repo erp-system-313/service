@@ -62,7 +62,7 @@ public class SalesOrderService {
     // ---- Queries ----
 
     @Transactional(readOnly = true)
-    public PageResponse<SalesOrderDto> findAll(int page, int size, String search, OrderStatus status, 
+    public PageResponse<SalesOrderDto> findAll(int page, int size, OrderStatus status, 
                                                 Long customerId, LocalDateTime dateFrom, 
                                                 LocalDateTime dateTo) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());

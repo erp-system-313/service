@@ -46,18 +46,12 @@ public class InvoiceDto {
                 .status(invoice.getStatus())
                 .subtotal(invoice.getSubtotal())
                 .taxAmount(invoice.getTaxAmount())
-                .total(invoice.getTotal())
+                .total(invoice.getTotalAmount())
                 .paidAmount(invoice.getPaidAmount())
                 .balance(invoice.getBalance())
-                .salesOrderId(invoice.getSalesOrder() != null ? invoice.getSalesOrder().getId() : null)
                 .createdAt(invoice.getCreatedAt())
                 .updatedAt(invoice.getUpdatedAt())
                 .build();
-        if (invoice.getLines() != null) {
-            dto.setLines(invoice.getLines().stream()
-                    .map(InvoiceLineDto::fromEntity)
-                    .toList());
-        }
         return dto;
     }
 }
