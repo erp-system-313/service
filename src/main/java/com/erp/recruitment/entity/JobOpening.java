@@ -48,6 +48,6 @@ public class JobOpening {
     private LocalDateTime updatedAt;
 
     public enum JobOpeningStatus {
-        OPEN, CLOSED, CANCELLED
+        OPEN, CLOSED, CANCELLED, ON_HOLD
     }
 }

@@ -10,6 +10,7 @@ import java.util.List;
 
 @Repository
 public interface HelpdeskTeamRepository extends JpaRepository<HelpdeskTeam, Long> {
+
     Page<HelpdeskTeam> findByIsActiveTrue(Pageable pageable);
 
     List<HelpdeskTeam> findByIsActiveTrue();

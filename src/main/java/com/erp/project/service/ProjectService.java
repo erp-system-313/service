@@ -36,6 +36,7 @@ public class ProjectService {
     private final TaskRepository taskRepository;
     private final TaskStageRepository taskStageRepository;
 
+    @Transactional(readOnly = true)
     public PageResponse<ProjectDto> findAll(int page, int size, ProjectState state, String search) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         String searchPattern = search != null ? "%" + search + "%" : "";
@@ -43,6 +44,7 @@ public class ProjectService {
         return PageResponse.from(projects.map(ProjectDto::fromEntity));
     }
 
+    @Transactional(readOnly = true)
     public ProjectDto findById(Long id) {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Project", id));

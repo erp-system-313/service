@@ -1,4 +1,4 @@
--- V43: Seed realistic purchasing data (suppliers, products, purchase orders, lines)
+-- V46: Seed realistic purchasing data (suppliers, products, purchase orders, lines)
 
 -- 1. Ensure missing columns exist on purchase_order_lines (entity expects discount + notes)
 ALTER TABLE purchase_order_lines ADD COLUMN IF NOT EXISTS discount NUMERIC(10, 2) DEFAULT 0;

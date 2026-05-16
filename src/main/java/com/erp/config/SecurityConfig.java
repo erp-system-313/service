@@ -71,7 +71,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of(
+        String origins = System.getenv("CORS_ALLOWED_ORIGINS");
+        if (origins != null && !origins.isBlank()) {
+            configuration.setAllowedOriginPatterns(List.of(origins.split(",")));
+        } else {
+            configuration.setAllowedOriginPatterns(List.of(
                     "http://localhost:*",
                     "http://127.0.0.1:*",
                     "http://0.0.0.0:*",
@@ -79,6 +83,7 @@ public class SecurityConfig {
                     "http://10.*.*.*:*",
                     "http://172.*.*.*:*"
             ));
+        }
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
         configuration.setExposedHeaders(List.of("Authorization"));

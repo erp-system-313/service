@@ -1,5 +1,6 @@
 package com.erp.finance.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.erp.sales.entity.Customer;
 import com.erp.sales.entity.SalesOrder;
 import jakarta.persistence.*;
@@ -20,6 +21,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Invoice {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,11 +31,8 @@ public class Invoice {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
+    @JsonIgnoreProperties({"invoices", "salesOrders", "quotes"})
     private Customer customer;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sales_order_id")
-    private SalesOrder salesOrder;
 
     @Column(name = "issue_date", nullable = false)
     private LocalDateTime invoiceDate;
@@ -47,24 +46,18 @@ public class Invoice {
     private InvoiceStatus status = InvoiceStatus.DRAFT;
 
     @Column(nullable = false, precision = 15, scale = 2)
-    @Builder.Default
-    private BigDecimal subtotal = BigDecimal.ZERO;
-
+    private BigDecimal subtotal;
+    
     @Column(name = "tax_amount", precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal taxAmount = BigDecimal.ZERO;
-
+    
     @Column(name = "total_amount", nullable = false, precision = 15, scale = 2)
-    @Builder.Default
-    private BigDecimal totalAmount = BigDecimal.ZERO;
+    private BigDecimal totalAmount;
 
     @Column(name = "paid_amount", precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal paidAmount = BigDecimal.ZERO;
-
-    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<InvoiceLine> lines = new ArrayList<>();
 
     // Payments are now handled via the new Move-based system.
     // This field is kept for backward compatibility but not mapped via JPA.
@@ -86,38 +79,21 @@ public class Invoice {
     @Column(name = "due_at")
     private LocalDateTime dueAt;
 
-    public void addLine(InvoiceLine line) {
-        lines.add(line);
-        line.setInvoice(this);
-    }
-
-    public void clearLines() {
-        lines.clear();
-    }
-
     public void addPayment(Payment payment) {
         payments.add(payment);
     }
 
     public void calculatePaidAmount() {
-        if (payments != null && !payments.isEmpty()) {
-            this.paidAmount = payments.stream()
-                    .map(Payment::getAmount)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-        }
+        this.paidAmount = payments.stream()
+                .map(Payment::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public BigDecimal getBalance() {
-        BigDecimal total = totalAmount != null ? totalAmount : BigDecimal.ZERO;
-        BigDecimal paid = paidAmount != null ? paidAmount : BigDecimal.ZERO;
-        return total.subtract(paid);
+        return totalAmount.subtract(paidAmount);
     }
 
     public BigDecimal getTotal() {
-        return totalAmount != null ? totalAmount : BigDecimal.ZERO;
-    }
-
-    public void setTotal(BigDecimal total) {
-        this.totalAmount = total;
+        return totalAmount;
     }
 }

@@ -30,12 +30,14 @@ public class JobOpeningService {
     private final AuditLogService auditLogService;
     private final CurrentUserUtil currentUserUtil;
 
+    @Transactional(readOnly = true)
     public PageResponse<JobOpeningDto> findAll(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<JobOpening> openings = jobOpeningRepository.findAll(pageable);
         return PageResponse.from(openings.map(this::toDto));
     }
 
+    @Transactional(readOnly = true)
     public JobOpeningDto findById(Long id) {
         JobOpening opening = jobOpeningRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("JobOpening", id));

@@ -52,7 +52,7 @@ public class Contract {
     private LocalDateTime updatedAt;
 
     public enum ContractType {
-        PERMANENT, INTERNSHIP, FIXED_TERM, CONTRACTOR
+        PERMANENT, INTERNSHIP, FIXED_TERM, CONTRACTOR, PROBATION
     }
 
     public enum ContractStatus {

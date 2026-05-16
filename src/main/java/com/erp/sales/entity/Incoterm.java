@@ -3,7 +3,7 @@ package com.erp.sales.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Entity(name = "SalesIncoterm")
+@Entity
 @Table(name = "incoterms")
 @Getter
 @Setter

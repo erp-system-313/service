@@ -6,6 +6,10 @@ import com.erp.finance.dto.InvoiceDto;
 import com.erp.finance.dto.PaymentDto;
 import com.erp.finance.entity.InvoiceStatus;
 import com.erp.finance.service.InvoiceService;
+import com.erp.finance.service.InvoicePdfService;
+import com.erp.finance.service.MovePdfService;
+import com.erp.finance.repository.InvoiceRepository;
+import com.erp.finance.repository.MoveRepository;
 import com.erp.common.dto.ApiResponse;
 import com.erp.common.dto.PageResponse;
 import jakarta.validation.Valid;
@@ -26,6 +30,10 @@ import java.util.List;
 public class InvoiceController {
 
     private final InvoiceService invoiceService;
+    private final InvoicePdfService invoicePdfService;
+    private final MovePdfService movePdfService;
+    private final InvoiceRepository invoiceRepository;
+    private final MoveRepository moveRepository;
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<InvoiceDto>>> getAll(
@@ -37,7 +45,7 @@ public class InvoiceController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFrom,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTo) {
 
-        PageResponse<InvoiceDto> invoices = invoiceService.findAll(page, size, search, status, customerId, dateFrom, dateTo);
+        PageResponse<InvoiceDto> invoices = invoiceService.findAll(page, size, status, customerId, dateFrom, dateTo, search);
         return ResponseEntity.ok(ApiResponse.success(invoices));
     }
 
@@ -48,10 +56,31 @@ public class InvoiceController {
     }
 
     @GetMapping("/{id}/pdf")
-    public ResponseEntity<ApiResponse<Void>> getPdf(@PathVariable Long id) {
-        invoiceService.findById(id);
-        log.warn("PDF generation requested for invoice {} but not yet implemented", id);
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    public ResponseEntity<byte[]> getPdf(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "legacy") String type) {
+
+        byte[] pdf;
+        String filename;
+
+        if ("move".equalsIgnoreCase(type)) {
+            // Move-based invoice (Odoo-style unified account.move)
+            pdf = movePdfService.generateInvoicePdf(id);
+            com.erp.finance.entity.Move move = moveRepository.findById(id)
+                    .orElseThrow(() -> new com.erp.common.exception.ResourceNotFoundException("Move", id));
+            filename = move.getName() + ".pdf";
+        } else {
+            // Legacy Invoice entity
+            pdf = invoicePdfService.generateInvoicePdf(id);
+            com.erp.finance.entity.Invoice invoice = invoiceRepository.findById(id)
+                    .orElseThrow(() -> new com.erp.common.exception.ResourceNotFoundException("Invoice", id));
+            filename = invoice.getInvoiceNumber() + ".pdf";
+        }
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
+                .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 
     @PostMapping
