@@ -28,11 +28,11 @@ public class AccountController {
     private final AccountService accountService;
 
     @GetMapping
-    public ResponseEntity<PageResponse<AccountDto>> getAll(
+    public ResponseEntity<ApiResponse<PageResponse<AccountDto>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "100") int size) {
         Page<AccountDto> accountPage = accountService.findAllActiveDto(PageRequest.of(page, size));
-        return ResponseEntity.ok(PageResponse.from(accountPage));
+        return ResponseEntity.ok(ApiResponse.success(PageResponse.from(accountPage)));
     }
 
     @GetMapping("/{id}")
