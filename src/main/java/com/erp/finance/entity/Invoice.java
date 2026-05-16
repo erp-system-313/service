@@ -20,7 +20,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Invoice {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,6 +30,10 @@ public class Invoice {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sales_order_id")
+    private SalesOrder salesOrder;
 
     @Column(name = "issue_date", nullable = false)
     private LocalDateTime invoiceDate;
@@ -44,18 +47,24 @@ public class Invoice {
     private InvoiceStatus status = InvoiceStatus.DRAFT;
 
     @Column(nullable = false, precision = 15, scale = 2)
-    private BigDecimal subtotal;
-    
+    @Builder.Default
+    private BigDecimal subtotal = BigDecimal.ZERO;
+
     @Column(name = "tax_amount", precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal taxAmount = BigDecimal.ZERO;
-    
+
     @Column(name = "total_amount", nullable = false, precision = 15, scale = 2)
-    private BigDecimal totalAmount;
+    @Builder.Default
+    private BigDecimal totalAmount = BigDecimal.ZERO;
 
     @Column(name = "paid_amount", precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal paidAmount = BigDecimal.ZERO;
+
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<InvoiceLine> lines = new ArrayList<>();
 
     // Payments are now handled via the new Move-based system.
     // This field is kept for backward compatibility but not mapped via JPA.
@@ -77,21 +86,38 @@ public class Invoice {
     @Column(name = "due_at")
     private LocalDateTime dueAt;
 
+    public void addLine(InvoiceLine line) {
+        lines.add(line);
+        line.setInvoice(this);
+    }
+
+    public void clearLines() {
+        lines.clear();
+    }
+
     public void addPayment(Payment payment) {
         payments.add(payment);
     }
 
     public void calculatePaidAmount() {
-        this.paidAmount = payments.stream()
-                .map(Payment::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (payments != null && !payments.isEmpty()) {
+            this.paidAmount = payments.stream()
+                    .map(Payment::getAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+        }
     }
 
     public BigDecimal getBalance() {
-        return totalAmount.subtract(paidAmount);
+        BigDecimal total = totalAmount != null ? totalAmount : BigDecimal.ZERO;
+        BigDecimal paid = paidAmount != null ? paidAmount : BigDecimal.ZERO;
+        return total.subtract(paid);
     }
 
     public BigDecimal getTotal() {
-        return totalAmount;
+        return totalAmount != null ? totalAmount : BigDecimal.ZERO;
+    }
+
+    public void setTotal(BigDecimal total) {
+        this.totalAmount = total;
     }
 }
