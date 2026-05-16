@@ -2,7 +2,6 @@ package com.erp.hr.controller;
 
 import com.erp.auth.security.CurrentUserUtil;
 import com.erp.hr.dto.AttendanceDto;
-import com.erp.hr.dto.AttendanceTodaySummaryDto;
 import com.erp.hr.dto.ClockedInEmployeeDto;
 import com.erp.hr.dto.CreateManualAttendanceRequest;
 import com.erp.hr.dto.UpdateAttendanceRequest;
@@ -42,14 +41,6 @@ public class AttendanceController {
 
         PageResponse<AttendanceDto> attendances = attendanceService.findAll(page, size, employeeId, startDate, endDate);
         return ResponseEntity.ok(ApiResponse.success(attendances));
-    }
-
-    @GetMapping("/today-summary")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public ResponseEntity<ApiResponse<AttendanceTodaySummaryDto>> getTodaySummary(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        AttendanceTodaySummaryDto summary = attendanceService.getTodaySummary(date);
-        return ResponseEntity.ok(ApiResponse.success(summary));
     }
 
     @GetMapping("/clocked-in")
