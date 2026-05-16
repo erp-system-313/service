@@ -1,8 +1,8 @@
--- V40: Restore schema tables from V26-V30 that are missing
+-- V50: Restore schema tables from V26-V30 that are missing
 -- Flyway marked these migrations as applied but the tables do not exist in the database.
 -- This migration re-creates them so V31 and later migrations can proceed.
 
-CREATE TABLE account_groups (
+CREATE TABLE IF NOT EXISTS account_groups (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     code_prefix_from VARCHAR(10),
@@ -11,7 +11,7 @@ CREATE TABLE account_groups (
     sequence INTEGER
 );
 
-CREATE INDEX idx_account_groups_parent ON account_groups(parent_id);
+CREATE INDEX IF NOT EXISTS idx_account_groups_parent ON account_groups(parent_id);
 
 ALTER TABLE accounts ADD COLUMN IF NOT EXISTS account_type VARCHAR(30);
 
@@ -33,7 +33,7 @@ CREATE INDEX IF NOT EXISTS idx_accounts_internal_group ON accounts(internal_grou
 
 CREATE INDEX IF NOT EXISTS idx_accounts_group ON accounts(group_id);
 
-CREATE TABLE journals (
+CREATE TABLE IF NOT EXISTS journals (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     code VARCHAR(5) NOT NULL,
@@ -48,11 +48,11 @@ CREATE TABLE journals (
     updated_at TIMESTAMP
 );
 
-CREATE UNIQUE INDEX idx_journals_code ON journals(code);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_journals_code ON journals(code);
 
-CREATE INDEX idx_journals_type ON journals(type);
+CREATE INDEX IF NOT EXISTS idx_journals_type ON journals(type);
 
-CREATE TABLE account_tags (
+CREATE TABLE IF NOT EXISTS account_tags (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     applicability VARCHAR(20) DEFAULT 'both',
@@ -60,19 +60,19 @@ CREATE TABLE account_tags (
     code VARCHAR(100) NOT NULL UNIQUE
 );
 
-CREATE TABLE account_account_tags (
+CREATE TABLE IF NOT EXISTS account_account_tags (
     account_id BIGINT NOT NULL REFERENCES accounts(id),
     tag_id BIGINT NOT NULL REFERENCES account_tags(id),
     PRIMARY KEY (account_id, tag_id)
 );
 
-CREATE TABLE account_allowed_journals (
+CREATE TABLE IF NOT EXISTS account_allowed_journals (
     account_id BIGINT NOT NULL REFERENCES accounts(id),
     journal_id BIGINT NOT NULL REFERENCES journals(id),
     PRIMARY KEY (account_id, journal_id)
 );
 
-CREATE TABLE tax_groups (
+CREATE TABLE IF NOT EXISTS tax_groups (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     tax_payable_account_id BIGINT REFERENCES accounts(id),
@@ -80,7 +80,7 @@ CREATE TABLE tax_groups (
     country_id BIGINT
 );
 
-CREATE TABLE taxes (
+CREATE TABLE IF NOT EXISTS taxes (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     type_tax_use VARCHAR(10) NOT NULL CHECK (type_tax_use IN ('SALE','PURCHASE','NONE')),
@@ -100,17 +100,17 @@ CREATE TABLE taxes (
     updated_at TIMESTAMP
 );
 
-CREATE INDEX idx_taxes_type ON taxes(type_tax_use);
+CREATE INDEX IF NOT EXISTS idx_taxes_type ON taxes(type_tax_use);
 
-CREATE INDEX idx_taxes_group ON taxes(tax_group_id);
+CREATE INDEX IF NOT EXISTS idx_taxes_group ON taxes(tax_group_id);
 
-CREATE TABLE tax_children (
+CREATE TABLE IF NOT EXISTS tax_children (
     tax_id BIGINT NOT NULL REFERENCES taxes(id),
     child_tax_id BIGINT NOT NULL REFERENCES taxes(id),
     PRIMARY KEY (tax_id, child_tax_id)
 );
 
-CREATE TABLE tax_repartition_lines (
+CREATE TABLE IF NOT EXISTS tax_repartition_lines (
     id BIGSERIAL PRIMARY KEY,
     tax_id BIGINT NOT NULL REFERENCES taxes(id),
     repartition_type VARCHAR(10) NOT NULL CHECK (repartition_type IN ('base','tax')),
@@ -121,9 +121,9 @@ CREATE TABLE tax_repartition_lines (
     is_refund BOOLEAN NOT NULL DEFAULT false
 );
 
-CREATE INDEX idx_tax_repartition_tax ON tax_repartition_lines(tax_id);
+CREATE INDEX IF NOT EXISTS idx_tax_repartition_tax ON tax_repartition_lines(tax_id);
 
-CREATE TABLE payment_terms (
+CREATE TABLE IF NOT EXISTS payment_terms (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     note TEXT,
@@ -135,7 +135,7 @@ CREATE TABLE payment_terms (
     updated_at TIMESTAMP
 );
 
-CREATE TABLE payment_term_lines (
+CREATE TABLE IF NOT EXISTS payment_term_lines (
     id BIGSERIAL PRIMARY KEY,
     payment_term_id BIGINT NOT NULL REFERENCES payment_terms(id),
     line_value VARCHAR(10) NOT NULL CHECK (line_value IN ('PERCENT','FIXED')),
@@ -145,9 +145,9 @@ CREATE TABLE payment_term_lines (
     sequence INTEGER NOT NULL DEFAULT 0
 );
 
-CREATE INDEX idx_payment_term_lines_term ON payment_term_lines(payment_term_id);
+CREATE INDEX IF NOT EXISTS idx_payment_term_lines_term ON payment_term_lines(payment_term_id);
 
-CREATE TABLE fiscal_positions (
+CREATE TABLE IF NOT EXISTS fiscal_positions (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     country_id BIGINT,
@@ -158,25 +158,25 @@ CREATE TABLE fiscal_positions (
     updated_at TIMESTAMP
 );
 
-CREATE TABLE fiscal_position_tax_rules (
+CREATE TABLE IF NOT EXISTS fiscal_position_tax_rules (
     id BIGSERIAL PRIMARY KEY,
     fiscal_position_id BIGINT NOT NULL REFERENCES fiscal_positions(id),
     tax_src_id BIGINT NOT NULL REFERENCES taxes(id),
     tax_dest_id BIGINT NOT NULL REFERENCES taxes(id)
 );
 
-CREATE INDEX idx_fp_tax_rules_fp ON fiscal_position_tax_rules(fiscal_position_id);
+CREATE INDEX IF NOT EXISTS idx_fp_tax_rules_fp ON fiscal_position_tax_rules(fiscal_position_id);
 
-CREATE TABLE fiscal_position_account_rules (
+CREATE TABLE IF NOT EXISTS fiscal_position_account_rules (
     id BIGSERIAL PRIMARY KEY,
     fiscal_position_id BIGINT NOT NULL REFERENCES fiscal_positions(id),
     account_src_id BIGINT NOT NULL REFERENCES accounts(id),
     account_dest_id BIGINT NOT NULL REFERENCES accounts(id)
 );
 
-CREATE INDEX idx_fp_account_rules_fp ON fiscal_position_account_rules(fiscal_position_id);
+CREATE INDEX IF NOT EXISTS idx_fp_account_rules_fp ON fiscal_position_account_rules(fiscal_position_id);
 
-CREATE TABLE moves (
+CREATE TABLE IF NOT EXISTS moves (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL UNIQUE,
     reference VARCHAR(100),
@@ -211,26 +211,26 @@ CREATE TABLE moves (
     posted_at TIMESTAMP
 );
 
-CREATE INDEX idx_moves_date ON moves(date);
+CREATE INDEX IF NOT EXISTS idx_moves_date ON moves(date);
 
-CREATE INDEX idx_moves_state ON moves(state);
+CREATE INDEX IF NOT EXISTS idx_moves_state ON moves(state);
 
-CREATE INDEX idx_moves_type ON moves(move_type);
+CREATE INDEX IF NOT EXISTS idx_moves_type ON moves(move_type);
 
-CREATE INDEX idx_moves_journal ON moves(journal_id);
+CREATE INDEX IF NOT EXISTS idx_moves_journal ON moves(journal_id);
 
-CREATE INDEX idx_moves_partner ON moves(partner_id);
+CREATE INDEX IF NOT EXISTS idx_moves_partner ON moves(partner_id);
 
-CREATE INDEX idx_moves_payment_state ON moves(payment_state);
+CREATE INDEX IF NOT EXISTS idx_moves_payment_state ON moves(payment_state);
 
-CREATE INDEX idx_moves_reversed ON moves(reversed_entry_id);
+CREATE INDEX IF NOT EXISTS idx_moves_reversed ON moves(reversed_entry_id);
 
-CREATE TABLE full_reconciles (
+CREATE TABLE IF NOT EXISTS full_reconciles (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL UNIQUE
 );
 
-CREATE TABLE move_lines (
+CREATE TABLE IF NOT EXISTS move_lines (
     id BIGSERIAL PRIMARY KEY,
     move_id BIGINT NOT NULL REFERENCES moves(id),
     account_id BIGINT NOT NULL REFERENCES accounts(id),
@@ -259,23 +259,23 @@ CREATE TABLE move_lines (
     company_id BIGINT
 );
 
-CREATE INDEX idx_move_lines_move ON move_lines(move_id);
+CREATE INDEX IF NOT EXISTS idx_move_lines_move ON move_lines(move_id);
 
-CREATE INDEX idx_move_lines_account ON move_lines(account_id);
+CREATE INDEX IF NOT EXISTS idx_move_lines_account ON move_lines(account_id);
 
-CREATE INDEX idx_move_lines_partner ON move_lines(partner_id);
+CREATE INDEX IF NOT EXISTS idx_move_lines_partner ON move_lines(partner_id);
 
-CREATE INDEX idx_move_lines_reconciled ON move_lines(reconciled);
+CREATE INDEX IF NOT EXISTS idx_move_lines_reconciled ON move_lines(reconciled);
 
-CREATE INDEX idx_move_lines_full_reconcile ON move_lines(full_reconcile_id);
+CREATE INDEX IF NOT EXISTS idx_move_lines_full_reconcile ON move_lines(full_reconcile_id);
 
-CREATE TABLE move_line_taxes (
+CREATE TABLE IF NOT EXISTS move_line_taxes (
     move_line_id BIGINT NOT NULL REFERENCES move_lines(id),
     tax_id BIGINT NOT NULL REFERENCES taxes(id),
     PRIMARY KEY (move_line_id, tax_id)
 );
 
-CREATE TABLE partial_reconciles (
+CREATE TABLE IF NOT EXISTS partial_reconciles (
     id BIGSERIAL PRIMARY KEY,
     debit_move_id BIGINT NOT NULL REFERENCES move_lines(id),
     credit_move_id BIGINT NOT NULL REFERENCES move_lines(id),
@@ -287,13 +287,13 @@ CREATE TABLE partial_reconciles (
     max_date DATE
 );
 
-CREATE INDEX idx_partial_reconciles_debit ON partial_reconciles(debit_move_id);
+CREATE INDEX IF NOT EXISTS idx_partial_reconciles_debit ON partial_reconciles(debit_move_id);
 
-CREATE INDEX idx_partial_reconciles_credit ON partial_reconciles(credit_move_id);
+CREATE INDEX IF NOT EXISTS idx_partial_reconciles_credit ON partial_reconciles(credit_move_id);
 
-CREATE INDEX idx_partial_reconciles_full ON partial_reconciles(full_reconcile_id);
+CREATE INDEX IF NOT EXISTS idx_partial_reconciles_full ON partial_reconciles(full_reconcile_id);
 
-CREATE TABLE payment_methods (
+CREATE TABLE IF NOT EXISTS payment_methods (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     code VARCHAR(30) NOT NULL UNIQUE,
@@ -301,7 +301,7 @@ CREATE TABLE payment_methods (
     active BOOLEAN NOT NULL DEFAULT true
 );
 
-CREATE TABLE payment_method_lines (
+CREATE TABLE IF NOT EXISTS payment_method_lines (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     payment_method_id BIGINT NOT NULL REFERENCES payment_methods(id),
@@ -313,11 +313,11 @@ CREATE TABLE payment_method_lines (
     active BOOLEAN NOT NULL DEFAULT true
 );
 
-CREATE INDEX idx_pml_method ON payment_method_lines(payment_method_id);
+CREATE INDEX IF NOT EXISTS idx_pml_method ON payment_method_lines(payment_method_id);
 
-CREATE INDEX idx_pml_journal ON payment_method_lines(journal_id);
+CREATE INDEX IF NOT EXISTS idx_pml_journal ON payment_method_lines(journal_id);
 
-CREATE TABLE currency_rates (
+CREATE TABLE IF NOT EXISTS currency_rates (
     id BIGSERIAL PRIMARY KEY,
     currency_id BIGINT NOT NULL,
     rate NUMERIC(15,6) NOT NULL,
@@ -325,11 +325,11 @@ CREATE TABLE currency_rates (
     company_id BIGINT
 );
 
-CREATE UNIQUE INDEX idx_currency_rates_unique ON currency_rates(currency_id, date, COALESCE(company_id, 0));
+CREATE UNIQUE INDEX IF NOT EXISTS idx_currency_rates_unique ON currency_rates(currency_id, date, COALESCE(company_id, 0));
 
-CREATE INDEX idx_currency_rates_date ON currency_rates(currency_id, date);
+CREATE INDEX IF NOT EXISTS idx_currency_rates_date ON currency_rates(currency_id, date);
 
-CREATE TABLE sales_teams (
+CREATE TABLE IF NOT EXISTS sales_teams (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
@@ -339,13 +339,13 @@ CREATE TABLE sales_teams (
     updated_at TIMESTAMP
 );
 
-CREATE TABLE sales_team_members (
+CREATE TABLE IF NOT EXISTS sales_team_members (
     team_id BIGINT NOT NULL REFERENCES sales_teams(id) ON DELETE CASCADE,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     PRIMARY KEY (team_id, user_id)
 );
 
-CREATE TABLE price_lists (
+CREATE TABLE IF NOT EXISTS price_lists (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     currency_id BIGINT,
@@ -356,7 +356,7 @@ CREATE TABLE price_lists (
     updated_at TIMESTAMP
 );
 
-CREATE TABLE price_list_items (
+CREATE TABLE IF NOT EXISTS price_list_items (
     id BIGSERIAL PRIMARY KEY,
     price_list_id BIGINT NOT NULL REFERENCES price_lists(id) ON DELETE CASCADE,
     product_id BIGINT NOT NULL,
@@ -369,18 +369,18 @@ CREATE TABLE price_list_items (
     updated_at TIMESTAMP
 );
 
-CREATE INDEX idx_price_list_items_list ON price_list_items(price_list_id);
+CREATE INDEX IF NOT EXISTS idx_price_list_items_list ON price_list_items(price_list_id);
 
-CREATE INDEX idx_price_list_items_product ON price_list_items(product_id);
+CREATE INDEX IF NOT EXISTS idx_price_list_items_product ON price_list_items(product_id);
 
-CREATE TABLE incoterms (
+CREATE TABLE IF NOT EXISTS incoterms (
     id BIGSERIAL PRIMARY KEY,
     code VARCHAR(10) NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL,
     description TEXT
 );
 
-CREATE TABLE partners (
+CREATE TABLE IF NOT EXISTS partners (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     type VARCHAR(20) NOT NULL DEFAULT 'INDIVIDUAL',
@@ -406,15 +406,15 @@ CREATE TABLE partners (
     updated_at TIMESTAMP
 );
 
-CREATE INDEX idx_partners_name ON partners(name);
+CREATE INDEX IF NOT EXISTS idx_partners_name ON partners(name);
 
-CREATE INDEX idx_partners_email ON partners(email);
+CREATE INDEX IF NOT EXISTS idx_partners_email ON partners(email);
 
-CREATE INDEX idx_partners_parent ON partners(parent_id);
+CREATE INDEX IF NOT EXISTS idx_partners_parent ON partners(parent_id);
 
-CREATE INDEX idx_partners_type ON partners(type);
+CREATE INDEX IF NOT EXISTS idx_partners_type ON partners(type);
 
-CREATE TABLE sales_order_line_taxes (
+CREATE TABLE IF NOT EXISTS sales_order_line_taxes (
     line_id BIGINT NOT NULL REFERENCES sales_order_lines(id) ON DELETE CASCADE,
     tax_id BIGINT NOT NULL REFERENCES taxes(id) ON DELETE CASCADE,
     PRIMARY KEY (line_id, tax_id)
@@ -442,7 +442,7 @@ ALTER TABLE sales_order_lines
     ADD COLUMN IF NOT EXISTS display_type VARCHAR(20) DEFAULT 'PRODUCT',
     ADD COLUMN IF NOT EXISTS product_uom VARCHAR(50);
 
-CREATE TABLE helpdesk_teams (
+CREATE TABLE IF NOT EXISTS helpdesk_teams (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
@@ -451,13 +451,13 @@ CREATE TABLE helpdesk_teams (
     updated_at TIMESTAMP
 );
 
-CREATE TABLE helpdesk_team_members (
+CREATE TABLE IF NOT EXISTS helpdesk_team_members (
     team_id BIGINT NOT NULL REFERENCES helpdesk_teams(id) ON DELETE CASCADE,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     PRIMARY KEY (team_id, user_id)
 );
 
-CREATE TABLE helpdesk_stages (
+CREATE TABLE IF NOT EXISTS helpdesk_stages (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     sequence INTEGER NOT NULL DEFAULT 0,
@@ -465,35 +465,35 @@ CREATE TABLE helpdesk_stages (
     team_id BIGINT REFERENCES helpdesk_teams(id)
 );
 
-CREATE INDEX idx_helpdesk_stages_team ON helpdesk_stages(team_id);
+CREATE INDEX IF NOT EXISTS idx_helpdesk_stages_team ON helpdesk_stages(team_id);
 
-CREATE INDEX idx_helpdesk_stages_sequence ON helpdesk_stages(sequence);
+CREATE INDEX IF NOT EXISTS idx_helpdesk_stages_sequence ON helpdesk_stages(sequence);
 
-CREATE TABLE helpdesk_categories (
+CREATE TABLE IF NOT EXISTS helpdesk_categories (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     team_id BIGINT REFERENCES helpdesk_teams(id)
 );
 
-CREATE INDEX idx_helpdesk_categories_team ON helpdesk_categories(team_id);
+CREATE INDEX IF NOT EXISTS idx_helpdesk_categories_team ON helpdesk_categories(team_id);
 
-CREATE TABLE helpdesk_tags (
+CREATE TABLE IF NOT EXISTS helpdesk_tags (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     color VARCHAR(7)
 );
 
-CREATE TABLE helpdesk_ticket_tags (
+CREATE TABLE IF NOT EXISTS helpdesk_ticket_tags (
     ticket_id BIGINT NOT NULL REFERENCES helpdesk_tickets(id) ON DELETE CASCADE,
     tag_id BIGINT NOT NULL REFERENCES helpdesk_tags(id) ON DELETE CASCADE,
     PRIMARY KEY (ticket_id, tag_id)
 );
 
-CREATE INDEX idx_helpdesk_ticket_tags_ticket ON helpdesk_ticket_tags(ticket_id);
+CREATE INDEX IF NOT EXISTS idx_helpdesk_ticket_tags_ticket ON helpdesk_ticket_tags(ticket_id);
 
-CREATE INDEX idx_helpdesk_ticket_tags_tag ON helpdesk_ticket_tags(tag_id);
+CREATE INDEX IF NOT EXISTS idx_helpdesk_ticket_tags_tag ON helpdesk_ticket_tags(tag_id);
 
-CREATE TABLE helpdesk_sla_policies (
+CREATE TABLE IF NOT EXISTS helpdesk_sla_policies (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     target_stage_id BIGINT REFERENCES helpdesk_stages(id),
@@ -502,9 +502,9 @@ CREATE TABLE helpdesk_sla_policies (
     team_id BIGINT REFERENCES helpdesk_teams(id)
 );
 
-CREATE INDEX idx_helpdesk_sla_team_priority ON helpdesk_sla_policies(team_id, priority);
+CREATE INDEX IF NOT EXISTS idx_helpdesk_sla_team_priority ON helpdesk_sla_policies(team_id, priority);
 
-CREATE TABLE helpdesk_kb_articles (
+CREATE TABLE IF NOT EXISTS helpdesk_kb_articles (
     id BIGSERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     content TEXT,
@@ -517,11 +517,11 @@ CREATE TABLE helpdesk_kb_articles (
     updated_at TIMESTAMP
 );
 
-CREATE INDEX idx_helpdesk_kb_published ON helpdesk_kb_articles(is_published);
+CREATE INDEX IF NOT EXISTS idx_helpdesk_kb_published ON helpdesk_kb_articles(is_published);
 
-CREATE INDEX idx_helpdesk_kb_category ON helpdesk_kb_articles(category_id);
+CREATE INDEX IF NOT EXISTS idx_helpdesk_kb_category ON helpdesk_kb_articles(category_id);
 
-CREATE TABLE helpdesk_attachments (
+CREATE TABLE IF NOT EXISTS helpdesk_attachments (
     id BIGSERIAL PRIMARY KEY,
     ticket_id BIGINT NOT NULL REFERENCES helpdesk_tickets(id) ON DELETE CASCADE,
     filename VARCHAR(255) NOT NULL,
@@ -531,7 +531,7 @@ CREATE TABLE helpdesk_attachments (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_helpdesk_attachments_ticket ON helpdesk_attachments(ticket_id);
+CREATE INDEX IF NOT EXISTS idx_helpdesk_attachments_ticket ON helpdesk_attachments(ticket_id);
 
 ALTER TABLE helpdesk_tickets
     ADD COLUMN IF NOT EXISTS stage_id BIGINT REFERENCES helpdesk_stages(id),
@@ -558,7 +558,7 @@ CREATE INDEX IF NOT EXISTS idx_helpdesk_tickets_sla_status ON helpdesk_tickets(s
 
 CREATE INDEX IF NOT EXISTS idx_helpdesk_tickets_archived ON helpdesk_tickets(is_archived);
 
-CREATE TABLE bank_statements (
+CREATE TABLE IF NOT EXISTS bank_statements (
     id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
     name VARCHAR(64) NOT NULL,
     reference VARCHAR(100),
@@ -577,13 +577,13 @@ CREATE TABLE bank_statements (
     CONSTRAINT uk_bank_statements_name UNIQUE (name)
 );
 
-CREATE INDEX idx_bank_statements_journal ON bank_statements(journal_id);
+CREATE INDEX IF NOT EXISTS idx_bank_statements_journal ON bank_statements(journal_id);
 
-CREATE INDEX idx_bank_statements_state ON bank_statements(state);
+CREATE INDEX IF NOT EXISTS idx_bank_statements_state ON bank_statements(state);
 
-CREATE INDEX idx_bank_statements_date ON bank_statements(date);
+CREATE INDEX IF NOT EXISTS idx_bank_statements_date ON bank_statements(date);
 
-CREATE TABLE bank_statement_lines (
+CREATE TABLE IF NOT EXISTS bank_statement_lines (
     id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
     statement_id BIGINT NOT NULL REFERENCES bank_statements(id) ON DELETE CASCADE,
     sequence INTEGER NOT NULL,
@@ -602,19 +602,19 @@ CREATE TABLE bank_statement_lines (
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_bank_statement_lines_statement ON bank_statement_lines(statement_id);
+CREATE INDEX IF NOT EXISTS idx_bank_statement_lines_statement ON bank_statement_lines(statement_id);
 
-CREATE INDEX idx_bank_statement_lines_reconciled ON bank_statement_lines(statement_id, is_reconciled);
+CREATE INDEX IF NOT EXISTS idx_bank_statement_lines_reconciled ON bank_statement_lines(statement_id, is_reconciled);
 
-CREATE INDEX idx_bank_statement_lines_partner ON bank_statement_lines(partner_id);
+CREATE INDEX IF NOT EXISTS idx_bank_statement_lines_partner ON bank_statement_lines(partner_id);
 
-CREATE INDEX idx_bank_statement_lines_import ON bank_statement_lines(import_id);
+CREATE INDEX IF NOT EXISTS idx_bank_statement_lines_import ON bank_statement_lines(import_id);
 
 COMMENT ON TABLE bank_statements IS 'Bank statements for reconciliation workflow (Odoo: account.bank.statement)';
 
 COMMENT ON TABLE bank_statement_lines IS 'Individual transactions on a bank statement (Odoo: account.bank.statement.line)';
 
-CREATE TABLE analytic_plans (
+CREATE TABLE IF NOT EXISTS analytic_plans (
     id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT,
@@ -625,7 +625,7 @@ CREATE TABLE analytic_plans (
     CONSTRAINT uk_analytic_plans_name UNIQUE (name)
 );
 
-CREATE TABLE analytic_accounts (
+CREATE TABLE IF NOT EXISTS analytic_accounts (
     id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     code VARCHAR(32),
@@ -652,15 +652,15 @@ CREATE TABLE analytic_accounts (
     CONSTRAINT uk_analytic_accounts_code UNIQUE (code)
 );
 
-CREATE INDEX idx_analytic_accounts_plan ON analytic_accounts(plan_id);
+CREATE INDEX IF NOT EXISTS idx_analytic_accounts_plan ON analytic_accounts(plan_id);
 
-CREATE INDEX idx_analytic_accounts_parent ON analytic_accounts(parent_id);
+CREATE INDEX IF NOT EXISTS idx_analytic_accounts_parent ON analytic_accounts(parent_id);
 
-CREATE INDEX idx_analytic_accounts_type ON analytic_accounts(account_type);
+CREATE INDEX IF NOT EXISTS idx_analytic_accounts_type ON analytic_accounts(account_type);
 
-CREATE INDEX idx_analytic_accounts_active ON analytic_accounts(active);
+CREATE INDEX IF NOT EXISTS idx_analytic_accounts_active ON analytic_accounts(active);
 
-CREATE TABLE analytic_lines (
+CREATE TABLE IF NOT EXISTS analytic_lines (
     id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
     account_id BIGINT NOT NULL REFERENCES analytic_accounts(id),
     date DATE NOT NULL,
@@ -681,15 +681,15 @@ CREATE TABLE analytic_lines (
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_analytic_lines_account ON analytic_lines(account_id);
+CREATE INDEX IF NOT EXISTS idx_analytic_lines_account ON analytic_lines(account_id);
 
-CREATE INDEX idx_analytic_lines_date ON analytic_lines(date);
+CREATE INDEX IF NOT EXISTS idx_analytic_lines_date ON analytic_lines(date);
 
-CREATE INDEX idx_analytic_lines_move_line ON analytic_lines(move_line_id);
+CREATE INDEX IF NOT EXISTS idx_analytic_lines_move_line ON analytic_lines(move_line_id);
 
-CREATE INDEX idx_analytic_lines_partner ON analytic_lines(partner_id);
+CREATE INDEX IF NOT EXISTS idx_analytic_lines_partner ON analytic_lines(partner_id);
 
-CREATE TABLE analytic_distributions (
+CREATE TABLE IF NOT EXISTS analytic_distributions (
     id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
     source_account_id BIGINT REFERENCES analytic_accounts(id),
     destination_account_id BIGINT NOT NULL REFERENCES analytic_accounts(id),
@@ -703,11 +703,11 @@ CREATE TABLE analytic_distributions (
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_analytic_distributions_source ON analytic_distributions(source_account_id);
+CREATE INDEX IF NOT EXISTS idx_analytic_distributions_source ON analytic_distributions(source_account_id);
 
-CREATE INDEX idx_analytic_distributions_dest ON analytic_distributions(destination_account_id);
+CREATE INDEX IF NOT EXISTS idx_analytic_distributions_dest ON analytic_distributions(destination_account_id);
 
-CREATE INDEX idx_analytic_distributions_active ON analytic_distributions(active);
+CREATE INDEX IF NOT EXISTS idx_analytic_distributions_active ON analytic_distributions(active);
 
 COMMENT ON TABLE analytic_plans IS 'Groups analytic accounts by dimension (Odoo: account.analytic.plan)';
 
