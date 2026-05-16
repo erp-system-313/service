@@ -41,6 +41,7 @@ public class TaskService {
                 .description(request.getDescription())
                 .assignedTo(request.getAssignedTo())
                 .stageId(request.getStageId())
+                .startDate(request.getStartDate())
                 .dueDate(request.getDueDate())
                 .estimatedHours(request.getEstimatedHours())
                 .actualHours(request.getActualHours())
@@ -75,6 +76,9 @@ public class TaskService {
                 throw new ResourceNotFoundException("TaskStage", request.getStageId());
             }
             task.setStageId(request.getStageId());
+        }
+        if (request.getStartDate() != null) {
+            task.setStartDate(request.getStartDate());
         }
         if (request.getDueDate() != null) {
             task.setDueDate(request.getDueDate());

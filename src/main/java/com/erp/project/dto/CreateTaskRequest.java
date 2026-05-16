@@ -27,6 +27,8 @@ public class CreateTaskRequest {
     @Positive(message = "Stage ID must be positive")
     private Long stageId;
 
+    private LocalDate startDate;
+
     private LocalDate dueDate;
 
     @Positive(message = "Estimated hours must be positive")

@@ -128,6 +128,7 @@ public class ProjectService {
                             .name(task.getName())
                             .stageName(stageName)
                             .assignedTo(task.getAssignedTo())
+                            .startDate(task.getStartDate())
                             .dueDate(task.getDueDate())
                             .estimatedHours(task.getEstimatedHours())
                             .actualHours(task.getActualHours())
