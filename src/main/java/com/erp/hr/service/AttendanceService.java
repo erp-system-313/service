@@ -2,6 +2,7 @@ package com.erp.hr.service;
 
 import com.erp.auth.security.CurrentUserUtil;
 import com.erp.hr.dto.AttendanceDto;
+import com.erp.hr.dto.AttendanceTodaySummaryDto;
 import com.erp.hr.dto.CreateManualAttendanceRequest;
 import com.erp.hr.dto.UpdateAttendanceRequest;
 import com.erp.hr.entity.Attendance;
@@ -261,6 +262,34 @@ public class AttendanceService {
             "No employee linked to your account. Contact admin.");
     }
     
+    @Transactional(readOnly = true)
+    public AttendanceTodaySummaryDto getTodaySummary(LocalDate date) {
+        if (date == null) date = LocalDate.now();
+        List<Object[]> results = attendanceRepository.countByStatusForDate(date);
+        long present = 0, absent = 0, late = 0, halfDay = 0, leave = 0;
+        for (Object[] row : results) {
+            Attendance.AttendanceStatus status = (Attendance.AttendanceStatus) row[0];
+            long count = (Long) row[1];
+            switch (status) {
+                case PRESENT -> present = count;
+                case ABSENT -> absent = count;
+                case LATE -> late = count;
+                case HALF_DAY -> halfDay = count;
+                case LEAVE -> leave = count;
+            }
+        }
+        long total = present + absent + late + halfDay + leave;
+        return AttendanceTodaySummaryDto.builder()
+                .date(date)
+                .total(total)
+                .present(present)
+                .absent(absent)
+                .late(late)
+                .halfDay(halfDay)
+                .leave(leave)
+                .build();
+    }
+
     public List<com.erp.hr.dto.ClockedInEmployeeDto> findClockedIn() {
         LocalDate today = LocalDate.now();
         return attendanceRepository.findClockedInByDate(today).stream()

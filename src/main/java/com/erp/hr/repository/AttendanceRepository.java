@@ -60,4 +60,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
     @Query("SELECT a FROM Attendance a WHERE a.date = :date AND a.checkIn IS NOT NULL AND a.checkOut IS NULL")
     List<Attendance> findClockedInByDate(@Param("date") LocalDate date);
+
+    @Query("SELECT a.status, COUNT(a) FROM Attendance a WHERE a.date = :date GROUP BY a.status")
+    List<Object[]> countByStatusForDate(@Param("date") LocalDate date);
 }
