@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,13 +49,19 @@ public class PurchaseOrderService {
     public PageResponse<PurchaseOrderDto> findAll(int page, int size, String search, Long supplierId, String status) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
+        boolean hasSearch = search != null && !search.isEmpty();
+        boolean hasSupplier = supplierId != null;
+        boolean hasStatus = status != null;
+
         Page<PurchaseOrder> orders;
-        if (search != null && !search.isEmpty()) {
-            orders = purchaseOrderRepository.search(search, pageable);
-        } else if (supplierId != null) {
-            orders = purchaseOrderRepository.findBySupplierId(supplierId, pageable);
-        } else if (status != null) {
-            orders = purchaseOrderRepository.findByStatus(PurchaseOrder.Status.valueOf(status.toUpperCase()), pageable);
+        if (hasSearch || hasSupplier || hasStatus) {
+            PurchaseOrder.Status statusEnum = hasStatus ? PurchaseOrder.Status.valueOf(status.toUpperCase()) : null;
+            orders = purchaseOrderRepository.findByFilters(
+                hasSearch ? search : null,
+                supplierId,
+                statusEnum,
+                pageable
+            );
         } else {
             orders = purchaseOrderRepository.findAll(pageable);
         }
@@ -139,12 +146,18 @@ public class PurchaseOrderService {
         if (request.getStatus() != null) order.setStatus(request.getStatus());
 
         if (request.getLines() != null) {
+            Map<Long, PurchaseOrderLine> existingLines = order.getLines().stream()
+                .collect(Collectors.toMap(l -> l.getProduct().getId(), l -> l, (a, b) -> a));
+
             order.getLines().clear();
             BigDecimal subtotal = BigDecimal.ZERO;
 
             for (UpdatePurchaseOrderRequest.UpdatePurchaseOrderLineRequest lineRequest : request.getLines()) {
                 Product product = productRepository.findById(lineRequest.getProductId())
                         .orElseThrow(() -> new ResourceNotFoundException("Product", lineRequest.getProductId()));
+
+                PurchaseOrderLine existing = existingLines.get(lineRequest.getProductId());
+                int receivedQty = existing != null ? existing.getReceivedQty() : 0;
 
                 PurchaseOrderLine line = PurchaseOrderLine.builder()
                         .purchaseOrder(order)
@@ -153,7 +166,7 @@ public class PurchaseOrderService {
                         .unitPrice(lineRequest.getUnitPrice())
                         .discount(lineRequest.getDiscount())
                         .notes(lineRequest.getNotes())
-                        .receivedQty(0)
+                        .receivedQty(receivedQty)
                         .build();
                 line.calculateLineTotal();
 
