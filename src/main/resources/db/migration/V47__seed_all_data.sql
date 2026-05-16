@@ -6,6 +6,33 @@
 --   V38 (MANAGER role), V39 (permissions, contracts table),
 --   V46 (6 suppliers, 13 products, 10 purchase orders with 26 lines)
 
+-- ================================================================
+-- 0. ENSURE MISSING TABLES (V37 may have been skipped on existing DBs)
+-- ================================================================
+
+CREATE TABLE IF NOT EXISTS departments (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    parent_id BIGINT REFERENCES departments(id),
+    manager_id BIGINT REFERENCES users(id),
+    description TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS job_positions (
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(100) NOT NULL UNIQUE,
+    department_id BIGINT REFERENCES departments(id),
+    description TEXT,
+    expected_employees INTEGER DEFAULT 1,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+ALTER TABLE employees ADD COLUMN IF NOT EXISTS department_id BIGINT REFERENCES departments(id);
+ALTER TABLE employees ADD COLUMN IF NOT EXISTS position_id BIGINT REFERENCES job_positions(id);
+
 -- Password hash for all new users (test123):
 -- $2b$10$HLP9D9x6TH68Qt/KYaUQ5.XD.vHmjMNK2URg5LApQRahKKeYdxqDC
 
