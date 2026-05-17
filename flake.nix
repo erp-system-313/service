@@ -22,6 +22,7 @@
             docker
             docker-compose
             postgresql
+            heroku
           ];
           shellHook = ''
             export DOCKER_HOST="unix:///run/user/$UID/podman/podman.sock"
@@ -57,6 +58,11 @@
             echo ""
             echo "Start the app with:"
             echo "  mvn spring-boot:run -Dspring-boot.run.profiles=dev"
+            echo ""
+            echo "Heroku commands:"
+            echo "  heroku login"
+            echo "  heroku create your-app-name"
+            echo "  heroku addons:create heroku-postgresql:essential-0"
             echo ""
 
             # Cleanup on exit
