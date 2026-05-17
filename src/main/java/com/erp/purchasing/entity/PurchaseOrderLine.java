@@ -40,9 +40,9 @@ public class PurchaseOrderLine {
     @Column(name = "line_total", precision = 15, scale = 2)
     private BigDecimal lineTotal;
 
-    @Column(name = "received_quantity")
+    @Column(name = "received_quantity", precision = 10, scale = 2)
     @Builder.Default
-    private Integer receivedQty = 0;
+    private BigDecimal receivedQty = BigDecimal.ZERO;
 
     @Column(columnDefinition = "TEXT")
     private String notes;

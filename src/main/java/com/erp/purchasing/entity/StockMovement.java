@@ -47,7 +47,7 @@ public class StockMovement {
     private Long referenceId;
 
     @Column(name = "movement_date", nullable = false)
-    private LocalDate date;
+    private LocalDateTime date;
 
     @Column(columnDefinition = "TEXT")
     private String notes;

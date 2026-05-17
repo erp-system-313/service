@@ -203,7 +203,7 @@ public class InvoiceService {
         // Using the old payment creation for backward compatibility
         com.erp.finance.entity.Payment payment = com.erp.finance.entity.Payment.builder()
                 .amount(request.getAmount())
-                .date(request.getPaymentDate().toLocalDate())
+                .date(request.getPaymentDate())
                 .paymentReference(request.getReference())
                 .paymentType(PaymentDirection.INBOUND)
                 .partnerType(PaymentPartnerType.CUSTOMER)

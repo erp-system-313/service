@@ -21,7 +21,7 @@ public class PaymentDto {
     private String partnerName;
     private BigDecimal amount;
     private Long currencyId;
-    private LocalDate date;
+    private LocalDateTime date;
     private PaymentDirection paymentType;
     private String paymentReference;
     private Long moveId;

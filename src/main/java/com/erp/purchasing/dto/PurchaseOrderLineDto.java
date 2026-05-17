@@ -20,6 +20,6 @@ public class PurchaseOrderLineDto {
     private BigDecimal unitPrice;
     private BigDecimal discount;
     private BigDecimal lineTotal;
-    private Integer receivedQty;
+    private BigDecimal receivedQty;
     private String notes;
 }

@@ -105,7 +105,7 @@ public class PurchaseOrderService {
                         .unitPrice(lineRequest.getUnitPrice())
                         .discount(lineRequest.getDiscount())
                         .notes(lineRequest.getNotes())
-                        .receivedQty(0)
+                        .receivedQty(BigDecimal.ZERO)
                         .build();
                 line.calculateLineTotal();
 
@@ -157,7 +157,7 @@ public class PurchaseOrderService {
                         .orElseThrow(() -> new ResourceNotFoundException("Product", lineRequest.getProductId()));
 
                 PurchaseOrderLine existing = existingLines.get(lineRequest.getProductId());
-                int receivedQty = existing != null ? existing.getReceivedQty() : 0;
+                BigDecimal receivedQty = existing != null ? existing.getReceivedQty() : BigDecimal.ZERO;
 
                 PurchaseOrderLine line = PurchaseOrderLine.builder()
                         .purchaseOrder(order)
@@ -216,20 +216,21 @@ public class PurchaseOrderService {
                         .findFirst()
                         .orElseThrow(() -> new ResourceNotFoundException("PurchaseOrderLine", lineRequest.getLineId()));
 
-                int receivedQty = lineRequest.getReceivedQty();
-                line.setReceivedQty(line.getReceivedQty() + receivedQty);
+                BigDecimal receivedQty = BigDecimal.valueOf(lineRequest.getReceivedQty());
+                line.setReceivedQty(line.getReceivedQty().add(receivedQty));
 
                 Product product = line.getProduct();
                 int previousStock = product.getCurrentStock() != null ? product.getCurrentStock() : 0;
-                product.setCurrentStock(previousStock + receivedQty);
+                int receivedQtyInt = lineRequest.getReceivedQty();
+                product.setCurrentStock(previousStock + receivedQtyInt);
                 productRepository.save(product);
 
                 CreateStockMovementRequest movementReq = CreateStockMovementRequest.builder()
                         .productId(product.getId())
                         .type(StockMovement.MovementType.IN)
-                        .quantity(receivedQty)
+                        .quantity(receivedQtyInt)
                         .previousStock(previousStock)
-                        .newStock(previousStock + receivedQty)
+                        .newStock(previousStock + receivedQtyInt)
                         .referenceType("PURCHASE_ORDER")
                         .referenceId(order.getId())
                         .date(LocalDate.now())

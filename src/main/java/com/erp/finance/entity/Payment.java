@@ -66,8 +66,8 @@ public class Payment {
     @Column(length = 100)
     private String paymentReference;
 
-    @Column(nullable = false)
-    private LocalDate date;
+    @Column(name = "payment_date", nullable = false)
+    private LocalDateTime date;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
