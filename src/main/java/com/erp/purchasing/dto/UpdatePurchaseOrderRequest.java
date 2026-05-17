@@ -33,7 +33,7 @@ public class UpdatePurchaseOrderRequest {
     @Builder
     public static class UpdatePurchaseOrderLineRequest {
         private Long productId;
-        private Integer quantity;
+        private BigDecimal quantity;
         private BigDecimal unitPrice;
         private BigDecimal discount;
         private String notes;

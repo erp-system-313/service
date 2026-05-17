@@ -27,8 +27,8 @@ public class PurchaseOrderLine {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @Column(nullable = false)
-    private Integer quantity;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal quantity;
 
     @Column(name = "unit_price", precision = 10, scale = 2, nullable = false)
     private BigDecimal unitPrice;
@@ -51,7 +51,7 @@ public class PurchaseOrderLine {
     @PreUpdate
     public void calculateLineTotal() {
         if (quantity != null && unitPrice != null) {
-            BigDecimal baseTotal = unitPrice.multiply(BigDecimal.valueOf(quantity));
+            BigDecimal baseTotal = unitPrice.multiply(quantity);
             if (discount != null) {
                 this.lineTotal = baseTotal.subtract(discount);
             } else {
