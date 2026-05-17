@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -23,10 +23,10 @@ public class CreateInvoiceRequest {
     private Long customerId;
 
     @NotNull(message = "Invoice date is required")
-    private LocalDateTime invoiceDate;
+    private LocalDate invoiceDate;
 
     @NotNull(message = "Due date is required")
-    private LocalDateTime dueDate;
+    private LocalDate dueDate;
 
     private List<InvoiceLineRequest> lines;
 

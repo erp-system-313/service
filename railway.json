@@ -1,0 +1,13 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile"
+  },
+  "deploy": {
+    "startCommand": "sh -c \"java ${JAVA_OPTS:-} -Dserver.port=${PORT:-8080} -Dspring.profiles.active=prod -jar app.jar\"",
+    "healthcheckPath": "/api/v1/auth/login",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}

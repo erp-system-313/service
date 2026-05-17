@@ -38,7 +38,7 @@ public class CreatePurchaseOrderRequest {
         private Long productId;
 
         @NotNull(message = "Quantity is required")
-        private Integer quantity;
+        private BigDecimal quantity;
 
         @NotNull(message = "Unit price is required")
         private BigDecimal unitPrice;

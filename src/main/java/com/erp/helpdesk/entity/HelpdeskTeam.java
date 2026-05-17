@@ -62,7 +62,7 @@ public class HelpdeskTeam {
     @Column(name = "team_lead_name", length = 255)
     private String teamLeadName;
 
-    @Column(name = "default_priority", length = 10)
+    @Column(name = "default_priority", length = 1)
     @Builder.Default
     private String defaultPriority = "0";
 

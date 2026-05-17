@@ -23,7 +23,7 @@ public class StockMovementDto {
     private Integer newStock;
     private String referenceType;
     private Long referenceId;
-    private LocalDate date;
+    private LocalDateTime date;
     private String notes;
     private Long createdById;
     private String createdByName;

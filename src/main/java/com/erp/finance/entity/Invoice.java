@@ -9,6 +9,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,10 +36,10 @@ public class Invoice {
     private Customer customer;
 
     @Column(name = "issue_date", nullable = false)
-    private LocalDateTime invoiceDate;
+    private LocalDate invoiceDate;
 
     @Column(name = "due_date", nullable = false)
-    private LocalDateTime dueDate;
+    private LocalDate dueDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

@@ -72,7 +72,7 @@ public class StockMovementService {
                 .newStock(request.getNewStock())
                 .referenceType(request.getReferenceType())
                 .referenceId(request.getReferenceId())
-                .date(request.getDate())
+                .date(request.getDate() != null ? request.getDate().atStartOfDay() : java.time.LocalDateTime.now())
                 .notes(request.getNotes())
                 .createdBy(createdBy)
                 .build();

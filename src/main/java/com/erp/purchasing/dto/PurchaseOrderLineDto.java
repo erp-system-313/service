@@ -16,10 +16,10 @@ public class PurchaseOrderLineDto {
     private Long orderId;
     private Long productId;
     private String productName;
-    private Integer quantity;
+    private BigDecimal quantity;
     private BigDecimal unitPrice;
     private BigDecimal discount;
     private BigDecimal lineTotal;
-    private Integer receivedQty;
+    private BigDecimal receivedQty;
     private String notes;
 }

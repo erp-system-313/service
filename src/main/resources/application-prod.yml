@@ -1,8 +1,6 @@
 spring:
   datasource:
-    url: ${DATABASE_URL}
-    username: ${DATABASE_USER}
-    password: ${DATABASE_PASSWORD}
+    url: jdbc:${DATABASE_URL:jdbc:postgresql://localhost:5432/erp}
     hikari:
       maximum-pool-size: 10
       minimum-idle: 2
@@ -22,7 +20,9 @@ cors:
 
 logging:
   level:
-    com.erp: WARN
+    com.erp: INFO
     org.springframework.security: WARN
+    org.hibernate: DEBUG
+    org.hibernate.tool.schema.internal: DEBUG
   file:
     name: logs/erp-backend.log
