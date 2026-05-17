@@ -20,7 +20,9 @@ cors:
 
 logging:
   level:
-    com.erp: WARN
+    com.erp: INFO
     org.springframework.security: WARN
+    org.hibernate: DEBUG
+    org.hibernate.tool.schema.internal: DEBUG
   file:
     name: logs/erp-backend.log
