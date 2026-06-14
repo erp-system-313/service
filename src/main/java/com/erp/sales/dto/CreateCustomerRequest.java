@@ -33,4 +33,6 @@ public class CreateCustomerRequest {
     private BigDecimal creditLimit;
 
     private PaymentTerms paymentTerms;
+
+    private Boolean isActive;
 }

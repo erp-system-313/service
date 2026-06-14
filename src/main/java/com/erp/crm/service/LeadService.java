@@ -111,14 +111,12 @@ public class LeadService {
     }
 
     @Transactional
-    public OpportunityDto convert(Long id, Long currentUserId, String ipAddress) {
+    public OpportunityDto convert(Long id, ConvertLeadRequest request, Long currentUserId, String ipAddress) {
         Lead lead = leadRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Lead", id));
 
-        PipelineStage stage = pipelineStageRepository.findByIsDefaultTrue()
-                .orElseGet(() -> pipelineStageRepository.findAllByOrderBySequenceAsc().stream()
-                        .findFirst()
-                        .orElseThrow(() -> new ResourceNotFoundException("PipelineStage", "default")));
+        PipelineStage stage = pipelineStageRepository.findById(request.getStageId())
+                .orElseThrow(() -> new ResourceNotFoundException("PipelineStage", request.getStageId()));
 
         Customer customer = Customer.builder()
                 .name(lead.getName())
@@ -136,8 +134,9 @@ public class LeadService {
                 .leadId(lead.getId())
                 .company(lead.getCompany())
                 .stage(stage)
-                .revenue(BigDecimal.ZERO)
-                .probability(0)
+                .revenue(request.getRevenue() != null ? request.getRevenue() : BigDecimal.ZERO)
+                .probability(request.getProbability() != null ? request.getProbability() : 0)
+                .expectedCloseDate(request.getCloseDate())
                 .build();
 
         opportunity = opportunityRepository.save(opportunity);
