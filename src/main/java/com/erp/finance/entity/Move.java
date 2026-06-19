@@ -1,5 +1,7 @@
 package com.erp.finance.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -25,6 +27,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Move {
 
     @Id
@@ -140,6 +143,7 @@ public class Move {
 
     @OneToMany(mappedBy = "move", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
+    @JsonIgnore
     private List<MoveLine> lines = new ArrayList<>();
 
     @CreationTimestamp
